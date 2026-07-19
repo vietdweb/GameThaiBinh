@@ -8,7 +8,15 @@ export const OBSTACLE_TYPES = {
   VENDOR_CART: 'VENDOR_CART',         // Xe bán hàng rong (Chuyển làn)
   VEHICLE_BUS: 'VEHICLE_BUS',         // Xe buýt di động 1 tầng (Chuyển làn)
   VEHICLE_BIKE: 'VEHICLE_BIKE',       // Xe máy di động (Chuyển làn)
-  VEHICLE_DOUBLE_DECKER: 'VEHICLE_DOUBLE_DECKER' // Xe buýt 2 tầng Sài Gòn mui trần (Chuyển làn)
+  VEHICLE_DOUBLE_DECKER: 'VEHICLE_DOUBLE_DECKER', // Xe buýt 2 tầng Sài Gòn mui trần (Chuyển làn)
+  VEHICLE_HANOI_BUS: 'VEHICLE_HANOI_BUS', // Xe buýt Hà Nội Xanh - Vàng (Cao 3.4m)
+  VEHICLE_VINBUS: 'VEHICLE_VINBUS'    // Xe buýt điện VinBus Xanh Lá Đậm (Cao 3.4m)
+};
+
+export const OBSTACLE_CATEGORIES = {
+  LOW: 'LOW',             // Thấp: Phải Nhảy (Jump). Cúi xuống hoặc đứng yên sẽ đâm.
+  HIGH: 'HIGH',           // Cao: Phải Cúi xuống (Crouch). Nhảy hoặc đứng yên sẽ đâm.
+  LONG_PLATFORM: 'LONG_PLATFORM' // Dài & Phẳng: Có thể Nhảy lên và CHẠY TRÊN NÓC.
 };
 
 // ----------------------------------------------------
@@ -18,6 +26,7 @@ export class Obstacle {
   constructor(scene, type, laneIndex, startZ) {
     this.scene = scene;
     this.type = type;
+    this.category = OBSTACLE_CATEGORIES.LOW;
     this.laneIndex = laneIndex; // 0: Trái, 1: Giữa, 2: Phải
     
     const lanesX = [LANE.LEFT, LANE.CENTER, LANE.RIGHT];
@@ -61,7 +70,7 @@ export class Obstacle {
   }
 
   addVehicleHeadlights(parentGroup) {
-    // 2 Bóng đèn LED vàng nhạt phát sáng ở đầu xe (Mesh thô siêu nhẹ, 0ms lag, không gây giật GPU)
+    // 2 Bóng đèn LED vàng nhạt phát sáng ở đầu xe
     const bulbMat = new THREE.MeshBasicMaterial({ color: 0xffffea });
     const bulbGeo = new THREE.SphereGeometry(0.1, 8, 8);
 
@@ -72,29 +81,39 @@ export class Obstacle {
     const bulbR = new THREE.Mesh(bulbGeo, bulbMat);
     bulbR.position.set(0.6, 0.65, -1.2);
     parentGroup.add(bulbR);
-
-    // Vệt sáng luồng xe chiếu nhẹ (Additive Blending Mesh siêu mượt)
-    const beamGeo = new THREE.PlaneGeometry(1.6, 6.0);
-    const beamMat = new THREE.MeshBasicMaterial({
-      color: 0xfffee0,
-      transparent: true,
-      opacity: 0.15,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      side: THREE.DoubleSide
-    });
-    const beamMesh = new THREE.Mesh(beamGeo, beamMat);
-    beamMesh.rotation.x = -Math.PI / 2;
-    beamMesh.position.set(0, 0.05, -4.0);
-    parentGroup.add(beamMesh);
   }
 
-  updateBoundingBox() {
+  initBoundingBox() {
     this.boundingBox.setFromObject(this.meshGroup);
     // Kẹp chặt bề rộng X của chướng ngại vật theo tâm làn đường xPos (bề rộng tối đa 2.0m)
     const laneX = this.xPos;
     if (this.boundingBox.min.x < laneX - 1.0) this.boundingBox.min.x = laneX - 1.0;
     if (this.boundingBox.max.x > laneX + 1.0) this.boundingBox.max.x = laneX + 1.0;
+
+    // Đối với chướng ngại vật Cao (Barrier, TrafficSign):
+    // Đặt khoảng trống bên dưới (Y < 1.1m) để người chơi Cúi xuống (Crouch) có thể chui qua an toàn!
+    if (this.category === OBSTACLE_CATEGORIES.HIGH) {
+      this.boundingBox.min.y = Math.max(this.boundingBox.min.y, 1.1);
+    }
+
+    this._boxMinY = this.boundingBox.min.y;
+    this._boxMaxY = this.boundingBox.max.y;
+    this._boxMinX = this.boundingBox.min.x;
+    this._boxMaxX = this.boundingBox.max.x;
+    this._boxDepthMin = this.boundingBox.min.z - this.zPos;
+    this._boxDepthMax = this.boundingBox.max.z - this.zPos;
+    this._initializedBox = true;
+  }
+
+  updateBoundingBox() {
+    if (!this._initializedBox) {
+      this.initBoundingBox();
+      return;
+    }
+    const curZ = this.meshGroup.position.z;
+    const curY = this.meshGroup.position.y;
+    this.boundingBox.min.set(this._boxMinX, this._boxMinY + curY, curZ + this._boxDepthMin);
+    this.boundingBox.max.set(this._boxMaxX, this._boxMaxY + curY, curZ + this._boxDepthMax);
   }
 
   update(deltaTime, currentSpeed) {
@@ -127,6 +146,7 @@ export class Obstacle {
 export class Roadblock extends Obstacle {
   constructor(scene, laneIndex, startZ) {
     super(scene, OBSTACLE_TYPES.ROADBLOCK, laneIndex, startZ);
+    this.category = OBSTACLE_CATEGORIES.LOW;
     this.initMesh();
   }
 
@@ -191,6 +211,7 @@ export class Roadblock extends Obstacle {
 export class Barrier extends Obstacle {
   constructor(scene, laneIndex, startZ) {
     super(scene, OBSTACLE_TYPES.BARRIER, laneIndex, startZ);
+    this.category = OBSTACLE_CATEGORIES.HIGH;
     this.initMesh();
   }
 
@@ -264,6 +285,7 @@ export class Barrier extends Obstacle {
 export class VendorCart extends Obstacle {
   constructor(scene, laneIndex, startZ) {
     super(scene, OBSTACLE_TYPES.VENDOR_CART, laneIndex, startZ);
+    this.category = OBSTACLE_CATEGORIES.LONG_PLATFORM;
     this.initMesh();
   }
 
@@ -332,9 +354,16 @@ export class VendorCart extends Obstacle {
 export class Vehicle extends Obstacle {
   constructor(scene, type, laneIndex, startZ) {
     super(scene, type, laneIndex, startZ);
+    this.category = OBSTACLE_CATEGORIES.LONG_PLATFORM;
     this.animTime = Math.random() * 10;
     
-    if (this.type === OBSTACLE_TYPES.VEHICLE_BUS) {
+    if (this.type === OBSTACLE_TYPES.VEHICLE_HANOI_BUS) {
+      this.ownSpeed = 5;
+      this.initHanoiBusMesh();
+    } else if (this.type === OBSTACLE_TYPES.VEHICLE_VINBUS) {
+      this.ownSpeed = 6;
+      this.initVinBusMesh();
+    } else if (this.type === OBSTACLE_TYPES.VEHICLE_BUS) {
       this.ownSpeed = 6;
       this.initBusMesh();
     } else if (this.type === OBSTACLE_TYPES.VEHICLE_DOUBLE_DECKER) {
@@ -346,6 +375,163 @@ export class Vehicle extends Obstacle {
     }
 
     this.setupObstacleMaterial(this.meshGroup, true);
+  }
+
+  initHanoiBusMesh() {
+    const busGroup = new THREE.Group();
+
+    // Vật liệu sơn Xe Bus Hà Nội (Xanh Dương truyền thống 0x0055a5 & Vàng rực 0xffd600)
+    const blueMat = new THREE.MeshStandardMaterial({ color: 0x0055a5, roughness: 0.25, metalness: 0.5 });
+    const yellowMat = new THREE.MeshStandardMaterial({ color: 0xffd600, roughness: 0.3, metalness: 0.3 });
+    const windowGlassMat = new THREE.MeshStandardMaterial({ color: 0x80deea, transparent: true, opacity: 0.75, roughness: 0.1 });
+    const blackTrimMat = new THREE.MeshStandardMaterial({ color: 0x121212, roughness: 0.8 });
+    const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, metalness: 0.9, roughness: 0.1 });
+
+    // 1. Thân xe cao vượt trội (Chiều cao H = 3.4m, Rộng X = 2.2m, Dài Z = 6.2m)
+    // Thân dưới sọc vàng
+    const lowerBody = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.4, 6.2), yellowMat);
+    lowerBody.position.set(0, 0.8, 0);
+    lowerBody.castShadow = true;
+    lowerBody.receiveShadow = true;
+    busGroup.add(lowerBody);
+
+    // Thân trên màu xanh dương Hà Nội
+    const upperBody = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.0, 6.2), blueMat);
+    upperBody.position.set(0, 2.4, 0);
+    upperBody.castShadow = true;
+    upperBody.receiveShadow = true;
+    busGroup.add(upperBody);
+
+    // 2. Kính chắn gió trước lớn & Bảng hiển thị tuyến "BUS HÀ NỘI - BỜ HỒ / NỘI BÀI"
+    const frontGlass = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.3), windowGlassMat);
+    frontGlass.position.set(0, 2.2, -3.11);
+    frontGlass.rotation.y = Math.PI;
+    busGroup.add(frontGlass);
+
+    const routeBox = new THREE.Mesh(
+      new THREE.BoxGeometry(1.8, 0.4, 0.1),
+      new THREE.MeshStandardMaterial({ color: 0xffea00, emissive: 0xffea00, emissiveIntensity: 0.8 })
+    );
+    routeBox.position.set(0, 3.1, -3.12);
+    busGroup.add(routeBox);
+
+    // 3. Cửa sổ hông xe bus hành khách
+    for (let zWin = -2.2; zWin <= 2.2; zWin += 1.4) {
+      const winL = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.9), windowGlassMat);
+      winL.position.set(-1.11, 2.4, zWin);
+      winL.rotation.y = -Math.PI / 2;
+      busGroup.add(winL);
+
+      const winR = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.9), windowGlassMat);
+      winR.position.set(1.11, 2.4, zWin);
+      winR.rotation.y = Math.PI / 2;
+      busGroup.add(winR);
+    }
+
+    // 4. Đèn LED trước & Bánh xe lớn
+    const lightGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.1, 14);
+    const lightMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffaa, emissiveIntensity: 1.2 });
+    
+    const headlightL = new THREE.Mesh(lightGeo, lightMat);
+    headlightL.rotation.x = Math.PI / 2;
+    headlightL.position.set(-0.8, 0.7, -3.12);
+    busGroup.add(headlightL);
+
+    const headlightR = headlightL.clone();
+    headlightR.position.x = 0.8;
+    busGroup.add(headlightR);
+
+    // 4 Bánh xe buýt kép lớn
+    const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.38, 14);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.6 });
+
+    const wFL = new THREE.Mesh(wheelGeo, wheelMat);
+    wFL.rotation.z = Math.PI / 2;
+    wFL.position.set(-1.02, 0.5, -2.0);
+    wFL.castShadow = true;
+    busGroup.add(wFL);
+
+    const wFR = wFL.clone();
+    wFR.position.x = 1.02;
+    busGroup.add(wFR);
+
+    const wBL = wFL.clone();
+    wBL.position.z = 2.0;
+    busGroup.add(wBL);
+
+    const wBR = wFR.clone();
+    wBR.position.z = 2.0;
+    busGroup.add(wBR);
+
+    // XOAY 180 ĐỘ ĐỂ ĐẦU XE CHIẾU VỀ NGƯỜI CHƠI
+    busGroup.rotation.y = Math.PI;
+
+    this.meshGroup.add(busGroup);
+  }
+
+  initVinBusMesh() {
+    const busGroup = new THREE.Group();
+
+    // Xe Buýt Điện VinBus hiện đại (Xanh lá cây đậm 0x004d40 metallic cao, viền LED Cyan 0x00e676)
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x004d40, metalness: 0.7, roughness: 0.15 });
+    const blackBodyMat = new THREE.MeshStandardMaterial({ color: 0x0a192f, roughness: 0.3 });
+    const windowGlassMat = new THREE.MeshStandardMaterial({ color: 0x0d47a1, transparent: true, opacity: 0.85, roughness: 0.1 });
+    const ledCyanMat = new THREE.MeshStandardMaterial({ color: 0x00e676, emissive: 0x00e676, emissiveIntensity: 1.0 });
+
+    // 1. Thân xe VinBus điện cao 3.4m, rực rỡ hiện đại
+    const mainBody = new THREE.Mesh(new THREE.BoxGeometry(2.2, 3.4, 6.4), bodyMat);
+    mainBody.position.set(0, 1.7, 0);
+    mainBody.castShadow = true;
+    mainBody.receiveShadow = true;
+    busGroup.add(mainBody);
+
+    // Dải LED Cyan viền thân xe VinBus phát sáng xanh tươi mát
+    const ledStripL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 6.2), ledCyanMat);
+    ledStripL.position.set(-1.11, 3.3, 0);
+    busGroup.add(ledStripL);
+
+    const ledStripR = ledStripL.clone();
+    ledStripR.position.x = 1.11;
+    busGroup.add(ledStripR);
+
+    // 2. Kính chắn gió trước mờ tối tân & Biển hiệu "VinBus - XE BUÝT ĐIỆN"
+    const frontGlass = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.4), windowGlassMat);
+    frontGlass.position.set(0, 2.2, -3.21);
+    frontGlass.rotation.y = Math.PI;
+    busGroup.add(frontGlass);
+
+    const brandingBox = new THREE.Mesh(
+      new THREE.BoxGeometry(1.8, 0.4, 0.1),
+      new THREE.MeshStandardMaterial({ color: 0x00e676, emissive: 0x00c853, emissiveIntensity: 0.9 })
+    );
+    brandingBox.position.set(0, 3.1, -3.22);
+    busGroup.add(brandingBox);
+
+    // 3. Đèn pha dải LED công nghệ tương lai
+    for (let l = -1; l <= 1; l += 2) {
+      const ledHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.12, 0.1), ledCyanMat);
+      ledHead.position.set(l * 0.7, 0.7, -3.22);
+      busGroup.add(ledHead);
+    }
+
+    // 4. Bánh xe VinBus đĩa mâm đúc
+    const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.38, 16);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+
+    for (let zPos of [-2.1, 2.1]) {
+      for (let xPos of [-1.02, 1.02]) {
+        const w = new THREE.Mesh(wheelGeo, wheelMat);
+        w.rotation.z = Math.PI / 2;
+        w.position.set(xPos, 0.5, zPos);
+        w.castShadow = true;
+        busGroup.add(w);
+      }
+    }
+
+    // XOAY 180 ĐỘ ĐỂ ĐẦU XE CHIẾU VỀ NGƯỜI CHƠI
+    busGroup.rotation.y = Math.PI;
+
+    this.meshGroup.add(busGroup);
   }
 
   update(deltaTime, currentSpeed) {
@@ -787,11 +973,12 @@ export class Vehicle extends Obstacle {
 }
 
 // ----------------------------------------------------
-// 7. LỚP THÙNG HÀNG GỖ NẸP CHÉO CHỮ X & SỌT NHỰA (CargoCrate)
+// 7. LỚP CỤM THÙNG RÁC CÔNG CỘNG XANH PBR (CargoCrate / Blue Trash Can Cluster)
 // ----------------------------------------------------
 export class CargoCrate extends Obstacle {
   constructor(scene, laneIndex, startZ, crateType = 'WOOD') {
     super(scene, OBSTACLE_TYPES.ROADBLOCK, laneIndex, startZ);
+    this.category = OBSTACLE_CATEGORIES.LOW;
     this.crateType = crateType;
     this.initMesh();
   }
@@ -799,45 +986,71 @@ export class CargoCrate extends Obstacle {
   initMesh() {
     const group = new THREE.Group();
 
-    if (this.crateType === 'WOOD') {
-      // 1. Thùng gỗ chính
-      const woodMat = new THREE.MeshStandardMaterial({ color: 0x8d6e63, roughness: 0.8, flatShading: true });
-      const frameMat = new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.9, flatShading: true });
+    // Vật liệu PBR thùng rác xanh dương công cộng (Nhựa cứng phản quang nhẹ, nhám 0.45)
+    const bluePlasticMat = new THREE.MeshStandardMaterial({
+      color: 0x0288d1,
+      roughness: 0.45,
+      metalness: 0.2
+    });
+    const darkLidMat = new THREE.MeshStandardMaterial({
+      color: 0x263238,
+      roughness: 0.6,
+      metalness: 0.1
+    });
+    const wheelMat = new THREE.MeshStandardMaterial({
+      color: 0x111111,
+      roughness: 0.8
+    });
+    const metallicRimMat = new THREE.MeshStandardMaterial({
+      color: 0xb0bec5,
+      metalness: 0.9,
+      roughness: 0.2
+    });
 
-      const crateBox = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 1.1), woodMat);
-      crateBox.position.y = 0.55;
-      crateBox.castShadow = true;
-      crateBox.receiveShadow = true;
-      group.add(crateBox);
+    // Tạo cụm 2 thùng rác xanh đứng sát nhau
+    const canOffsets = [-0.42, 0.42];
+    canOffsets.forEach((xOff, idx) => {
+      const canGroup = new THREE.Group();
 
-      // 2. Thanh nẹp gỗ viền 4 cạnh
-      const edgeSlatGeo = new THREE.BoxGeometry(1.14, 0.08, 0.08);
-      for (let y of [0.08, 1.02]) {
-        const slatTop = new THREE.Mesh(edgeSlatGeo, frameMat);
-        slatTop.position.set(0, y, 0.56);
-        group.add(slatTop);
-        const slatBack = slatTop.clone();
-        slatBack.position.z = -0.56;
-        group.add(slatBack);
+      // Thân thùng rác vút nhẹ
+      const bodyGeo = new THREE.BoxGeometry(0.68, 1.1, 0.68);
+      const body = new THREE.Mesh(bodyGeo, bluePlasticMat);
+      body.position.y = 0.55;
+      body.castShadow = true;
+      body.receiveShadow = true;
+      canGroup.add(body);
+
+      // Nắp thùng rác sẫm màu có tay nắm
+      const lidGeo = new THREE.BoxGeometry(0.72, 0.12, 0.72);
+      const lid = new THREE.Mesh(lidGeo, darkLidMat);
+      lid.position.y = 1.14;
+      lid.castShadow = true;
+      canGroup.add(lid);
+
+      const handleGeo = new THREE.BoxGeometry(0.3, 0.06, 0.08);
+      const handle = new THREE.Mesh(handleGeo, darkLidMat);
+      handle.position.set(0, 1.22, 0.32);
+      canGroup.add(handle);
+
+      // Bánh xe di động dưới chân
+      for (let side of [-0.32, 0.32]) {
+        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 12), wheelMat);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(side, 0.09, -0.28);
+        canGroup.add(wheel);
       }
 
-      // 3. Nẹp chéo chữ X ở mặt trước
-      const cross1 = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.08, 0.09), frameMat);
-      cross1.position.set(0, 0.55, 0.56);
-      cross1.rotation.z = 0.78;
-      group.add(cross1);
+      // Vạch tay vịn nẹp kim loại
+      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.6, 8), metallicRimMat);
+      rim.rotation.z = Math.PI / 2;
+      rim.position.set(0, 1.05, -0.34);
+      canGroup.add(rim);
 
-      const cross2 = cross1.clone();
-      cross2.rotation.z = -0.78;
-      group.add(cross2);
-    } else {
-      // Sọt nhựa rỗng
-      const plasticMat = new THREE.MeshStandardMaterial({ color: 0x0288d1, roughness: 0.4, flatShading: true });
-      const basket = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.85, 1.1), plasticMat);
-      basket.position.y = 0.42;
-      basket.castShadow = true;
-      group.add(basket);
-    }
+      // Xoay nhẹ tự nhiên
+      canGroup.rotation.y = (idx === 0 ? 0.08 : -0.12);
+      canGroup.position.x = xOff;
+      group.add(canGroup);
+    });
 
     this.meshGroup.add(group);
     this.updateBoundingBox();
@@ -850,6 +1063,7 @@ export class CargoCrate extends Obstacle {
 export class TrafficSign extends Obstacle {
   constructor(scene, laneIndex, startZ) {
     super(scene, OBSTACLE_TYPES.BARRIER, laneIndex, startZ);
+    this.category = OBSTACLE_CATEGORIES.HIGH;
     this.initMesh();
   }
 

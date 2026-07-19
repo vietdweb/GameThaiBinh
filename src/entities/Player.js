@@ -26,6 +26,12 @@ export class Player {
     // Các biến lưu trữ kích thước hình học gốc
     this.originalHeight = 1.6;
 
+    // Biến quản lý chuyển động bánh xe & đánh lái Siêu Xe (Group Pivot Wrapper Pattern)
+    this.carFrontWheelPivots = [];
+    this.carAllWheelMeshes = [];
+    this.currentSteerAngle = 0;
+    this.carWheelRollAngle = 0; // Tích lũy góc quay bánh xe dạng primitive float (Khóa cứng tâm bánh xe)
+
     // Nhóm đối tượng chứa toàn bộ Mesh nhân vật
     this.meshGroup = new THREE.Group();
     // Nhóm con chứa phần hiển thị trực quan (để dễ dàng xoay và scale độc lập)
@@ -142,87 +148,58 @@ export class Player {
 
       this._buildBaristaSkin();
     } else if (skinId === 'car_driver') {
-      const glbCarModel = AssetManager.getModel('car_driver') || AssetManager.getModel('ferrari');
+      const glbCarModel = AssetManager.getModel('car_driver') || AssetManager.getModel('lamborghini') || AssetManager.getModel('ferrari');
       if (glbCarModel) {
+        // Lấy mô hình siêu xe đã pre-merge thành 1 Mesh nguyên khối trong bộ nhớ Cache (0ms lag khi chọn trong Menu!)
         const carModel = glbCarModel.clone();
-        carModel.rotation.y = Math.PI;
 
-        // Vật liệu đen ánh kim sơn phủ bóng gương Clearcoat 2 tầng chuẩn 100% như trong hình reference Ferrari 458 Italia
-        const bodyMaterial = new THREE.MeshPhysicalMaterial({
-          color: 0x0d0d0d,
-          metalness: 1.0,
-          roughness: 0.2,
-          clearcoat: 1.0,
-          clearcoatRoughness: 0.1
-        });
+        // 1. SỬA HƯỚNG ĐẦU XE (Đầu xe hướng về phía trước -Z theo đúng chiều đường phố)
+        carModel.rotation.y = 0;
 
-        // Vật liệu mâm bánh đĩa 5 chấu & nẹp crom màu bạc rực rỡ mạ kim
-        const detailsMaterial = new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          metalness: 1.0,
-          roughness: 0.4
-        });
+        // 2. TỐI ƯU HÓA VẬT LIỆU MƯỢT MÀ 60 FPS (Ép FrontSide & Tắt Transparent thừa)
+        carModel.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
 
-        // Kính xe truyền sáng mờ trong suốt cao cấp
-        const glassMaterial = new THREE.MeshPhysicalMaterial({
-          color: 0xffffff,
-          metalness: 0.25,
-          roughness: 0,
-          transmission: 1.0,
-          transparent: true,
-          opacity: 0.7
-        });
-
-        carModel.traverse(function (object) {
-          if (object.isMesh) {
-            object.castShadow = true;
-            object.receiveShadow = true;
-
-            if (object.name === 'body') {
-              object.material = bodyMaterial;
-            } else if (
-              object.name === 'rim_fl' ||
-              object.name === 'rim_fr' ||
-              object.name === 'rim_rr' ||
-              object.name === 'rim_rl' ||
-              object.name === 'trim'
-            ) {
-              object.material = detailsMaterial;
-            } else if (object.name === 'glass') {
-              object.material = glassMaterial;
+            if (child.material) {
+              const materials = Array.isArray(child.material) ? child.material : [child.material];
+              materials.forEach(mat => {
+                mat.side = THREE.FrontSide; // Ép GPU render 1 chiều mượt như Student model 16MB
+                if (mat.emissive) {
+                  mat.emissive.setHex(0x000000); // Tắt hiệu ứng đèn LED phát quang thừa
+                  mat.emissiveIntensity = 0;
+                }
+                const matName = (mat.name || '').toLowerCase();
+                const nodeName = (child.name || '').toLowerCase();
+                if (!matName.includes('glass') && !nodeName.includes('glass') && mat.transparent) {
+                  mat.transparent = false;
+                  mat.depthWrite = true;
+                }
+              });
             }
           }
         });
 
-        // Căn chỉnh tỉ lệ cho khớp với bề rộng làn đường (bề rộng X ~ 1.25m)
+        // 3. CĂN CHỈNH TỈ LỆ XE TO BỀ THẾ (1.85m) & ĐẶT XE CHÍNH GIỮA CHUẨN LÀN ĐƯỜNG
         const bbox = new THREE.Box3().setFromObject(carModel);
         const size = bbox.getSize(new THREE.Vector3());
         if (size.y > 0) {
-          const targetWidth = 1.25;
+          const targetWidth = 1.85; // Xe rộng 1.85m bề thế sang trọng
           const scaleFactor = targetWidth / size.x;
           carModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
 
           const scaledBbox = new THREE.Box3().setFromObject(carModel);
+          const scaledCenter = scaledBbox.getCenter(new THREE.Vector3());
+          carModel.position.x = -scaledCenter.x;
+          carModel.position.z = -scaledCenter.z;
           carModel.position.y = -scaledBbox.min.y;
         }
 
-        // Tấm bóng gầm xe Ferrari AO Shadow
-        const shadowTex = new THREE.TextureLoader().load('/models/ferrari_ao.png');
-        const shadowMesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(1.6, 3.2),
-          new THREE.MeshBasicMaterial({
-            map: shadowTex,
-            blending: THREE.MultiplyBlending,
-            toneMapped: false,
-            transparent: true,
-            premultipliedAlpha: true
-          })
-        );
-        shadowMesh.rotation.x = -Math.PI / 2;
-        shadowMesh.position.set(0, 0.01, 0);
-        this.visualGroup.add(shadowMesh);
-
+        this.carShadowMesh = null;
         this.visualGroup.add(carModel);
+
+        // 4. LƯU VẬT LIỆU GỐC ĐỂ KHÔI PHỤC MÀU XE BAN ĐẦU SAU KHI HẾT TĂNG TỐC (FEVER MODE / BOOST)
         this.saveOriginalMaterials();
         return;
       }
@@ -659,14 +636,10 @@ export class Player {
 
     // 1. Khối cầu khiên năng lượng Hologram trong suốt (Translucent Plasma Energy Dome)
     const sphereGeo = new THREE.SphereGeometry(1.25, 32, 32);
-    const sphereMat = new THREE.MeshStandardMaterial({
+    const sphereMat = new THREE.MeshBasicMaterial({
       color: 0x00e5ff,
-      emissive: 0x00b0ff,
-      emissiveIntensity: 0.9,
       transparent: true,
       opacity: 0.38,
-      roughness: 0.1,
-      metalness: 0.8,
       side: THREE.DoubleSide
     });
     const sphere = new THREE.Mesh(sphereGeo, sphereMat);
@@ -737,10 +710,19 @@ export class Player {
   jump() {
     if (!this.isJumping && !this.isSliding) {
       this.isJumping = true;
-      this.velocityY = PHYSICS.JUMP_FORCE;
+      const force = this.isHighJumpActive ? PHYSICS.HIGH_JUMP_FORCE : PHYSICS.JUMP_FORCE;
+      this.velocityY = force;
       return true;
     }
     return false;
+  }
+
+  enableHighJump() {
+    this.isHighJumpActive = true;
+  }
+
+  disableHighJump() {
+    this.isHighJumpActive = false;
   }
 
   slide() {
@@ -908,22 +890,15 @@ export class Player {
   }
 
   updateBoundingBox() {
-    this.boundingBox.setFromObject(this.meshGroup);
-    const groundY = this.meshGroup.position.y;
+    const pos = this.meshGroup.position;
+    const height = this.isSliding ? (this.originalHeight * 0.5) : this.originalHeight;
 
-    // Khi Cúi xuống (isSliding), thu nhỏ Hộp va chạm AABB Y xuống còn 50% (lọt qua rào chắn cao Barrier)
-    if (this.isSliding) {
-      this.boundingBox.min.y = groundY;
-      this.boundingBox.max.y = groundY + (this.originalHeight * 0.5); // 0.8m
-    }
-
-    // Giới hạn bề rộng X của BoundingBox nhân vật tối đa 0.7m quanh tâm vị trí X
-    const centerX = this.meshGroup.position.x;
-    this.boundingBox.min.x = centerX - 0.35;
-    this.boundingBox.max.x = centerX + 0.35;
+    // Cập nhật trực tiếp 0ms lag không cần duyệt lại toàn bộ cây Mesh
+    this.boundingBox.min.set(pos.x - 0.35, pos.y, pos.z - 0.6);
+    this.boundingBox.max.set(pos.x + 0.35, pos.y + height, pos.z + 0.6);
   }
 
-  update(deltaTime) {
+  update(deltaTime, currentSpeed = 15.0) {
     // 1. Chuyển làn mượt mà (Lerp vị trí X)
     this.meshGroup.position.x = THREE.MathUtils.lerp(
       this.meshGroup.position.x,
@@ -965,6 +940,8 @@ export class Player {
         this.stopSliding();
       }
     }
+
+
 
     // 4. HIỆU ỨNG NGHIÊNG NHÂN VẬT & XE THEO QUÁN TÍNH DI CHUYỂN (VEHICLE & CHARACTER TILTING & STEERING YAW)
     // 4a. Nghiêng trục Z (cuộn thân) & xoay nhẹ Y (bẻ đầu lái) khi chuyển làn Trái / Phải

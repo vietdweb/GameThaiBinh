@@ -3,6 +3,7 @@ import { SceneManager } from './SceneManager.js';
 import { StateMachine } from '../managers/StateMachine.js';
 import { CollisionManager } from '../managers/CollisionManager.js';
 import { AudioManager } from '../managers/AudioManager.js';
+import { CharacterViewerManager } from '../managers/CharacterViewerManager.js';
 import {
   GAME_STATES,
   GAME_CONFIG,
@@ -24,6 +25,7 @@ import {
   Vehicle,
   OBSTACLE_TYPES
 } from '../entities/Obstacle.js';
+import { ObstacleManager } from '../managers/ObstacleManager.js';
 
 export class Game {
   constructor() {
@@ -60,14 +62,18 @@ export class Game {
     // Quản lý Timers của Power-ups
     this.doubleScoreTimer = 0;
     this.boostTimer = 0;
+    this.highJumpTimer = 0;
 
     // Quản lý các thực thể game
     this.player = null;
     this.environment = null;
-    this.obstacles = [];
+    this.obstacleManager = null;
     this.collectibles = [];
     this.obstacleSpawnTimer = 0;
     this.collectibleSpawnTimer = 0;
+
+    // Override model cho viewer (null = dùng character đang chọn)
+    this.pendingViewerOverride = null;
 
     // Hiệu ứng hạt Fever (particles)
     this.feverParticles = null;
@@ -80,6 +86,7 @@ export class Game {
     this.domScreens = {
       loading: document.getElementById('loading-screen'),
       menu: document.getElementById('main-menu'),
+      viewer: document.getElementById('character-viewer-panel'),
       hud: document.getElementById('hud'),
       gameOver: document.getElementById('game-over-screen')
     };
@@ -97,6 +104,11 @@ export class Game {
       overCoffee: document.getElementById('over-coffee'),
       overHighScore: document.getElementById('over-high-score'),
       btnStart: document.getElementById('btn-start'),
+      btnView360: document.getElementById('btn-view-360'),
+      btnViewLamborghini: document.getElementById('btn-view-lamborghini'),
+      btnCloseViewer: document.getElementById('btn-close-viewer'),
+      btnToggleAutoRotate: document.getElementById('btn-toggle-auto-rotate'),
+      btnResetViewerCam: document.getElementById('btn-reset-viewer-cam'),
       btnRestart: document.getElementById('btn-restart'),
       btnHome: document.getElementById('btn-home'),
       btnMute: document.getElementById('btn-mute'),
@@ -111,6 +123,9 @@ export class Game {
       btnTouchJump: document.getElementById('touch-btn-jump'),
       btnTouchSlide: document.getElementById('touch-btn-slide')
     };
+
+    // Khởi tạo Quản lý Phòng Xem 360°
+    this.characterViewerManager = new CharacterViewerManager(this.sceneManager.renderer, this);
 
     this.init();
   }
@@ -131,6 +146,13 @@ export class Game {
     // 5. Gắn điều khiển vuốt cảm ứng (Swipe)
     this._setupSwipeControls();
 
+    // Resize listener cho phòng xem 360°
+    window.addEventListener('resize', () => {
+      if (this.characterViewerManager) {
+        this.characterViewerManager.onWindowResize(window.innerWidth, window.innerHeight);
+      }
+    });
+
     // 6. Chạy quá trình tải (Loading)
     this._runSimulatedLoading();
 
@@ -149,11 +171,36 @@ export class Game {
       this._showScreen('menu');
       this._updateHighScoreDisplay();
       this.audioManager.stopBGM();
+      if (this.characterViewerManager) {
+        this.characterViewerManager.closeViewer();
+      }
+    });
+
+    // Khi vào VIEWER (Phòng xem 360°)
+    sm.onEnter(GAME_STATES.VIEWER, () => {
+      this._showScreen('viewer');
+      // Ưu tiên override nếu có (VD: Lamborghini viewer)
+      if (this.pendingViewerOverride) {
+        const override = this.pendingViewerOverride;
+        this.pendingViewerOverride = null;
+        if (this.characterViewerManager) {
+          this.characterViewerManager.openViewer(override.id, override);
+        }
+      } else {
+        const skinKey = this.skinKeys[this.selectedSkinIndex] || 'SHIPPER';
+        const perk = CHARACTERS[skinKey] || CHARACTERS.SHIPPER;
+        if (this.characterViewerManager) {
+          this.characterViewerManager.openViewer(perk.id, perk);
+        }
+      }
     });
 
     // Khi vào PLAYING
     sm.onEnter(GAME_STATES.PLAYING, () => {
       this._showScreen('hud');
+      if (this.characterViewerManager) {
+        this.characterViewerManager.closeViewer();
+      }
       if (this.isFeverActive) {
         // Thoát Fever Mode nhưng vẫn PLAYING
         this._deactivateFeverVisuals();
@@ -199,6 +246,47 @@ export class Game {
       this.audioManager._ensureContext(); // Unlock AudioContext sau user gesture
       this.startGame();
     });
+
+    if (this.domElements.btnView360) {
+      this.domElements.btnView360.addEventListener('click', () => {
+        this.audioManager._ensureContext();
+        this.stateMachine.transition(GAME_STATES.VIEWER);
+      });
+    }
+
+    if (this.domElements.btnViewLamborghini) {
+      this.domElements.btnViewLamborghini.addEventListener('click', () => {
+        this.audioManager._ensureContext();
+        // Đặt override model Lamborghini trước khi chuyển state
+        this.pendingViewerOverride = {
+          id: 'car_driver',
+          name: '🏎️ Lamborghini Huận',
+          desc: 'Siêu xe thể thao đỉnh cao | Kéo chuột / Vuốt để xoay 360°'
+        };
+        this.stateMachine.transition(GAME_STATES.VIEWER);
+      });
+    }
+
+    if (this.domElements.btnCloseViewer) {
+      this.domElements.btnCloseViewer.addEventListener('click', () => {
+        this.stateMachine.transition(GAME_STATES.MENU);
+      });
+    }
+
+    if (this.domElements.btnToggleAutoRotate) {
+      this.domElements.btnToggleAutoRotate.addEventListener('click', () => {
+        const isAutoOn = this.characterViewerManager.toggleAutoRotate();
+        this.domElements.btnToggleAutoRotate.textContent = isAutoOn
+          ? '🔄 Tự Động Xoay: Bật'
+          : '🔄 Tự Động Xoay: Tắt';
+      });
+    }
+
+    if (this.domElements.btnResetViewerCam) {
+      this.domElements.btnResetViewerCam.addEventListener('click', () => {
+        this.characterViewerManager.resetCamera();
+      });
+    }
 
     this.domElements.btnRestart.addEventListener('click', () => {
       this.startGame();
@@ -425,7 +513,7 @@ export class Game {
       "KÍCH HOẠT ĐỘNG CƠ CYBERPUNK 3D...",
       "ĐANG BUỘC THUN CHẰN THÙNG HÀNG SHIPPER...",
       "PHA CÀ PHÊ SỮA ĐÁ NĂNG LƯỢNG RUSH FEVER...",
-      "NẠP BẢN ĐỒ ĐƯỜNG PHỐ SÀI GÒN NEON...",
+      "NẠP BẢN ĐỒ ĐƯỜNG PHỐ THÁI BÌNH NEON...",
       "HOÀN TẤT ĐỘNG CƠ - SẴN SÀNG LAO PHỐ!"
     ];
 
@@ -435,7 +523,7 @@ export class Game {
         this.updateLoadingProgress(progress, statusMessages[msgIndex]);
       },
       () => {
-        this.updateLoadingProgress(100, "SÀI GÒN RUSH - KHỞI CHẠY!");
+        this.updateLoadingProgress(100, "THÁI BÌNH RUSH - KHỞI CHẠY!");
         this._initEntities();
         this._updateCharacterCardDisplay();
         setTimeout(() => {
@@ -497,6 +585,9 @@ export class Game {
     if (this.environment) this.environment.dispose();
     this.environment = new Environment(scene);
 
+    if (this.obstacleManager) this.obstacleManager.clear();
+    this.obstacleManager = new ObstacleManager(scene);
+
     if (this.player) this.player.dispose();
     this.player = new Player(scene, skinId);
 
@@ -509,8 +600,9 @@ export class Game {
   }
 
   _clearObstacles() {
-    this.obstacles.forEach(obs => obs.dispose());
-    this.obstacles = [];
+    if (this.obstacleManager) {
+      this.obstacleManager.clear();
+    }
   }
 
   _clearCollectibles() {
@@ -529,6 +621,7 @@ export class Game {
     this.feverTimer = 0;
     this.doubleScoreTimer = 0;
     this.boostTimer = 0;
+    this.highJumpTimer = 0;
     this.currentSpeed = 4.0; // Bắt đầu cuộn mượt mà từ tốc độ Menu 4.0 m/s lên tốc độ chơi!
     this.obstacleSpawnTimer = 1.5;
     this.collectibleSpawnTimer = 2.0;
@@ -633,47 +726,8 @@ export class Game {
   // SINH CHƯỚNG NGẠI VẬT
   // =========================================================
   _spawnRandomObstacle() {
-    const scene = this.sceneManager.scene;
-    const laneIndex = Math.floor(Math.random() * 3);
-    const spawnZ = -85 - Math.random() * 20;
-
-    const nearbyObstaclesInLane = this.obstacles.filter(obs => {
-      const dz = Math.abs(obs.meshGroup.position.z - spawnZ);
-      const obsLane = obs.laneIndex;
-      return dz < 15 && obsLane === laneIndex;
-    });
-
-    if (nearbyObstaclesInLane.length > 0) return;
-
-    const types = Object.values(OBSTACLE_TYPES);
-    const chosenType = types[Math.floor(Math.random() * types.length)];
-
-    let obstacle = null;
-    switch (chosenType) {
-      case OBSTACLE_TYPES.ROADBLOCK:
-        obstacle = new Roadblock(scene, laneIndex, spawnZ);
-        break;
-      case OBSTACLE_TYPES.BARRIER:
-        obstacle = new Barrier(scene, laneIndex, spawnZ);
-        break;
-      case OBSTACLE_TYPES.VENDOR_CART:
-        obstacle = new VendorCart(scene, laneIndex, spawnZ);
-        break;
-      case OBSTACLE_TYPES.VEHICLE_BUS:
-        obstacle = new Vehicle(scene, OBSTACLE_TYPES.VEHICLE_BUS, laneIndex, spawnZ);
-        break;
-      case OBSTACLE_TYPES.VEHICLE_DOUBLE_DECKER:
-        obstacle = new Vehicle(scene, OBSTACLE_TYPES.VEHICLE_DOUBLE_DECKER, laneIndex, spawnZ);
-        break;
-      case OBSTACLE_TYPES.VEHICLE_BIKE:
-        obstacle = new Vehicle(scene, OBSTACLE_TYPES.VEHICLE_BIKE, laneIndex, spawnZ);
-        break;
-    }
-
-    if (obstacle) {
-      obstacle.laneIndex = laneIndex;
-      obstacle.isAlive = true;
-      this.obstacles.push(obstacle);
+    if (this.obstacleManager) {
+      this.obstacleManager.spawnRandomObstacle(this.collectibles);
     }
   }
 
@@ -685,6 +739,19 @@ export class Game {
     const laneIndex = Math.floor(Math.random() * 3);
     const spawnZ = -80 - Math.random() * 20;
 
+    // Kiểm tra khoảng cách an toàn với Chướng ngại vật trong CÙNG làn đường!
+    // Giữ khoảng cách tối thiểu 25m để người chơi ăn hết dãy cà phê mà không bị xe tông giữa chừng
+    if (this.obstacleManager && this.obstacleManager.obstacles.length > 0) {
+      const nearbyObstacleInLane = this.obstacleManager.obstacles.filter(obs => {
+        if (!obs || !obs.isAlive) return false;
+        const obsLane = obs.laneIndex;
+        const obsZ = obs.meshGroup ? obs.meshGroup.position.z : 0;
+        const dz = Math.abs(obsZ - spawnZ);
+        return obsLane === laneIndex && dz < 25;
+      });
+      if (nearbyObstacleInLane.length > 0) return;
+    }
+
     // 25% cơ hội sinh Power-up
     const isPowerUp = Math.random() < 0.25;
     if (isPowerUp) {
@@ -694,10 +761,10 @@ export class Game {
       col.isAlive = true;
       this.collectibles.push(col);
     } else {
-      // Sinh dãy 4-6 ly cà phê nối tiếp nhau kéo dài trên làn đường
-      const groupCount = 4 + Math.floor(Math.random() * 3);
+      // Sinh dãy 4 ly cà phê nối tiếp nhau (khoảng cách 3.0m giữa các ly)
+      const groupCount = 4;
       for (let i = 0; i < groupCount; i++) {
-        const col = new Collectible(scene, laneIndex, spawnZ - i * 3.5, 'COFFEE');
+        const col = new Collectible(scene, laneIndex, spawnZ - i * 3.0, 'COFFEE');
         col.isAlive = true;
         this.collectibles.push(col);
       }
@@ -738,6 +805,9 @@ export class Game {
     } else if (type === POWERUP_TYPES.BOOST) {
       this.boostTimer = POWERUP_CONFIG.BOOST_DURATION;
       this._activateFeverMode();
+    } else if (type === POWERUP_TYPES.HIGH_JUMP) {
+      this.highJumpTimer = POWERUP_CONFIG.HIGH_JUMP_DURATION;
+      if (this.player) this.player.enableHighJump();
     }
     this._updateHUDDisplay();
   }
@@ -843,6 +913,27 @@ export class Game {
         `;
       }
 
+      // 4. Giày Nhảy Cao Phản Lực Neon
+      if (this.highJumpTimer > 0) {
+        const pct = ((this.highJumpTimer / POWERUP_CONFIG.HIGH_JUMP_DURATION) * 100).toFixed(1);
+        const secs = (this.highJumpTimer / 1000).toFixed(1);
+        cardsHTML += `
+          <div class="powerup-card boost-card" style="border-color: #00e5ff">
+            <div class="powerup-header">
+              <div class="powerup-title-group">
+                <span class="powerup-icon">👟</span>
+                <span class="powerup-title">Giày Nhảy Cao</span>
+              </div>
+              <span class="powerup-timer-text">${secs}s</span>
+            </div>
+            <div class="powerup-progress-track">
+              <div class="powerup-progress-fill" style="width: ${pct}%; background: linear-gradient(90deg, #00b0ff, #00e5ff)"></div>
+            </div>
+            <div class="powerup-effect-desc">Tăng siêu lực nhảy - Nhảy qua đầu xe bus Hà Nội 3.4m dễ dàng</div>
+          </div>
+        `;
+      }
+
       this.domElements.activePowerups.innerHTML = cardsHTML;
     }
   }
@@ -882,6 +973,13 @@ export class Game {
   }
 
   _update(deltaTime) {
+    if (this.stateMachine.is(GAME_STATES.VIEWER)) {
+      if (this.characterViewerManager) {
+        this.characterViewerManager.update();
+      }
+      return;
+    }
+
     this.sceneManager.update(deltaTime);
 
     // Cập nhật phố xá 3D cuộn nhẹ (4m/s) & hiển thị cây cối rợp bóng trong màn hình MENU / LOADING
@@ -920,6 +1018,12 @@ export class Game {
       if (this.boostTimer <= 0 && !this.isFeverActive) {
         this._deactivateFeverVisuals();
         this._destroyFeverParticles();
+      }
+    }
+    if (this.highJumpTimer > 0) {
+      this.highJumpTimer = Math.max(0, this.highJumpTimer - deltaTime * 1000);
+      if (this.highJumpTimer <= 0 && this.player) {
+        this.player.disableHighJump();
       }
     }
 
@@ -988,7 +1092,7 @@ export class Game {
 
     // --- 4. Cập nhật nhân vật ---
     if (this.player) {
-      this.player.update(deltaTime);
+      this.player.update(deltaTime, this.currentSpeed);
     }
 
     // --- 5. Cập nhật môi trường ---
@@ -1011,76 +1115,25 @@ export class Game {
       this.collectibleSpawnTimer = 1.0 + Math.random() * 0.8;
     }
 
-    // --- 8. Cập nhật Obstacles & Kiểm tra Va chạm Nâng cao & Platforming chạy trên nóc xe ---
     const playerPos = this.player ? this.player.meshGroup.position : null;
-    let standingOnVehicleRoof = false;
 
-    for (let i = this.obstacles.length - 1; i >= 0; i--) {
-      const obs = this.obstacles[i];
-      obs.update(deltaTime, this.currentSpeed);
-
-      if (!this.player) continue;
-
-      const playerBox = this.player.boundingBox;
-      const obsBox = obs.boundingBox;
-      const isVehiclePlatform = (
-        obs.type === OBSTACLE_TYPES.VEHICLE_BUS ||
-        obs.type === OBSTACLE_TYPES.VEHICLE_DOUBLE_DECKER ||
-        obs.type === OBSTACLE_TYPES.VEHICLE_BIKE ||
-        obs.type === OBSTACLE_TYPES.VENDOR_CART
-      );
-
-      // --- LOGIC CHẠY TRÊN NÓC XE (PLATFORMING) ---
-      if (isVehiclePlatform && playerPos) {
-        const vehicleTopY = obsBox.max.y;
-        const isOverVehicleRoof = (
-          playerPos.x >= obsBox.min.x - 0.2 && playerPos.x <= obsBox.max.x + 0.2 &&
-          playerPos.z >= obsBox.min.z - 0.3 && playerPos.z <= obsBox.max.z + 0.3
-        );
-
-        if (isOverVehicleRoof && playerPos.y >= vehicleTopY - 0.35) {
-          // Người chơi tiếp đất an toàn và CHẠY TRÊN NÓC XE/CONTAINER!
-          standingOnVehicleRoof = true;
-          this.player.currentPlatformY = vehicleTopY;
+    // --- 8. Cập nhật Obstacles & Kiểm tra Va chạm Nâng cao & Platforming chạy trên nóc xe ---
+    if (this.obstacleManager) {
+      this.obstacleManager.update(deltaTime, this.currentSpeed);
+      this.obstacleManager.checkCollisionAndPlatforming(
+        this.player,
+        this.isFeverActive || this.boostTimer > 0,
+        scoreMult,
+        this.audioManager,
+        {
+          onSmash: (obs) => {
+            this.score += 300 * scoreMult;
+          },
+          onGameOver: (obs) => {
+            this._triggerGameOver();
+          }
         }
-      }
-
-      // --- LOGIC VA CHẠM AABB ---
-      const isStandingSafelyOnTop = (
-        isVehiclePlatform &&
-        this.player.currentPlatformY > 0 &&
-        playerPos.y >= obsBox.max.y - 0.25
       );
-
-      if (!isStandingSafelyOnTop && playerBox.intersectsBox(obsBox)) {
-        if (this.isFeverActive || this.boostTimer > 0) {
-          this.score += 300 * scoreMult;
-          this.audioManager.playSmash();
-          obs.dispose();
-          this.obstacles.splice(i, 1);
-          continue;
-        } else if (this.player.hasShield) {
-          this.player.consumeShield();
-          this.audioManager.playShieldBreak();
-          obs.dispose();
-          this.obstacles.splice(i, 1);
-          continue;
-        } else {
-          this._triggerGameOver();
-          return;
-        }
-      }
-
-      // Dọn dẹp obstacle đã vượt qua phía sau camera
-      if (obs.meshGroup.position.z > 45) {
-        obs.dispose();
-        this.obstacles.splice(i, 1);
-      }
-    }
-
-    // Nếu chạy vượt qua chiều dài ô tô hoặc đổi làn ra khỏi xe, cho rơi tự do về mặt đất Y=0
-    if (this.player && !standingOnVehicleRoof && this.player.currentPlatformY > 0) {
-      this.player.currentPlatformY = 0;
     }
 
     // --- 9. Cập nhật Collectibles ---
@@ -1117,6 +1170,12 @@ export class Game {
   }
 
   _render() {
+    if (this.stateMachine.is(GAME_STATES.VIEWER)) {
+      if (this.characterViewerManager) {
+        this.characterViewerManager.render();
+      }
+      return;
+    }
     this.sceneManager.render();
   }
 }

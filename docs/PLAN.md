@@ -254,10 +254,55 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
   - [x] Gán `glass`: `MeshPhysicalMaterial` khúc xạ mờ (`transmission: 1.0`) và đệm bóng `ferrari_ao.png`.
   - [x] Xoay `rotation.y = Math.PI` và thu tỷ lệ vừa vặn 1.25m làn đường.
 
+---
 
+## Phase 18: Nâng Cấp Hệ Thống Chướng Ngại Vật & Platforming Nóc Xe
+**Mục tiêu:** Phân loại 3 nhóm chướng ngại vật (Thấp - Nhảy qua, Cao - Cúi qua, Dài & Phẳng - Chạy trên nóc) và viết lớp `ObstacleManager` xử lý va chạm AABB +Platforming.
 
+### Checklist công việc chi tiết
+- [x] **Task 18.1: Phân Loại Chướng Ngại Vật (`OBSTACLE_CATEGORIES`)**
+  - [x] Thấp (`LOW`): Roadblock, CargoCrate (Buộc Nhảy qua, Cúi xuống sẽ bị đâm).
+  - [x] Cao (`HIGH`): Barrier, TrafficSign (Buộc Cúi xuống, Nhảy hoặc Đứng sẽ bị đâm).
+  - [x] Dài & Phẳng (`LONG_PLATFORM`): Bus, Double Decker, Bike, VendorCart (Có thể Nhảy lên và CHẠY TRÊN NÓC XE).
+- [x] **Task 18.2: Viết Lớp `ObstacleManager.js` & Xử Lý Va Chạm Nâng Cao**
+  - [x] Khởi tạo `src/managers/ObstacleManager.js` phân bổ ngẫu nhiên 3 loại chướng ngại vật và đảm bảo luôn còn ít nhất 1 làn đường trống.
+  - [x] Bounding Box nhân vật khi Cúi xuống (Crouch) thu nhỏ 50% Y (từ 1.6m -> 0.8m).
+  - [x] Bounding Box vật thể Cao giữ khoảng trống Y < 1.1m bên dưới để người chơi trượt chui qua an toàn.
+  - [x] Kiểm tra tiếp đất `player.y >= roofY` và kẹp vị trí Y khi chạy trên nóc ô tô. Tự động rơi tự do theo trọng lực khi chạy qua hết chiều dài xe.
 
+---
 
+## Phase 19: Đồ Họa AAA Realism, 2 Xe Bus Hà Nội 3.4m & Giày Nhảy Cao Neon
+**Mục tiêu:** Nâng cấp đồ họa đêm rực rỡ qua EffectComposer Bloom Pass, ACESFilmicToneMapping, đường nhựa ướt PBR, bổ sung 2 mẫu Xe Bus Hà Nội & VinBus cao 3.4m và Vật phẩm Giày Nhảy Cao Neon.
 
+### Checklist công việc chi tiết
+- [x] **Task 19.1: Đồ Họa Đêm Rực Rỡ (Post-processing & PBR Materials)**
+  - [x] Cấu hình `EffectComposer` với `UnrealBloomPass` trong `SceneManager.js` tạo hiệu ứng phát sáng rực rỡ cho đèn pha xe, biển LED và vật phẩm.
+  - [x] Bật `ACESFilmicToneMapping` và `PCFSoftShadowMap` đổ bóng mịn.
+  - [x] Nâng cấp mặt đường nhựa ướt đêm mưa PBR (`roughness: 0.35`, `metalness: 0.18`) bắt phản xạ ánh đèn đường.
+- [x] **Task 19.2: Thay Thế Chướng Ngại Vật Xanh Công Cộng PBR**
+  - [x] Loại bỏ khối vuông xanh đơn điệu. Thay thế bằng Cụm Thùng Rác Công Cộng Xanh PBR (`BlueTrashCanCluster`) có nắp, bánh xe, tay nắm và độ bóng nhựa phản quang.
+- [x] **Task 19.3: Tích Hợp 2 Mô Hình Xe Bus Hà Nội & VinBus (Cao 3.4m)**
+  - [x] Mẫu 1: Xe Bus Hà Nội truyền thống Xanh - Vàng (`VEHICLE_HANOI_BUS`) cao 3.4m có biển hiệu tuyến "BUS HÀ NỘI".
+  - [x] Mẫu 2: Xe Buýt Điện VinBus Xanh Lá Đậm (`VEHICLE_VINBUS`) cao 3.4m có dải LED Cyan phát sáng rực rỡ.
+  - [x] Bounding Box cao 3.4m chặn đứng mọi cú nhảy thường từ mặt đất, chỉ cho phép chạy trên nóc khi đáp từ trên cao hoặc dùng Giày Nhảy Cao.
+- [x] **Task 19.4: Vật Phẩm Giày Nhảy Cao Neon Phản Lực (`HIGH_JUMP`)**
 
+---
 
+## Phase 20: Tích Hợp Siêu Xe Lamborghini 3D, Group Pivot Wrapper & Tối Ưu 60 FPS
+**Mục tiêu:** Đưa mô hình `lamborghini.glb` làm Siêu Xe Player trực tiếp điều khiển, khắc phục triệt để lỗi xe lộn nhào bằng Group Pivot Wrapper Pattern, sửa đầu xe hướng chuẩn và tối ưu mượt mà 60 FPS.
+
+### Checklist công việc chi tiết
+- [x] **Task 20.1: Đăng Ký Mô Hình Lamborghini (`AssetManager.js`)**
+  - [x] Nạp `lamborghini.glb` và gán cho skin `car_driver` ("Đại Gia Ô Tô").
+- [x] **Task 20.2: Cấu Trúc Bọc Bánh Xe Group Pivot Wrapper Pattern (`Player.js`)**
+  - [x] Trích xuất 4 bánh xe (`Object_36`, `Object_37`, `Object_38`, `Object_39`) DUY NHẤT 1 LẦN trong callback `buildCharacterSkin()`.
+  - [x] Bọc từng Mesh bánh xe vào một `THREE.Group` Pivot tại vị trí gốc của bánh xe, đưa Mesh bánh xe về tâm (0,0,0) của Group.
+  - [x] Phân tách chuyển động: Dùng `wheelMesh.rotateX(rollDelta)` trên Mesh bánh xe bên trong để quay tròn tít mù, và dùng `frontPivot.rotation.y = steerAngle` trên Group cha của 2 bánh trước để bẻ lái rẽ. Triệt tiêu 100% lỗi lộn nhào xe.
+- [x] **Task 20.3: Khắc Phục Lỗi Lag GLB 12MB & Tối Ưu 60 FPS**
+  - [x] Chuyển toàn bộ 20 vật liệu từ `doubleSided = true` sang `FrontSide` giúp giảm 50% số lượng polygon render trên GPU.
+  - [x] Tắt `transparent = true` và bật `depthWrite = true` trên các bộ phận khung xe/bánh xe không phải kính để triệt tiêu lỗi lag do depth-sorting.
+  - [x] Tuyệt đối không gọi `model.traverse()` trong vòng lặp render `update()`, duy trì 60 FPS ổn định.
+- [x] **Task 20.4: Sửa Hướng Đầu Xe Hướng Về Phía Trước**
+  - [x] Cấu hình `carModel.rotation.y = 0;` để đầu xe và đèn pha hướng về phía trước (-Z) theo chiều chạy đường phố.

@@ -82,9 +82,34 @@
 
       <div class="menu-actions">
         <button id="btn-start" class="btn-primary glow-btn">CHƠI NGAY</button>
+        <button id="btn-view-360" class="btn-secondary glow-btn-view">🔍 XEM NHÂN VẬT 360°</button>
+        <button id="btn-view-lamborghini" class="btn-secondary glow-btn-lambo">🏎️ XEM LAMBORGHINI</button>
         <button id="btn-mute" class="btn-secondary">
           <span class="sound-icon">🔊</span> Âm Thanh: Bật
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2b. Giao diện Phòng Xem 360° (Character Viewer Room Overlay) -->
+  <div id="character-viewer-panel" class="ui-screen hidden">
+    <div class="viewer-top-bar">
+      <div class="viewer-title-group">
+        <h2 id="viewer-char-name" class="glow-text">NHÂN VẬT 360°</h2>
+        <p id="viewer-char-desc" class="viewer-subtitle">Xoay 360° bằng cách kéo chuột hoặc vuốt màn hình</p>
+      </div>
+      <button id="btn-close-viewer" class="btn-close-viewer">◀ QUAY LẠI MENU</button>
+    </div>
+
+    <!-- Hướng dẫn & Nút điều khiển xoay -->
+    <div class="viewer-controls-hint">
+      <div class="hint-badges">
+        <span class="hint-badge">🖱️ Kéo chuột / Vuốt: Xoay 360°</span>
+        <span class="hint-badge">🔍 Cuộn chuột: Zoom</span>
+      </div>
+      <div class="viewer-actions-row">
+        <button id="btn-toggle-auto-rotate" class="btn-viewer-action">🔄 Tự Động Xoay: Bật</button>
+        <button id="btn-reset-viewer-cam" class="btn-viewer-action">🎯 Reset Góc Nhìn</button>
       </div>
     </div>
   </div>

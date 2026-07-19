@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { GAME_CONFIG } from '../utils/Constants.js';
 
 export class SceneManager {
@@ -10,6 +13,7 @@ export class SceneManager {
     this.scene = null;
     this.camera = null;
     this.renderer = null;
+    this.composer = null;
     this.controls = null;
 
     // Lưu các nguồn sáng để tiện điều chỉnh nếu cần
@@ -63,7 +67,20 @@ export class SceneManager {
     // 4. Thiết lập ánh sáng (Lighting)
     this.setupLighting();
 
-    // 5. Cài đặt OrbitControls nếu ở chế độ Debug
+    // 5. Khởi tạo EffectComposer & UnrealBloomPass cho đồ họa đêm rực rỡ (Bloom Effect)
+    this.composer = new EffectComposer(this.renderer);
+    const renderPass = new RenderPass(this.scene, this.camera);
+    this.composer.addPass(renderPass);
+
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.65, // strength
+      0.4,  // radius
+      0.80  // threshold
+    );
+    this.composer.addPass(bloomPass);
+
+    // 6. Cài đặt OrbitControls nếu ở chế độ Debug
     if (this.debugMode) {
       this.controls = new OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
@@ -73,7 +90,7 @@ export class SceneManager {
       this.controls.maxDistance = 100;
     }
 
-    // 6. Lắng nghe sự kiện thay đổi kích thước trình duyệt
+    // 7. Lắng nghe sự kiện thay đổi kích thước trình duyệt
     window.addEventListener('resize', this.onWindowResize.bind(this));
   }
 
@@ -119,6 +136,10 @@ export class SceneManager {
 
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    if (this.composer) {
+      this.composer.setSize(width, height);
+    }
   }
 
   update(deltaTime) {
@@ -128,7 +149,11 @@ export class SceneManager {
   }
 
   render() {
-    this.renderer.render(this.scene, this.camera);
+    if (this.composer) {
+      this.composer.render();
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 
   // Tiện ích dọn dẹp bộ nhớ khi cần hủy cảnh

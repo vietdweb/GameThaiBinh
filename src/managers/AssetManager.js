@@ -19,7 +19,8 @@ class AssetManagerClass {
       player: '/models/student.glb',
       student: '/models/student.glb',
       ferrari: '/models/ferrari.glb',
-      car_driver: '/models/ferrari.glb',
+      lamborghini: '/models/lamborghini.glb',
+      car_driver: '/models/lamborghini.glb',
       maple_tree: '/models/maple_tree.glb',
       pine_tree: '/models/pine_tree.glb'
     };

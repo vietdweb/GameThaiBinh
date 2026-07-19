@@ -458,6 +458,161 @@ html, body {
   box-shadow: 0 6px 20px rgba(255, 111, 0, 0.35);
 }
 
+.glow-btn-view {
+  background: linear-gradient(135deg, #00e5ff, #0088ff) !important;
+  color: #050b14 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.35) !important;
+  border: 1px solid rgba(0, 229, 255, 0.5) !important;
+}
+
+.glow-btn-view:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 6px 22px rgba(0, 229, 255, 0.55) !important;
+}
+
+/* Nút XEM LAMBORGHINI - Gold sang trọng */
+.glow-btn-lambo {
+  background: linear-gradient(135deg, #f59e0b, #d97706, #fbbf24) !important;
+  color: #07070a !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 18px rgba(245, 158, 11, 0.45) !important;
+  border: 1px solid rgba(251, 191, 36, 0.6) !important;
+  letter-spacing: 1px;
+}
+
+.glow-btn-lambo:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 28px rgba(245, 158, 11, 0.65) !important;
+  transform: translateY(-2px);
+}
+
+/* Global hidden utility */
+.hidden {
+  display: none !important;
+}
+
+/* =========================================================
+   GIAO DIỆN PHÒNG XEM CHI TIẾT 360° (CHARACTER VIEWER ROOM)
+   ========================================================= */
+#character-viewer-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 900;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.viewer-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  z-index: 910;
+  pointer-events: auto;
+}
+
+.viewer-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.viewer-title-group h2 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #00e5ff;
+  letter-spacing: 1px;
+  text-shadow: 0 0 16px rgba(0, 229, 255, 0.6);
+  margin: 0;
+}
+
+.viewer-subtitle {
+  font-size: 0.85rem;
+  color: #a0aec0;
+  margin: 0;
+}
+
+.btn-close-viewer {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #ff4d4d;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.btn-close-viewer:hover {
+  background: rgba(239, 68, 68, 0.4);
+  color: #ffffff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.viewer-controls-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+  z-index: 910;
+  pointer-events: auto;
+}
+
+.hint-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hint-badge {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  backdrop-filter: blur(6px);
+}
+
+.viewer-actions-row {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-viewer-action {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.btn-viewer-action:hover {
+  background: rgba(0, 229, 255, 0.25);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+}
+
 .glow-btn:hover {
   box-shadow: 0 8px 25px rgba(255, 111, 0, 0.5);
   filter: brightness(1.1);

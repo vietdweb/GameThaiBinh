@@ -3,6 +3,7 @@
 export const GAME_STATES = {
   LOADING: 'LOADING',
   MENU: 'MENU',
+  VIEWER: 'VIEWER',
   PLAYING: 'PLAYING',
   FEVER: 'FEVER',
   PAUSED: 'PAUSED',
@@ -20,7 +21,8 @@ export const LANE = {
 
 export const PHYSICS = {
   GRAVITY: 32,          // Gia tốc trọng trường (m/s^2)
-  JUMP_FORCE: 12,       // Lực nhảy ban đầu
+  JUMP_FORCE: 14.5,     // Lực nhảy ban đầu thường
+  HIGH_JUMP_FORCE: 23.0,// Lực nhảy siêu cao (vượt qua xe buýt Hà Nội 3.4m)
   SLIDE_DURATION: 800,  // Thời gian trượt (ms)
   PLAYER_GROUND_Y: 0    // Độ cao mặt đất mặc định của nhân vật
 };
@@ -45,12 +47,14 @@ export const GAME_CONFIG = {
 export const POWERUP_TYPES = {
   SHIELD: 'SHIELD',          // Giáp Nón Lá (đỡ 1 va chạm)
   DOUBLE_SCORE: 'DOUBLE_SCORE', // Bánh Mì X2 Score (10s)
-  BOOST: 'BOOST'             // Xe Ôm Boost Siêu Tốc (6s)
+  BOOST: 'BOOST',             // Xe Ôm Boost Siêu Tốc (6s)
+  HIGH_JUMP: 'HIGH_JUMP'     // Giày Nhảy Cao Phản Lực Neon (8s)
 };
 
 export const POWERUP_CONFIG = {
   DOUBLE_SCORE_DURATION: 10000, // 10 giây
-  BOOST_DURATION: 6000          // 6 giây
+  BOOST_DURATION: 6000,         // 6 giây
+  HIGH_JUMP_DURATION: 8000      // 8 giây
 };
 
 export const CHARACTERS = {

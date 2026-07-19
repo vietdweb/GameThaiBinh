@@ -40,6 +40,8 @@ export class Collectible {
       this._buildDoubleScoreMesh();
     } else if (this.type === POWERUP_TYPES.BOOST) {
       this._buildBoostMesh();
+    } else if (this.type === POWERUP_TYPES.HIGH_JUMP) {
+      this._buildHighJumpMesh();
     } else {
       this._buildCoffeeMesh();
     }
@@ -122,21 +124,20 @@ export class Collectible {
     sticker.position.set(0, 0.42, 0.29);
     this.meshGroup.add(sticker);
 
-    // 7. Ống hút cong màu xanh mạ tươi (Bent Green Straw)
-    const strawGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.9, 8);
+    // 7. Ống hút thẳng đứng màu xanh tươi (Straight Green Straw as shown in image)
+    const strawGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.95, 8);
     const strawMat = new THREE.MeshStandardMaterial({ color: 0x00e676, roughness: 0.3 });
     const straw = new THREE.Mesh(strawGeo, strawMat);
-    straw.position.set(0.08, 0.95, 0);
-    straw.rotation.z = -0.22;
+    straw.position.set(0, 0.95, 0); // Thẳng đứng chính giữa nắp vòm chuẩn như ảnh!
     this.meshGroup.add(straw);
 
-    // 8. Hào quang lấp lánh rạng rỡ (Golden Orange Radiant Halo)
-    const glowGeo = new THREE.SphereGeometry(0.65, 14, 14);
+    // 8. Quả cầu hào quang siêu nhạt mờ mỏng nhẹ (Whisper Faint Glow Sphere)
+    const glowGeo = new THREE.SphereGeometry(0.68, 16, 16);
     const glowMat = new THREE.MeshBasicMaterial({
-      color: 0xff9100,
+      color: 0xfff8e1,
       transparent: true,
-      opacity: 0.25,
-      side: THREE.BackSide,
+      opacity: 0.025,
+      side: THREE.DoubleSide,
       depthWrite: false
     });
     const glow = new THREE.Mesh(glowGeo, glowMat);
@@ -151,14 +152,11 @@ export class Collectible {
   _buildShieldMesh() {
     // 1. Quả cầu năng lượng Hologram Cyan phát sáng 3D (Glowing Plasma Shield Orb)
     const sphereGeo = new THREE.SphereGeometry(0.42, 24, 24);
-    const sphereMat = new THREE.MeshStandardMaterial({
+    const sphereMat = new THREE.MeshBasicMaterial({
       color: 0x00e5ff,
-      emissive: 0x00b0ff,
-      emissiveIntensity: 0.9,
       transparent: true,
       opacity: 0.78,
-      roughness: 0.1,
-      metalness: 0.7
+      side: THREE.DoubleSide
     });
     const sphere = new THREE.Mesh(sphereGeo, sphereMat);
     this.meshGroup.add(sphere);
@@ -279,6 +277,100 @@ export class Collectible {
     this.glowMat = glowMat;
   }
 
+  _buildHighJumpMesh() {
+    const group = new THREE.Group();
+
+    // 1. Giày Sneaker Tương Lai Neon Cyan (Future Neon Sneaker)
+    const shoeMat = new THREE.MeshStandardMaterial({
+      color: 0x00e5ff,
+      emissive: 0x00b0ff,
+      emissiveIntensity: 0.6,
+      roughness: 0.25,
+      metalness: 0.7
+    });
+    const soleMat = new THREE.MeshStandardMaterial({
+      color: 0x00e676,
+      emissive: 0x00e676,
+      emissiveIntensity: 0.8,
+      roughness: 0.1
+    });
+
+    const shoeGroup = new THREE.Group();
+
+    // Đế giày nhảy cao phản quang
+    const soleGeo = new THREE.BoxGeometry(0.42, 0.12, 0.85);
+    const sole = new THREE.Mesh(soleGeo, soleMat);
+    sole.position.y = 0.06;
+    sole.castShadow = true;
+    shoeGroup.add(sole);
+
+    // Thân giày Sneaker thể thao
+    const upperGeo = new THREE.BoxGeometry(0.38, 0.38, 0.75);
+    const upper = new THREE.Mesh(upperGeo, shoeMat);
+    upper.position.set(0, 0.28, -0.05);
+    upper.castShadow = true;
+    shoeGroup.add(upper);
+
+    // Mũi giày thon nhọn
+    const toeGeo = new THREE.ConeGeometry(0.2, 0.35, 8);
+    const toe = new THREE.Mesh(toeGeo, shoeMat);
+    toe.rotation.x = -Math.PI / 2;
+    toe.position.set(0, 0.18, -0.48);
+    shoeGroup.add(toe);
+
+    // 2 Ống Phản Lực Nhỏ Ở Đáy Giày (Twin Rocket Thrusters)
+    const thrusterGeo = new THREE.CylinderGeometry(0.06, 0.08, 0.22, 10);
+    const thrusterMat = new THREE.MeshStandardMaterial({ color: 0xffea00, emissive: 0xff6d00, emissiveIntensity: 1.2 });
+    for (let t of [-0.12, 0.12]) {
+      const thruster = new THREE.Mesh(thrusterGeo, thrusterMat);
+      thruster.position.set(t, 0.02, 0.25);
+      shoeGroup.add(thruster);
+    }
+
+    shoeGroup.rotation.x = -Math.PI / 8;
+    group.add(shoeGroup);
+
+    // 2. Hệ Thống Hạt Hào Quang Ánh Sáng Xanh Neon (Cyan Particle Aura Ring)
+    const particleCount = 24;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (i / particleCount) * Math.PI * 2;
+      const radius = 0.65 + Math.random() * 0.1;
+      positions[i * 3] = Math.cos(angle) * radius;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 0.3;
+      positions[i * 3 + 2] = Math.sin(angle) * radius;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const pMat = new THREE.PointsMaterial({
+      color: 0x00e5ff,
+      size: 0.09,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending
+    });
+
+    const particles = new THREE.Points(geometry, pMat);
+    group.add(particles);
+
+    // 3. Quả Cầu Hào Quang Xanh rực rỡ
+    const glowGeo = new THREE.SphereGeometry(0.75, 16, 16);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0x00e5ff,
+      transparent: true,
+      opacity: 0.3,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    });
+    const glowSphere = new THREE.Mesh(glowGeo, glowMat);
+    group.add(glowSphere);
+
+    this.meshGroup.add(group);
+    this.glowMat = glowMat;
+  }
+
   update(deltaTime, currentSpeed, playerPosition, isFeverActive) {
     if (!this.isAlive) return;
 
@@ -292,9 +384,9 @@ export class Collectible {
     // Xoay liên tục
     this.meshGroup.rotation.y += 1.8 * deltaTime;
 
-    // Nhấp nháy hào quang
+    // Nhấp nháy hào quang siêu mờ mỏng nhẹ
     if (this.glowMat) {
-      this.glowMat.opacity = 0.15 + 0.15 * Math.abs(Math.sin(this.bobTime * 2));
+      this.glowMat.opacity = 0.018 + 0.015 * Math.abs(Math.sin(this.bobTime * 2));
     }
 
     // === Nam châm Fever Mode / Boost ===

@@ -7,5 +7,5 @@ window.addEventListener('DOMContentLoaded', () => {
   // Xuất đối tượng game ra đối tượng window toàn cục để hỗ trợ kiểm thử từ Console của trình duyệt
   window.game = game;
   
-  console.log('Sài Gòn Rush: Phase 1 khởi chạy thành công!');
+  console.log('Thái Bình Rush: Phase 1 khởi chạy thành công!');
 });

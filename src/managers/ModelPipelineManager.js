@@ -4,8 +4,7 @@ import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
- * ModelPipelineManager.js - Quản lý Tải, Override Vật Liệu PBR & Gộp Hình Học InstancedMesh cho Mô Hình GLB
- * Áp dụng kỹ năng threejs-performance-instancing và threejs-sketchfab-pipeline
+ * ModelPipelineManager.js - Quản lý Tải & Override Vật Liệu PBR cho Mô Hình GLB
  */
 export class ModelPipelineManager {
   constructor() {
@@ -60,7 +59,12 @@ export class ModelPipelineManager {
         path,
         (gltf) => {
           this.loadedGLTFs[key] = gltf;
-          this.processGLTFMaterials(gltf.scene);
+
+          // Chỉ xử lý Shader đục lá cho mô hình Cây
+          if (key.includes('tree')) {
+            this.processGLTFMaterials(gltf.scene);
+          }
+
           this.loadedModels[key] = gltf.scene;
           checkItemCompleted();
         },
@@ -73,10 +77,6 @@ export class ModelPipelineManager {
     });
   }
 
-  /**
-   * 2. Duyệt qua từng mesh con của GLTF để xử lý Material lá cây & thân cây theo 5 quy tắc tối ưu
-   * @param {THREE.Object3D} scene 
-   */
   processGLTFMaterials(scene) {
     scene.traverse((child) => {
       if (child.isMesh) {
@@ -86,7 +86,6 @@ export class ModelPipelineManager {
         if (child.material) {
           const materials = Array.isArray(child.material) ? child.material : [child.material];
           materials.forEach((mat) => {
-            // Tắt blend để tránh lỗi đè lớp depth sorting
             mat.transparent = false;
             mat.depthWrite = true;
             mat.depthTest = true;
@@ -96,19 +95,14 @@ export class ModelPipelineManager {
               mat.map.colorSpace = THREE.SRGBColorSpace;
               mat.color.setHex(0x999999);
 
-              // Inject Shader can thiệp vào Fragment Shader để tự động đục thủng điểm ảnh trắng đục (#FFFFFF)
               mat.onBeforeCompile = (shader) => {
                 shader.fragmentShader = shader.fragmentShader.replace(
                   '#include <clipping_planes_fragment>',
                   `
                   #include <clipping_planes_fragment>
-                  
-                  // Lấy màu sắc hiện tại của pixel texture
                   vec4 texColor = texture2D( map, vMapUv );
-                  
-                  // Nếu pixel đó có màu thiên về màu trắng đục của viền (R > 0.75, G > 0.75, B > 0.75)
                   if (texColor.r > 0.75 && texColor.g > 0.75 && texColor.b > 0.75) {
-                      discard; // Đục thủng pixel nền trắng
+                      discard;
                   }
                   `
                 );
@@ -128,6 +122,9 @@ export class ModelPipelineManager {
   }
 
   cloneModel(key) {
+    if (this.loadedModels[key]) {
+      return this.loadedModels[key].clone();
+    }
     const gltf = this.loadedGLTFs[key];
     if (!gltf) return null;
 
