@@ -92,18 +92,31 @@ export class CharacterViewerManager {
   }
 
   /**
-   * Thiết lập OrbitControls xoay 360° mượt mà
+   * Thiết lập OrbitControls xoay tự do 720° (chuột + cảm ứng)
    */
   _setupControls() {
     this.controls = new OrbitControls(this.viewerCamera, this.renderer.domElement);
     this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.05;
+    this.controls.dampingFactor = 0.06;
     this.controls.autoRotate = true;
     this.controls.autoRotateSpeed = 2.0;
     this.controls.minDistance = 1.6;
     this.controls.maxDistance = 6.5;
-    this.controls.minPolarAngle = Math.PI / 6;
-    this.controls.maxPolarAngle = Math.PI / 2 - 0.05; // Không nhìn xuyên qua sàn
+
+    // Mở toàn bộ góc xoay dọc (0 → π) - xoay tự do 720°
+    this.controls.minPolarAngle = 0;
+    this.controls.maxPolarAngle = Math.PI;
+
+    // Không giới hạn góc xoay ngang (mặc định đã tự do)
+    this.controls.minAzimuthAngle = -Infinity;
+    this.controls.maxAzimuthAngle = Infinity;
+
+    // Bật cảm ứng đa điểm chạm
+    this.controls.touches = {
+      ONE: THREE.TOUCH.ROTATE,
+      TWO: THREE.TOUCH.DOLLY_ROTATE
+    };
+
     this.controls.target.set(0, 0.8, 0);
     this.controls.enabled = false;
   }
