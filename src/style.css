@@ -1045,3 +1045,30 @@ html, body {
   opacity: 1;
 }
 
+
+/* Vung keo rieng cho OrbitControls - z-902, nam DUOI cac UI button z-910 */
+#viewer-drag-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 902;
+  cursor: grab;
+  touch-action: none;
+}
+#viewer-drag-area:active {
+  cursor: grabbing;
+}
+
+/* Dam bao top-bar va controls-hint nam TREN drag area */
+.viewer-top-bar {
+  position: relative;
+  z-index: 912;
+  pointer-events: auto;
+}
+.viewer-controls-hint {
+  position: relative;
+  z-index: 912;
+  pointer-events: auto;
+}

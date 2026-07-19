@@ -3,35 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Thái Bình Rush - Game 3D Endless Runner Việt Nam</title>
-  <!-- Google Fonts: Outfit cho văn bản, Space Grotesk cho tiêu đề, Rajdhani cho số HUD cực kỳ sắc nét -->
+  <title>Thai Binh Rush - Game 3D Endless Runner Viet Nam</title>
+  <!-- Google Fonts: Outfit cho van ban, Space Grotesk cho tieu de, Rajdhani cho so HUD -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Rajdhani:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
-  <!-- Canvas kết xuất Three.js -->
+  <!-- Canvas ket xuat Three.js -->
   <canvas id="game-canvas"></canvas>
-  <!-- Lớp phủ độ nhòe chuyển động khi tăng tốc (Motion Blur Overlay) -->
+  <!-- Lop phu do nhoe chuyen dong khi tang toc (Motion Blur Overlay) -->
   <div id="speed-motion-blur" class="speed-motion-blur"></div>
 
-  <!-- LỚP PHỦ GIAO DIỆN (UI OVERLAYS) -->
+  <!-- LOP PHU GIAO DIEN (UI OVERLAYS) -->
 
-  <!-- 1. Màn hình tải tài nguyên phong cách Cyberpunk Sci-Fi (Futuristic Loading Screen) -->
+  <!-- 1. Man hinh tai tai nguyen phong cach Cyberpunk Sci-Fi -->
   <div id="loading-screen" class="ui-screen active">
     <!-- Animated Cyberpunk Matrix Grid Background -->
     <div class="cyber-grid-bg"></div>
     
     <div class="glass-panel text-center cyber-loading-card">
-      <h1 class="game-logo glow-text animated-logo">THÁI BÌNH RUSH</h1>
+      <h1 class="game-logo glow-text animated-logo">THAI BINH RUSH</h1>
       <p class="subtitle cyber-subtitle">CYBERPUNK ENDLESS RUNNER 3D</p>
       
       <!-- Concentric Dual Rotating Tech Core Spinner -->
       <div class="cyber-spinner-wrapper">
         <div class="spinner-ring outer-ring"></div>
         <div class="spinner-ring inner-ring"></div>
-        <div class="spinner-core">⚡</div>
+        <div class="spinner-core">&#9889;</div>
       </div>
       
       <div class="loading-container">
@@ -41,39 +41,39 @@
           </div>
         </div>
         <div class="loading-status-wrapper">
-          <p id="loading-text" class="cyber-status-text">ĐANG KÍCH HOẠT ĐỘNG CƠ CÔNG NGHỆ...</p>
+          <p id="loading-text" class="cyber-status-text">DANG KICH HOAT DONG CO CONG NGHE...</p>
           <span id="loading-percent" class="cyber-percent">0%</span>
         </div>
       </div>
 
       <div class="loading-tips cyber-tips">
-        <p class="tip-title">💡 MẸO THÁI BÌNH:</p>
-        <p id="tip-content" class="tip-content">Thu thập Cà Phê Sữa Đá để bùng nổ năng lượng Rush Fever siêu tốc!</p>
+        <p class="tip-title">&#128161; MEO THAI BINH:</p>
+        <p id="tip-content" class="tip-content">Thu thap Ca Phe Sua Da de bung no nang luong Rush Fever sieu toc!</p>
       </div>
     </div>
   </div>
 
-  <!-- 2. Menu chính (Main Menu) -->
+  <!-- 2. Menu chinh (Main Menu) -->
   <div id="main-menu" class="ui-screen">
     <div class="glass-panel">
-      <h1 class="game-logo glow-text animated-logo">THÁI BÌNH RUSH</h1>
-      <p class="subtitle">Endless Runner Việt Nam</p>
+      <h1 class="game-logo glow-text animated-logo">THAI BINH RUSH</h1>
+      <p class="subtitle">Endless Runner Viet Nam</p>
 
       <div class="high-score-board">
-        <span>KỶ LỤC CỦA BẠN:</span>
+        <span>KY LUC CUA BAN:</span>
         <span id="menu-high-score" class="score-value">0</span>
       </div>
 
-      <!-- Khu vực chọn nhân vật -->
+      <!-- Khu vuc chon nhan vat -->
       <div class="character-select-container">
-        <h3>CHỌN NHÂN VẬT</h3>
+        <h3>CHON NHAN VAT</h3>
         <div class="character-carousel">
           <button id="char-prev" class="carousel-btn prev-btn">&lt;</button>
           <div class="character-card active">
             <div id="char-avatar" class="character-avatar shipper-skin"></div>
             <div class="character-info">
-              <span id="char-name" class="char-name">Anh Shipper Công Nghệ</span>
-              <span id="char-desc" class="char-desc">+10% tốc độ sạc Fever</span>
+              <span id="char-name" class="char-name">Anh Shipper Cong Nghe</span>
+              <span id="char-desc" class="char-desc">+10% toc do sac Fever</span>
             </div>
           </div>
           <button id="char-next" class="carousel-btn next-btn">&gt;</button>
@@ -81,67 +81,77 @@
       </div>
 
       <div class="menu-actions">
-        <button id="btn-start" class="btn-primary glow-btn">CHƠI NGAY</button>
-        <button id="btn-view-360" class="btn-secondary glow-btn-view">🔍 XEM NHÂN VẬT 360°</button>
-        <button id="btn-view-lamborghini" class="btn-secondary glow-btn-lambo">🏎️ XEM LAMBORGHINI</button>
+        <button id="btn-start" class="btn-primary glow-btn">CHOI NGAY</button>
+        <button id="btn-view-360" class="btn-secondary glow-btn-view">&#128269; XEM NHAN VAT 360&#176;</button>
+        <button id="btn-view-lamborghini" class="btn-secondary glow-btn-lambo">&#127950;&#65039; XEM LAMBORGHINI</button>
         <button id="btn-mute" class="btn-secondary">
-          <span class="sound-icon">🔊</span> Âm Thanh: Bật
+          <span class="sound-icon">&#128266;</span> Am Thanh: Bat
         </button>
       </div>
     </div>
   </div>
 
-  <!-- 2b. Giao diện Phòng Xem 360° (Character Viewer Room Overlay) -->
+  <!-- 2b. Giao dien Phong Xem 360 (Character Viewer Room Overlay) -->
   <div id="character-viewer-panel" class="ui-screen hidden">
+
+    <!--
+      VUNG KEO THU DIEN TICH RIENG CHO ORBITCONTROLS
+      z-index: 902 -> nam DUOI cac UI button (z-index: 910+)
+      -> OrbitControls nhan drag/xoay tai day
+      -> Buttons van nhan click vi z-index cao hon
+    -->
+    <div id="viewer-drag-area"></div>
+
+    <!-- Top bar: title + nut back (z-index 910, tren drag area) -->
     <div class="viewer-top-bar">
       <div class="viewer-title-group">
-        <h2 id="viewer-char-name" class="glow-text">NHÂN VẬT 360°</h2>
-        <p id="viewer-char-desc" class="viewer-subtitle">Xoay 360° bằng cách kéo chuột hoặc vuốt màn hình</p>
+        <h2 id="viewer-char-name" class="glow-text">NHAN VAT 360&#176;</h2>
+        <p id="viewer-char-desc" class="viewer-subtitle">Keo chuot / Vuot de xoay tu do 720&#176;</p>
       </div>
-      <button id="btn-close-viewer" class="btn-close-viewer">◀ QUAY LẠI MENU</button>
+      <button id="btn-close-viewer" class="btn-close-viewer">&#9664; QUAY LAI MENU</button>
     </div>
 
-    <!-- Hướng dẫn & Nút điều khiển xoay -->
+    <!-- Huong dan & Nut dieu khien xoay (z-index 910) -->
     <div class="viewer-controls-hint">
       <div class="hint-badges">
-        <span class="hint-badge">🖱️ Kéo chuột / Vuốt 1 ngón: Xoay tự do 720°</span>
-        <span class="hint-badge">✌️ Chụm 2 ngón / Cuộn chuột: Zoom</span>
+        <span class="hint-badge">&#128433;&#65039; Keo chuot / Vuot 1 ngon: Xoay tu do 720&#176;</span>
+        <span class="hint-badge">&#9996;&#65039; Chum 2 ngon / Cuon chuot: Zoom</span>
       </div>
       <div class="viewer-actions-row">
-        <button id="btn-toggle-auto-rotate" class="btn-viewer-action">🔄 Tự Động Xoay: Bật</button>
-        <button id="btn-reset-viewer-cam" class="btn-viewer-action">🎯 Reset Góc Nhìn</button>
+        <button id="btn-toggle-auto-rotate" class="btn-viewer-action">&#128260; Tu Dong Xoay: Bat</button>
+        <button id="btn-reset-viewer-cam" class="btn-viewer-action">&#127919; Reset Goc Nhin</button>
       </div>
     </div>
   </div>
 
-  <!-- 3. Giao diện chơi game (HUD) -->
+  <!-- 3. Giao dien choi game (HUD) -->
   <div id="hud" class="ui-hud">
     <div class="hud-top-bar">
-      <!-- Bộ thu thập Cà phê -->
+      <!-- Bo thu thap Ca phe -->
       <div class="hud-item coffee-counter">
         <div class="hud-icon-wrapper">
-          <span class="hud-icon">☕</span>
+          <span class="hud-icon">&#9749;</span>
         </div>
         <div class="hud-info-text">
-          <span class="hud-label">CÀ PHÊ</span>
+          <span class="hud-label">CA PHE</span>
           <span id="hud-coffee-count" class="hud-value">0</span>
         </div>
       </div>
 
-      <!-- Điểm số hiện tại -->
+      <!-- Diem so hien tai -->
       <div class="hud-item score-counter">
         <div class="hud-icon-wrapper">
-          <span class="hud-icon">🏆</span>
+          <span class="hud-icon">&#127942;</span>
         </div>
         <div class="hud-info-text">
-          <span class="hud-label">ĐIỂM SỐ</span>
+          <span class="hud-label">DIEM SO</span>
           <span id="hud-score" class="hud-value">000000</span>
         </div>
       </div>
     </div>
 
 
-    <!-- Thanh năng lượng Fever (Fever Gauge) -->
+    <!-- Thanh nang luong Fever (Fever Gauge) -->
     <div class="hud-bottom-bar">
       <div class="fever-gauge-container">
         <div class="fever-label-wrapper">
@@ -154,36 +164,36 @@
       </div>
     </div>
 
-    <!-- Hướng dẫn điều khiển nhanh trên desktop (Tự ẩn sau 5 giây) -->
+    <!-- Huong dan dieu khien nhanh tren desktop (Tu an sau 5 giay) -->
     <div id="desktop-instructions" class="instructions-panel">
-      <p>Vuốt/kéo chuột hoặc Nhấn [A]/[D] chuyển làn | [W] Nhảy | [S] Trượt</p>
+      <p>Vuot/keo chuot hoac Nhan [A]/[D] chuyen lan | [W] Nhay | [S] Truot</p>
     </div>
   </div>
 
-  <!-- 4. Màn hình Game Over -->
+  <!-- 4. Man hinh Game Over -->
   <div id="game-over-screen" class="ui-screen">
     <div class="glass-panel text-center">
-      <h2 class="game-over-title glow-text-red">BỊ LẬP BIÊN BẢN!</h2>
-      <p class="subtitle">Bạn đã va chạm trên đường chạy</p>
+      <h2 class="game-over-title glow-text-red">BI LAP BIEN BAN!</h2>
+      <p class="subtitle">Ban da va cham tren duong chay</p>
 
       <div class="stats-panel">
         <div class="stat-row">
-          <span>Quãng đường:</span>
+          <span>Quang duong:</span>
           <span id="over-score" class="stat-value">0 m</span>
         </div>
         <div class="stat-row">
-          <span>Cà phê thu thập:</span>
+          <span>Ca phe thu thap:</span>
           <span id="over-coffee" class="stat-value">0 ly</span>
         </div>
         <div class="stat-row highlight">
-          <span>Kỷ lục mới:</span>
+          <span>Ky luc moi:</span>
           <span id="over-high-score" class="stat-value">12,450</span>
         </div>
       </div>
 
       <div class="game-over-actions">
-        <button id="btn-restart" class="btn-primary glow-btn-red">CHƠI LẠI</button>
-        <button id="btn-home" class="btn-secondary">TRANG CHỦ</button>
+        <button id="btn-restart" class="btn-primary glow-btn-red">CHOI LAI</button>
+        <button id="btn-home" class="btn-secondary">TRANG CHU</button>
       </div>
     </div>
   </div>
