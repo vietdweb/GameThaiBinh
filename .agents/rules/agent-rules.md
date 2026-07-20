@@ -42,3 +42,9 @@ Sau khi hoàn thành:
 
 # Quy tắc khôi phục (Rollback)
 - Khi người dùng nói "back" (hoặc "quay lại"): AI lập tức thực hiện khôi phục (git restore . / git checkout) để đưa dự án về mốc game hoạt động ổn định trước đó.
+
+# Quy tắc Quản lý Giao diện (UI HUD Visibility Rules)
+- **Top Currency Bar** (Thanh tài nguyên: Kim Cương, Xu, Thịt) và **Audio Control Panel** (Cụm nút Top-Right: Âm thanh, Jukebox, Lịch sử 🏆):
+  + CHỈ ĐƯỢC PHÉP HIỂN THỊ DUY NHẤT Ở MÀN HÌNH MENU CHÍNH (`MENU` state).
+  + BẮT BUỘC ẨN 100% trong tất cả các giao diện phụ và trạng thái khác: Màn hình Tải game (`LOADING`), Phòng Xem Nhân Vật / Lamborghini 360° (`VIEWER`), Đang chơi game (`PLAYING`), và Màn hình Game Over (`GAMEOVER`).
+  + Các tính năng mới phát triển trong tương lai cũng BẮT BUỘC tuân thủ nghiêm ngặt quy tắc này.

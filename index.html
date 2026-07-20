@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,14 +8,35 @@
   <!-- Google Fonts: Outfit cho van ban, Space Grotesk cho tieu de, Rajdhani cho so HUD -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Rajdhani:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Rajdhani:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
   <!-- Canvas ket xuat Three.js -->
   <canvas id="game-canvas"></canvas>
   <!-- Lop phu do nhoe chuyen dong khi tang toc (Motion Blur Overlay) -->
   <div id="speed-motion-blur" class="speed-motion-blur"></div>
+
+
+
+  <!-- Pop-up ThÃ´ng BÃ¡o KhÃ´ng Äá»§ Thá»‹t (Insufficient Meat Modal) -->
+  <div id="meat-alert-modal" class="meat-alert-modal" aria-hidden="true">
+    <div class="meat-alert-backdrop"></div>
+    <div class="meat-alert-card">
+      <div class="alert-icon-wrap">ðŸ–</div>
+      <h3 class="alert-title">KHÃ”NG Äá»¦ THá»ŠT NÄ‚NG LÆ¯á»¢NG!</h3>
+      <p class="alert-message">Báº¡n cáº§n Ã­t nháº¥t <strong>10 Thá»‹t</strong> Ä‘á»ƒ tham gia lÆ°á»£t chÆ¡i má»›i.</p>
+      <div class="alert-actions">
+        <button id="btn-quick-fill-meat" class="btn-alert-fill">ðŸŽ Nháº­n +100 Thá»‹t Miá»…n PhÃ­</button>
+        <button id="btn-close-meat-alert" class="btn-alert-close">ÄÃ³ng</button>
+      </div>
+    </div>
+  </div>
 
   <!-- LOP PHU GIAO DIEN (UI OVERLAYS) -->
 
@@ -22,18 +44,18 @@
   <div id="loading-screen" class="ui-screen active">
     <!-- Animated Cyberpunk Matrix Grid Background -->
     <div class="cyber-grid-bg"></div>
-    
+
     <div class="glass-panel text-center cyber-loading-card">
       <h1 class="game-logo glow-text animated-logo">THAI BINH RUSH</h1>
       <p class="subtitle cyber-subtitle">CYBERPUNK ENDLESS RUNNER 3D</p>
-      
+
       <!-- Concentric Dual Rotating Tech Core Spinner -->
       <div class="cyber-spinner-wrapper">
         <div class="spinner-ring outer-ring"></div>
         <div class="spinner-ring inner-ring"></div>
         <div class="spinner-core">&#9889;</div>
       </div>
-      
+
       <div class="loading-container">
         <div class="loading-bar cyber-progress-bar">
           <div id="loading-bar-fill" style="width: 0%">
@@ -53,43 +75,118 @@
     </div>
   </div>
 
-  <!-- 2. Menu chinh (Main Menu) -->
+  <!-- 2. Menu ChÃ­nh (Main Menu) - Redesign AAA Glassmorphic -->
   <div id="main-menu" class="ui-screen">
-    <div class="glass-panel">
-      <h1 class="game-logo glow-text animated-logo">THAI BINH RUSH</h1>
-      <p class="subtitle">Endless Runner Viet Nam</p>
 
-      <div class="high-score-board">
-        <span>KY LUC CUA BAN:</span>
-        <span id="menu-high-score" class="score-value">0</span>
+    <!-- ============================================================ -->
+    <!-- TOP BAR CURRENCY HUD - Thanh Quáº£n lÃ½ TÃ i NguyÃªn Mobile AAA -->
+    <!-- ============================================================ -->
+    <div id="top-currency-bar" class="top-currency-bar">
+
+      <!-- 1. Gems Pill (Kim CÆ°Æ¡ng) -->
+      <div id="pill-gems" class="resource-pill pill-gems" title="Kim CÆ°Æ¡ng">
+        <div class="pill-icon-wrap">
+          <span class="pill-emoji">ðŸ’Ž</span>
+        </div>
+        <div class="pill-val-wrap">
+          <span id="val-gems" class="pill-val">50</span>
+        </div>
+        <button id="btn-add-gems" class="btn-pill-add" title="ThÃªm Kim CÆ°Æ¡ng">+</button>
       </div>
 
-      <!-- Khu vuc chon nhan vat -->
-      <div class="character-select-container">
-        <h3>CHON NHAN VAT</h3>
-        <div class="character-carousel">
-          <button id="char-prev" class="carousel-btn prev-btn">&lt;</button>
-          <div class="character-card active">
-            <div id="char-avatar" class="character-avatar shipper-skin"></div>
-            <div class="character-info">
-              <span id="char-name" class="char-name">Anh Shipper Cong Nghe</span>
-              <span id="char-desc" class="char-desc">+10% toc do sac Fever</span>
+      <!-- 2. Gold Coins Pill (Xu VÃ ng) -->
+      <div id="pill-coins" class="resource-pill pill-coins" title="Xu VÃ ng">
+        <div class="pill-icon-wrap">
+          <span class="pill-emoji">ðŸª™</span>
+        </div>
+        <div class="pill-val-wrap">
+          <span id="val-coins" class="pill-val">0</span>
+        </div>
+        <button id="btn-add-coins" class="btn-pill-add" title="ThÃªm Xu">+</button>
+      </div>
+
+      <!-- 3. Meat Energy Pill (Thá»‹t Thá»ƒ Lá»±c) -->
+      <div id="pill-meat" class="resource-pill pill-meat" title="Thá»‹t Thá»ƒ Lá»±c (Tá»‘n 10 Thá»‹t / tráº­n)">
+        <div class="pill-icon-wrap">
+          <span class="pill-emoji">ðŸ –</span>
+        </div>
+        <div class="pill-val-wrap">
+          <span id="val-meat" class="pill-val">1,000</span>
+        </div>
+        <button id="btn-add-meat" class="btn-pill-add" title="Náº¡p Thá»‹t">+</button>
+      </div>
+
+    </div>
+
+    <div class="menu-glass-panel">
+
+      <!-- Header: Logo + Subtitle (Phong cÃ¡ch cÅ©) -->
+      <div class="menu-header">
+        <h1 class="game-logo glow-text animated-logo">THÃ I BÃŒNH <span class="text-orange">RUSH</span></h1>
+        <p class="subtitle">Ä Æ¯á»œNG PHá»  VIá»†T NAM</p>
+      </div>
+
+      <!-- Ká»· lá»¥c -->
+      <div class="menu-highscore">
+        <span class="hs-label">ðŸ † Ká»¶ Lá»¤C Cá»¦A Báº N</span>
+        <span id="menu-high-score" class="hs-value">0</span>
+      </div>
+
+      <!-- Chá» n NhÃ¢n Váº­t -->
+      <div class="char-select-section">
+        <p class="char-section-label">CHá»ŒN NHÃ‚N Váº¬T</p>
+        <div class="char-carousel">
+          <button id="char-prev" class="char-arrow-btn" aria-label="NhÃ¢n váº­t trÆ°á»›c">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+
+          <div class="char-card" id="char-card">
+            <div id="char-avatar" class="char-avatar shipper-skin"></div>
+            <div class="char-card-info">
+              <span id="char-name" class="char-name-text">Anh Shipper CÃ´ng Nghá»‡</span>
+              <span id="char-desc" class="char-desc-text">âš¡ +10% tá»‘c Ä‘á»™ sáº¡c Fever Mode</span>
             </div>
+            <div class="char-card-glow"></div>
           </div>
-          <button id="char-next" class="carousel-btn next-btn">&gt;</button>
+
+          <button id="char-next" class="char-arrow-btn" aria-label="NhÃ¢n váº­t tiáº¿p theo">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
         </div>
       </div>
 
-      <div class="menu-actions">
-        <button id="btn-start" class="btn-primary glow-btn">CHOI NGAY</button>
-        <button id="btn-view-360" class="btn-secondary glow-btn-view">&#128269; XEM NHAN VAT 360&#176;</button>
-        <button id="btn-view-lamborghini" class="btn-secondary glow-btn-lambo">&#127950;&#65039; XEM LAMBORGHINI</button>
-        <button id="btn-mute" class="btn-secondary">
-          <span class="sound-icon">&#128266;</span> Am Thanh: Bat
+      <!-- NÃºt hÃ nh Ä‘á»™ng -->
+      <div class="menu-actions-group">
+        <!-- NÃºt chÃ­nh: CHÆ I NGAY -->
+        <button id="btn-start" class="btn-play-now">
+          <span class="btn-play-shimmer"></span>
+          <span class="btn-play-icon">â–¶</span>
+          <span class="btn-play-text">CHÆ I NGAY</span>
+          <span class="cost-badge-meat">x10 ðŸ –</span>
         </button>
+
+        <!-- NÃºt phá»¥ -->
+        <div class="menu-secondary-btns">
+          <button id="btn-view-360" class="btn-outline-neon btn-neon-cyan">
+            <span>ðŸ” </span>
+            <span>Xem NhÃ¢n Váº­t 360Â°</span>
+          </button>
+          <button id="btn-view-lamborghini" class="btn-outline-neon btn-neon-amber">
+            <span>ðŸ Žï¸ </span>
+            <span>Xem Lamborghini</span>
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
+
 
   <!-- 2b. Giao dien Phong Xem 360 (Character Viewer Room Overlay) -->
   <div id="character-viewer-panel" class="ui-screen hidden">
@@ -198,7 +295,384 @@
     </div>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- AUDIO CONTROL PANEL - Goc PHAI tren (chi hien o Menu chinh) -->
+  <!-- ============================================================ -->
+  <div id="audio-control-panel" class="audio-control-panel">
+
+    <!-- Nut Mute/Unmute + Volume Slider (hover de mo) -->
+    <div class="mute-volume-group">
+      <button id="btn-audio-mute" class="audio-btn mute-btn" title="Bat/Tat am thanh / Hover de chinh am luong">
+        <!-- Icon Loa (hien khi bat am thanh) -->
+        <svg id="icon-sound-on" class="audio-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" />
+          <path d="M15.54 8.46a5 5 0 010 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path d="M19.07 4.93a10 10 0 010 14.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <!-- Icon Loa Tat (hien khi tat am thanh) -->
+        <svg id="icon-sound-off" class="audio-icon hidden" viewBox="0 0 24 24" fill="none"
+          xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" opacity="0.5" />
+          <line x1="23" y1="9" x2="17" y2="15" stroke="#ff4444" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="17" y1="9" x2="23" y2="15" stroke="#ff4444" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        <span class="mute-ring-indicator"></span>
+      </button>
+      <!-- Volume slider hien khi hover vao mute button - truot ra ben trai -->
+      <div id="volume-slider-wrap" class="volume-slider-wrap collapsed">
+        <div class="volume-slider-track">
+          <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="60" step="1">
+          <div class="volume-fill-bar" id="volume-fill-bar" style="width:60%"></div>
+        </div>
+        <span id="volume-label" class="volume-label">60%</span>
+      </div>
+    </div>
+
+    <!-- Jukebox Button -->
+    <button id="btn-jukebox" class="audio-btn jukebox-btn" title="Chá» n nháº¡c ná» n">
+      <svg class="audio-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="4" fill="currentColor" />
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" />
+        <path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+      <span class="jukebox-spin-dot"></span>
+    </button>
+
+    <!-- Match History Button -->
+    <button id="btn-history" class="audio-btn history-btn" title="Lá»‹ch Sá»­ Thi Ä áº¥u">
+      <i data-lucide="trophy" class="history-lucide-icon"></i>
+      <span class="history-badge-dot"></span>
+    </button>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MATCH HISTORY MODAL - Lá»‹ch Sá»­ Thi Ä áº¥u                       -->
+  <!-- ============================================================ -->
+  <div id="history-modal" class="history-modal" aria-hidden="true">
+    <div class="history-backdrop"></div>
+    <div class="history-panel">
+      <!-- Header -->
+      <div class="history-header">
+        <div class="history-title-group">
+          <i data-lucide="history" class="header-icon-glow"></i>
+          <div>
+            <h3 class="history-title glow-text-gold">Lá»ŠCH Sá»¬ THI Ä áº¤U</h3>
+            <p class="history-subtitle">15 Tráº­n Gáº§n Nháº¥t & Thá»‘ng KÃª</p>
+          </div>
+        </div>
+        <button id="btn-close-history" class="btn-close-history">âœ•</button>
+      </div>
+
+      <!-- Content Scrollable Body -->
+      <div class="history-body">
+
+        <!-- Top Personal Best High Score Card -->
+        <div id="personal-best-card" class="personal-best-card">
+          <div class="pb-badge">ðŸ † Ká»¶ Lá»¤C CAO NHáº¤T</div>
+          <div class="pb-main-info">
+            <div class="pb-score-wrap">
+              <span class="pb-score-label">BEST SCORE</span>
+              <span id="pb-score-value" class="pb-score-val">0</span>
+            </div>
+            <div class="pb-meta-grid">
+              <div class="pb-meta-item">
+                <i data-lucide="coins" class="pb-icon gold"></i>
+                <span id="pb-coins-value">0 Xu</span>
+              </div>
+              <div class="pb-meta-item">
+                <i data-lucide="timer" class="pb-icon cyan"></i>
+                <span id="pb-time-value">00:00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Container: Ä iá»ƒm sá»‘ qua cÃ¡c tráº­n gáº§n Ä‘Ã¢y -->
+        <div class="history-chart-card">
+          <div class="chart-header">
+            <i data-lucide="trending-up" class="chart-icon"></i>
+            <span>TIáº¾N TRÃŒNH Ä Iá»‚M Sá»  Gáº¦N Ä Ã‚Y</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="match-history-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Section Label for List -->
+        <div class="history-list-header">
+          <i data-lucide="list" class="list-icon"></i>
+          <span>DANH SÃ CH TRáº¬N Ä áº¤U</span>
+        </div>
+
+        <!-- Match Cards List Container -->
+        <div id="history-track-list" class="history-track-list">
+          <!-- Populated dynamically in Game.js -->
+        </div>
+
+      </div>
+
+      <!-- Footer Action -->
+      <div class="history-footer">
+        <button id="btn-clear-history" class="btn-clear-history">
+          <i data-lucide="trash-2" class="trash-icon"></i>
+          <span>XÃ³a Lá»‹ch Sá»­</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================ -->
+  <!-- JUKEBOX MODAL - Chon bai nhac nen                           -->
+  <!-- ============================================================ -->
+  <div id="jukebox-modal" class="jukebox-modal" aria-hidden="true">
+    <div class="jukebox-backdrop"></div>
+    <div class="jukebox-panel">
+      <!-- Header -->
+      <div class="jukebox-header">
+        <div class="jukebox-title-group">
+          <span class="jukebox-disc-icon">ðŸŽµ</span>
+          <div>
+            <h3 class="jukebox-title">CHá»ŒN NHáº C Ná»€N</h3>
+            <p class="jukebox-subtitle">7 Ca KhÃºc Hot Streaming + 3 Nháº¡c Game BGM</p>
+          </div>
+        </div>
+        <button id="btn-close-jukebox" class="btn-close-jukebox">âœ•</button>
+      </div>
+
+      <!-- Now Playing Bar -->
+      <div class="now-playing-bar">
+        <div class="now-playing-waveform">
+          <span class="wave-bar" style="animation-delay:0s"></span>
+          <span class="wave-bar" style="animation-delay:0.15s"></span>
+          <span class="wave-bar" style="animation-delay:0.3s"></span>
+          <span class="wave-bar" style="animation-delay:0.45s"></span>
+          <span class="wave-bar" style="animation-delay:0.1s"></span>
+        </div>
+        <span id="now-playing-label" class="now-playing-label">Ä ang phÃ¡t: Original Theme</span>
+      </div>
+
+      <!-- Track List -->
+      <div class="track-list" id="jukebox-track-list">
+
+        <!-- === SECTION: STREAMING MUSIC === -->
+        <div class="track-section-header streaming-header">
+          <span class="section-badge streaming-badge">ðŸ”´ STREAMING HOT</span>
+          <span class="section-label">Nháº¡c Trá»±c Tuyáº¿n - YouTube</span>
+        </div>
+
+        <!-- Khung cuá»™n riÃªng dÃ nh cho má»¥c STREAMING HOT -->
+        <div class="streaming-tracks-wrapper" id="streaming-tracks-wrapper">
+
+          <!-- 1. CÃ³ Cháº¯c YÃªu LÃ  Ä Ã¢y -->
+          <div class="track-item streaming-track" data-track="co_chac_yeu_la_day" data-type="streaming" id="track-item-co_chac_yeu_la_day">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">ðŸŒ¸</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="MP3 Direct Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">CÃ³ Cháº¯c YÃªu LÃ  Ä Ã¢y</span>
+              <span class="track-artist">SÆ¡n TÃ¹ng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+              <div class="track-loading-ring" id="loading-co_chac_yeu_la_day"></div>
+            </div>
+          </div>
+
+          <!-- 2. Em Cá»§a NgÃ y HÃ´m Qua -->
+          <div class="track-item streaming-track" data-track="em_cua_ngay_hom_qua" data-type="streaming" id="track-item-em_cua_ngay_hom_qua">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">ðŸŒ™</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="MP3 Direct Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Em Cá»§a NgÃ y HÃ´m Qua</span>
+              <span class="track-artist">SÆ¡n TÃ¹ng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+              <div class="track-loading-ring" id="loading-em_cua_ngay_hom_qua"></div>
+            </div>
+          </div>
+
+          <!-- 3. ChÃºng Ta KhÃ´ng Thuá»™c Vá»  Nhau -->
+          <div class="track-item streaming-track" data-track="chung_ta_khong_thuoc_ve_nhau" data-type="streaming" id="track-item-chung_ta_khong_thuoc_ve_nhau">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">ðŸ’”</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="MP3 Direct Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">ChÃºng Ta KhÃ´ng Thuá»™c Vá»  Nhau</span>
+              <span class="track-artist">SÆ¡n TÃ¹ng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+              <div class="track-loading-ring" id="loading-chung_ta_khong_thuoc_ve_nhau"></div>
+            </div>
+          </div>
+
+          <!-- 4. Ä á»«ng LÃ m TrÃ¡i Tim Anh Ä au -->
+          <div class="track-item streaming-track" data-track="dung_lam_trai_tim_anh_dau" data-type="streaming" id="track-item-dung_lam_trai_tim_anh_dau">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">â ¤ï¸ </span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="MP3 Direct Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Ä á»«ng LÃ m TrÃ¡i Tim Anh Ä au</span>
+              <span class="track-artist">SÆ¡n TÃ¹ng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+              <div class="track-loading-ring" id="loading-dung_lam_trai_tim_anh_dau"></div>
+            </div>
+          </div>
+
+          <!-- 5. Láº¡c TrÃ´i -->
+          <div class="track-item streaming-track" data-track="lac_troi" data-type="streaming" id="track-item-lac_troi">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">ðŸ ‰</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="MP3 Direct Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Láº¡c TrÃ´i</span>
+              <span class="track-artist">SÆ¡n TÃ¹ng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+              <div class="track-loading-ring" id="loading-lac_troi"></div>
+            </div>
+          </div>
+
+          <!-- 6. Náº¯ng áº¤m Xa Dáº§n -->
+          <div class="track-item streaming-track" data-track="nang_am_xa_dan" data-type="streaming" id="track-item-nang_am_xa_dan">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">â˜€ï¸ </span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="MP3 Direct Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Náº¯ng áº¤m Xa Dáº§n</span>
+              <span class="track-artist">SÆ¡n TÃ¹ng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+              <div class="track-loading-ring" id="loading-nang_am_xa_dan"></div>
+            </div>
+          </div>
+
+          <!-- 7. KhÃ´ng Pháº£i Dáº¡ng Vá»«a Ä Ã¢u -->
+          <div class="track-item streaming-track" data-track="khong_phai_dang_vua_dau" data-type="streaming" id="track-item-khong_phai_dang_vua_dau">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">âš¡</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="MP3 Direct Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">KhÃ´ng Pháº£i Dáº¡ng Vá»«a Ä Ã¢u</span>
+              <span class="track-artist">SÆ¡n TÃ¹ng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+              <div class="track-loading-ring" id="loading-khong_phai_dang_vua_dau"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- === SECTION: GAME BGM === -->
+        <div class="track-section-header">
+          <span class="section-badge procedural-badge">&#9836; GAME BGM</span>
+          <span class="section-label">Nhac procedural - Offline</span>
+        </div>
+
+        <div class="track-item active" data-track="track_1" data-type="procedural" id="track-item-track_1">
+          <div class="track-icon-wrap">
+            <span class="track-emoji">&#127925;</span>
+            <div class="track-active-ring"></div>
+          </div>
+          <div class="track-info">
+            <span class="track-name">Original Theme</span>
+            <span class="track-sub">Pentatonic Viet Nam &#127756;</span>
+          </div>
+          <div class="track-meta">
+            <div class="track-waveform">
+              <span class="tw-bar" style="animation-delay:0.0s"></span>
+              <span class="tw-bar" style="animation-delay:0.2s"></span>
+              <span class="tw-bar" style="animation-delay:0.1s"></span>
+              <span class="tw-bar" style="animation-delay:0.3s"></span>
+            </div>
+            <span class="track-bpm">120 BPM</span>
+          </div>
+        </div>
+
+        <div class="track-item" data-track="track_2" data-type="procedural" id="track-item-track_2">
+          <div class="track-icon-wrap">
+            <span class="track-emoji">&#127748;</span>
+            <div class="track-active-ring"></div>
+          </div>
+          <div class="track-info">
+            <span class="track-name">Night City Synthwave</span>
+            <span class="track-sub">Lo-Fi Saigon Night &#129311;</span>
+          </div>
+          <div class="track-meta">
+            <div class="track-waveform">
+              <span class="tw-bar" style="animation-delay:0.15s"></span>
+              <span class="tw-bar" style="animation-delay:0.05s"></span>
+              <span class="tw-bar" style="animation-delay:0.25s"></span>
+              <span class="tw-bar" style="animation-delay:0.35s"></span>
+            </div>
+            <span class="track-bpm">130 BPM</span>
+          </div>
+        </div>
+
+        <div class="track-item" data-track="track_3" data-type="procedural" id="track-item-track_3">
+          <div class="track-icon-wrap">
+            <span class="track-emoji">&#9889;</span>
+            <div class="track-active-ring"></div>
+          </div>
+          <div class="track-info">
+            <span class="track-name">Cyberpunk Run</span>
+            <span class="track-sub">Aggressive Electronic &#128293;</span>
+          </div>
+          <div class="track-meta">
+            <div class="track-waveform">
+              <span class="tw-bar" style="animation-delay:0.1s"></span>
+              <span class="tw-bar" style="animation-delay:0.3s"></span>
+              <span class="tw-bar" style="animation-delay:0.0s"></span>
+              <span class="tw-bar" style="animation-delay:0.2s"></span>
+            </div>
+            <span class="track-bpm">140 BPM</span>
+          </div>
+        </div>
+
+      </div><!-- /.track-list -->
+
+    </div><!-- /.jukebox-panel -->
+  </div><!-- /#jukebox-modal -->
+
+        </div>
+
+      </div>
+
+      <!-- Footer Action -->
+      <div class="history-footer">
+        <button id="btn-clear-history" class="btn-clear-history">
+          <span class="trash-icon">ðŸ—‘ï¸</span>
+          <span>XÃ³a Lá»‹ch Sá»­</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Entry Point script -->
   <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>

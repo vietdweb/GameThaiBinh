@@ -306,3 +306,43 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
   - [x] Tuyệt đối không gọi `model.traverse()` trong vòng lặp render `update()`, duy trì 60 FPS ổn định.
 - [x] **Task 20.4: Sửa Hướng Đầu Xe Hướng Về Phía Trước**
   - [x] Cấu hình `carModel.rotation.y = 0;` để đầu xe và đèn pha hướng về phía trước (-Z) theo chiều chạy đường phố.
+
+---
+
+## Phase 21: Nâng Cấp Hệ Thống Âm Thanh AAA (Audio System & Sound Settings)
+**Mục tiêu:** Triển khai Audio Control Panel glassmorphism góc trái trên, Volume Slider slide-in, Jukebox chọn 3 track BGM với fade transition, và localStorage persistence theo chuẩn game mobile AAA.
+
+### Checklist công việc chi tiết
+- [x] **Task 21.1: AudioManager v2 (`src/managers/AudioManager.js`)**
+  - [x] Thêm 3 BGM tracks procedural: `track_1` Pentatonic VN (120 BPM), `track_2` Night City Synthwave (130 BPM), `track_3` Cyberpunk Run (140 BPM).
+  - [x] API `setMasterVolume(v)` - điều chỉnh master gain real-time.
+  - [x] API `setMuted(bool)` / `toggle()` - Mute/Unmute với fade.
+  - [x] API `selectTrack(trackId)` - chuyển bài với Fade-out 400ms → Fade-in 500ms mượt mà.
+  - [x] API `duckVolume(ratio, fadeMs)` - Audio Ducking khi Game Over (giảm xuống 12%).
+  - [x] API `restoreVolume(fadeMs)` - khôi phục volume bình thường.
+  - [x] `saveSettings()` / `loadSettings()` - persist `sgr_audio_muted`, `sgr_audio_volume`, `sgr_audio_track` vào localStorage.
+  - [x] BGM gain node riêng (`bgmGainNode`) tách biệt với SFX để fade độc lập.
+- [x] **Task 21.2: Audio Control Panel UI (`index.html`)**
+  - [x] Panel góc trái trên với 3 buttons: Mute Toggle, Volume, Jukebox.
+  - [x] SVG icons cho sound-on và sound-off (gạch chéo đỏ khi muted).
+  - [x] Volume Slider slide-in từ bên phải button khi click.
+  - [x] Jukebox Modal với 3 track items, now-playing bar, waveform animations.
+- [x] **Task 21.3: CSS Glassmorphism AAA (`src/style.css`)**
+  - [x] `.audio-control-panel` - fixed góc trái, flex column.
+  - [x] `.audio-btn` - glassmorphism hover bounce animation.
+  - [x] `.mute-btn.muted` - viền đỏ, glow đỏ khi tắt tiếng.
+  - [x] `.mute-ring-indicator` - pulse animation khi đang phát.
+  - [x] `.volume-slider-wrap` - max-width transition slide-in/out.
+  - [x] Custom range input neon vàng-cam với fill bar gradient.
+  - [x] `.jukebox-modal` - overlay slide-up từ góc trái dưới.
+  - [x] `.track-item.active` - gradient highlight + waveform animation.
+  - [x] `.jukebox-disc-icon` - xoay 360° liên tục.
+- [x] **Task 21.4: Game.js Integration (`src/core/Game.js`)**
+  - [x] `_setupAudioControlPanel()` - kết nối event listeners đầy đủ.
+  - [x] `_syncAudioPanelUI()` - đồng bộ UI với settings từ localStorage khi load game.
+  - [x] `_updateJukeboxActiveTrack()` - cập nhật track active và now-playing label.
+  - [x] `_setJukeboxOpen()` - toggle jukebox modal.
+  - [x] MENU enter: nhạc tự phát nếu chưa phát (không restart).
+  - [x] GAMEOVER enter: `duckVolume(0.12)` thay vì `stopBGM()`.
+  - [x] PLAYING enter: `restoreVolume()` từ ducking.
+  - [x] `startGame()`: nhạc tiếp tục phát mượt mà từ Menu → Gameplay.
