@@ -20,6 +20,8 @@ export class ObstacleManager {
     this.scene = scene;
     this.obstacles = [];
     this._tempBox = new THREE.Box3();
+    // Thời gian miễn trừ va chạm sau khi khiên bị phá (giây)
+    this._shieldCooldown = 0;
   }
 
   /**
@@ -123,6 +125,10 @@ export class ObstacleManager {
    * Cập nhật vị trí toàn bộ chướng ngại vật
    */
   update(deltaTime, currentSpeed) {
+    // Đếm ngược thời gian miễn trừ va chạm sau khi khiên bị phá
+    if (this._shieldCooldown > 0) {
+      this._shieldCooldown = Math.max(0, this._shieldCooldown - deltaTime);
+    }
     for (let i = this.obstacles.length - 1; i >= 0; i--) {
       const obs = this.obstacles[i];
       obs.update(deltaTime, currentSpeed);
@@ -181,16 +187,22 @@ export class ObstacleManager {
 
       if (!isStandingSafelyOnTop && playerBox.intersectsBox(obsBox)) {
         if (isFeverOrBoost) {
+          // Chế độ Fever/Boost: đâm phá tất cả
           if (callbacks.onSmash) callbacks.onSmash(obs);
           audioManager.playSmash();
           obs.dispose();
           this.obstacles.splice(i, 1);
           continue;
-        } else if (player.hasShield) {
+        } else if (player.hasShield && this._shieldCooldown <= 0) {
+          // Khiên Nón Lá: kháng 1 va chạm, trao vô địch 1.5 giây để không dính liên tiếp
           player.consumeShield();
           audioManager.playShieldBreak();
+          this._shieldCooldown = 1.5;
           obs.dispose();
           this.obstacles.splice(i, 1);
+          continue;
+        } else if (this._shieldCooldown > 0) {
+          // Đang trong thời gian miễn trừ sau khi khiên vỡ - bỏ qua va chạm này
           continue;
         } else {
           if (callbacks.onGameOver) callbacks.onGameOver(obs);

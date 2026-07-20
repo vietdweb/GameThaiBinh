@@ -1383,6 +1383,11 @@ export class Game {
       this._destroyFeverParticles();
     }
 
+    // Dọn sạch toàn bộ Obstacles & Collectibles khỏi scene ngay lập tức khi Game Over
+    // Không để chướng ngại vật và vật phẩm còn trên màn hình sau khi nhân vật thua
+    this._clearObstacles();
+    this._clearCollectibles();
+
     this.stateMachine.transition(GAME_STATES.GAMEOVER);
   }
 

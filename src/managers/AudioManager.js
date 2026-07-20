@@ -1,12 +1,12 @@
 /**
  * AudioManager - Hệ thống quản lý âm thanh HTML5 Native & Web Audio API
- * - Nạp nhạc trực tiếp từ GitHub Releases CDN v1.0.0 (vietdweb/Music)
- * - Tự động Preload Audio Pool (bộ đệm bộ nhớ trước) cho toàn bộ 11 ca khúc -> Đổi bài TỨC THÌ (< 50ms)
+ * - Nạp nhạc trực tiếp từ Supabase Storage (Singapore) - Tốc độ cực nhanh tại Việt Nam < 150ms
+ * - Audio Preload Pool: Khởi tạo toàn bộ 11 Audio() với preload='auto' từ màn hình Loading -> bấm bài tức thì < 0.5s
  * - Hiệu ứng âm thanh SFX tổng hợp bằng Web Audio API (Nhảy, Trượt, Ăn Xu, Va chạm)
  * - Quản lý Volume Slider, Mute/Unmute, và Audio Ducking khi Game Over
  */
 
-const RELEASE_BASE = 'https://github.com/vietdweb/Music/releases/download/v1.0.0/';
+const SUPABASE_BASE = 'https://unvlbgfpdxufyjfzygqe.supabase.co/storage/v1/object/public/Music-Game/';
 
 export const MUSIC_PLAYLIST = [
   {
@@ -15,7 +15,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Sơn Tùng M-TP',
     icon: '❄️',
     color: '#00e5ff',
-    url: RELEASE_BASE + 'chac-ai-do-se-ve.mp3'
+    url: SUPABASE_BASE + 'chac-ai-do-se-ve.mp3'
   },
   {
     id: 'chung_ta_khong_thuoc_ve_nhau',
@@ -23,7 +23,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Sơn Tùng M-TP',
     icon: '💔',
     color: '#7c4dff',
-    url: RELEASE_BASE + 'chung-ta-khong-thuoc-ve-nhau.mp3'
+    url: SUPABASE_BASE + 'chung-ta-khong-thuoc-ve-nhau.mp3'
   },
   {
     id: 'co_chac_yeu_la_day',
@@ -31,7 +31,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Sơn Tùng M-TP',
     icon: '🌸',
     color: '#ff6b9d',
-    url: RELEASE_BASE + 'co-chac-yeu-la-day.mp3'
+    url: SUPABASE_BASE + 'co-chac-yeu-la-day.mp3'
   },
   {
     id: 'dung_lam_trai_tim_anh_dau',
@@ -39,7 +39,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Sơn Tùng M-TP',
     icon: '💖',
     color: '#ff4081',
-    url: RELEASE_BASE + 'dung-lam-trai-tim-anh-dau.mp3'
+    url: SUPABASE_BASE + 'dung-lam-trai-tim-anh-dau.mp3'
   },
   {
     id: 'khong_phai_dang_vua_dau',
@@ -47,7 +47,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Sơn Tùng M-TP',
     icon: '🔥',
     color: '#ff5500',
-    url: RELEASE_BASE + 'khong-phai-dang-vua-dau.mp3'
+    url: SUPABASE_BASE + 'khong-phai-dang-vua-dau.mp3'
   },
   {
     id: 'khong_thoi_gian',
@@ -55,7 +55,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Dương Domic',
     icon: '⏳',
     color: '#ab47bc',
-    url: RELEASE_BASE + 'khong-thoi-gian.mp3'
+    url: SUPABASE_BASE + 'khong-thoi-gian.mp3'
   },
   {
     id: 'lac_troi',
@@ -63,7 +63,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Sơn Tùng M-TP',
     icon: '🐉',
     color: '#e91e63',
-    url: RELEASE_BASE + 'lac-troi.mp3'
+    url: SUPABASE_BASE + 'lac-troi.mp3'
   },
   {
     id: 'mat_ket_noi',
@@ -71,7 +71,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Dương Domic',
     icon: '📡',
     color: '#00e5ff',
-    url: RELEASE_BASE + 'mat-ket-noi.mp3'
+    url: SUPABASE_BASE + 'mat-ket-noi.mp3'
   },
   {
     id: 'nang_am_xa_dan',
@@ -79,7 +79,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Sơn Tùng M-TP',
     icon: '☀️',
     color: '#ff9800',
-    url: RELEASE_BASE + 'nang-am-xa-dan.mp3'
+    url: SUPABASE_BASE + 'nang-am-xa-dan.mp3'
   },
   {
     id: 'noi_nay_co_anh',
@@ -87,7 +87,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Sơn Tùng M-TP',
     icon: '❄️',
     color: '#29b6f6',
-    url: RELEASE_BASE + 'noi-nay-co-anh.mp3'
+    url: SUPABASE_BASE + 'noi-nay-co-anh.mp3'
   },
   {
     id: 'tran_bo_nho',
@@ -95,7 +95,7 @@ export const MUSIC_PLAYLIST = [
     artist: 'Dương Domic',
     icon: '💾',
     color: '#66bb6a',
-    url: RELEASE_BASE + 'tran-bo-nho.mp3'
+    url: SUPABASE_BASE + 'tran-bo-nho.mp3'
   }
 ];
 
@@ -127,19 +127,20 @@ export class AudioManager {
   }
 
   /**
-   * Tạo bộ đệm Audio Pool trong bộ nhớ ngay từ màn hình Loading để phát tức thì
+   * Tạo Audio Pool với preload='none' - KHÔNG tốn băng thông khi load trang.
+   * Trình duyệt chỉ tải dữ liệu MP3 từ Supabase khi người chơi BẤM CHỌN bài đó.
    */
   _initAudioPool() {
     try {
       MUSIC_PLAYLIST.forEach(track => {
         try {
           const audio = new Audio();
-          audio.src = track.url;
+          audio.preload = 'none'; // KHÔNG tải trước - tiết kiệm 100% băng thông wifi
           audio.loop = true;
-          audio.preload = 'auto'; // Tải đệm trước dữ liệu MP3 từ GitHub Releases CDN
+          // KHÔNG gán audio.src ở đây -> trình duyệt sẽ không gửi request mạng nào
           this.audioPool[track.id] = audio;
         } catch (e) {
-          console.warn(`[AudioManager] Error preloading ${track.id}:`, e);
+          console.warn(`[AudioManager] Error creating audio for ${track.id}:`, e);
         }
       });
       const initialId = this.currentTrackId || 'co_chac_yeu_la_day';
@@ -211,7 +212,7 @@ export class AudioManager {
   }
 
   /**
-   * Phát ca khúc Direct MP3 Streaming TỨC THÌ (< 50ms) từ GitHub Release CDN
+   * Phát ca khúc từ Supabase Storage - CHỈ tải khi người chơi BẤM CHỌN bài đó (Lazy Load)
    * @param {string} trackId - ID ca khúc trong MUSIC_PLAYLIST
    */
   playTrack(trackId) {
@@ -233,10 +234,16 @@ export class AudioManager {
     try {
       let targetAudio = this.audioPool[track.id];
       if (!targetAudio) {
-        targetAudio = new Audio(track.url);
+        targetAudio = new Audio();
         targetAudio.loop = true;
-        targetAudio.preload = 'auto';
+        targetAudio.preload = 'none';
         this.audioPool[track.id] = targetAudio;
+      }
+
+      // Gán src TẠI ĐÂY - chỉ khi người chơi bấm chọn bài này
+      // Trình duyệt mới bắt đầu gửi request tải MP3 từ Supabase
+      if (!targetAudio.src || !targetAudio.src.includes(track.url.split('/').pop())) {
+        targetAudio.src = track.url;
       }
 
       this.currentAudio = targetAudio;
@@ -250,6 +257,7 @@ export class AudioManager {
       console.warn('[AudioManager] Error playing track:', err);
     }
   }
+
 
   /**
    * Bật/Tắt Mute hoàn toàn

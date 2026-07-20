@@ -1,5 +1,5 @@
 ﻿/**
- * MatchHistoryManager - Quáº£n lÃ½ Lá»‹ch Sá»­ Äáº¥u & LocalStorage Persistence
+ * MatchHistoryManager - Quản lý Lịch Sử Đấu & LocalStorage Persistence
  */
 const STORAGE_KEY = 'tb_rush_match_history';
 const MAX_ENTRIES = 15;
@@ -10,7 +10,7 @@ export class MatchHistoryManager {
   }
 
   /**
-   * Äá»c máº£ng lá»‹ch sá»­ tá»« localStorage
+   * Đọc mảng lịch sử từ localStorage
    */
   _loadHistory() {
     try {
@@ -23,7 +23,7 @@ export class MatchHistoryManager {
   }
 
   /**
-   * LÆ°u máº£ng lá»‹ch sá»­ vÃ o localStorage
+   * Lưu mảng lịch sử vào localStorage
    */
   _saveHistory() {
     try {
@@ -34,14 +34,14 @@ export class MatchHistoryManager {
   }
 
   /**
-   * Láº¥y danh sÃ¡ch tráº­n Ä‘áº¥u gáº§n Ä‘Ã¢y
+   * Lấy danh sách trận đấu gần đây
    */
   getHistory() {
     return this.history;
   }
 
   /**
-   * Láº¥y tráº­n Ä‘áº¥u cÃ³ Ä‘iá»ƒm sá»‘ cao nháº¥t (Personal Best)
+   * Lấy trận đấu có điểm số cao nhất (Personal Best)
    */
   getPersonalBest() {
     if (!this.history || this.history.length === 0) return null;
@@ -49,7 +49,7 @@ export class MatchHistoryManager {
   }
 
   /**
-   * Äá»‹nh dáº¡ng thá»i gian chÆ¡i (VD: 125 giÃ¢y -> 02:05)
+   * Định dạng thời gian chơi (VD: 125 giây -> 02:05)
    */
   formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
@@ -58,7 +58,7 @@ export class MatchHistoryManager {
   }
 
   /**
-   * Äá»‹nh dáº¡ng ngÃ y giá» dáº¡ng DD/MM/YYYY - HH:mm
+   * Định dạng ngày giờ dạng DD/MM/YYYY - HH:mm
    */
   formatDate(dateObj = new Date()) {
     const dd = String(dateObj.getDate()).padStart(2, '0');
@@ -70,25 +70,25 @@ export class MatchHistoryManager {
   }
 
   /**
-   * LÆ°u tráº­n Ä‘áº¥u má»›i vÃ o lá»‹ch sá»­
+   * Lưu trận đấu mới vào lịch sử
    */
-  saveMatch({ score, coins = 0, characterId = 'namsuo', characterName = 'Nam Suá»‘', survivalSeconds = 0 }) {
+  saveMatch({ score, coins = 0, characterId = 'namsuo', characterName = 'Nam Suối', survivalSeconds = 0 }) {
     const finalScore = Math.floor(score);
     const currentBest = this.getPersonalBest();
     const isNewRecord = !currentBest || finalScore > currentBest.score;
 
-    // TÃ­nh toÃ¡n badge danh hiá»‡u cho tráº­n Ä‘áº¥u
-    let badgeText = 'âš¡ PHONG Äá»˜';
+    // Tính toán badge danh hiệu cho trận đấu
+    let badgeText = '⚡ PHONG ĐỘ';
     let badgeClass = 'badge-normal';
 
     if (isNewRecord) {
-      badgeText = 'ðŸ† Ká»¶ Lá»¤C Má»šI';
+      badgeText = '🏆 KỶ LỤC MỚI';
       badgeClass = 'badge-gold';
     } else if (currentBest && finalScore >= currentBest.score * 0.85) {
-      badgeText = 'ðŸ¥ˆ TOP PHONG Äá»˜';
+      badgeText = '🥈 TOP PHONG ĐỘ';
       badgeClass = 'badge-silver';
     } else if (coins >= 25) {
-      badgeText = 'ðŸª™ VUA NHáº¶T XU';
+      badgeText = '🪙 VUA NHẶT XU';
       badgeClass = 'badge-coins';
     }
 
@@ -107,7 +107,7 @@ export class MatchHistoryManager {
       badgeClass: badgeClass
     };
 
-    // ChÃ¨n tráº­n má»›i lÃªn Ä‘áº§u danh sÃ¡ch vÃ  giá»›i háº¡n 15 tráº­n gáº§n nháº¥t
+    // Chèn trận mới lên đầu danh sách và giới hạn 15 trận gần nhất
     this.history.unshift(matchRecord);
     if (this.history.length > MAX_ENTRIES) {
       this.history = this.history.slice(0, MAX_ENTRIES);
@@ -118,7 +118,7 @@ export class MatchHistoryManager {
   }
 
   /**
-   * XÃ³a toÃ n bá»™ lá»‹ch sá»­ Ä‘áº¥u
+   * Xóa toàn bộ lịch sử đấu
    */
   clearHistory() {
     this.history = [];

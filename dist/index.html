@@ -1,40 +1,100 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Thái Bình Rush - Game 3D Endless Runner Việt Nam</title>
-  <!-- Google Fonts: Outfit cho văn bản, Space Grotesk cho tiêu đề, Rajdhani cho số HUD cực kỳ sắc nét -->
+  <title>Thai Binh Rush - Game 3D Endless Runner Viet Nam</title>
+  <!-- Google Fonts: Outfit cho van ban, Space Grotesk cho tieu de, Rajdhani cho so HUD -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Rajdhani:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-BSvLb5w3.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-B9hQPEre.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Rajdhani:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" crossorigin src="./assets/index-UEfGUK5X.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CWhTIFoB.css">
 </head>
+
 <body>
-  <!-- Canvas kết xuất Three.js -->
+  <!-- Canvas ket xuat Three.js -->
   <canvas id="game-canvas"></canvas>
-  <!-- Lớp phủ độ nhòe chuyển động khi tăng tốc (Motion Blur Overlay) -->
+  <!-- Lop phu do nhoe chuyen dong khi tang toc (Motion Blur Overlay) -->
   <div id="speed-motion-blur" class="speed-motion-blur"></div>
 
-  <!-- LỚP PHỦ GIAO DIỆN (UI OVERLAYS) -->
+  <!-- ============================================================ -->
+  <!-- TOP BAR CURRENCY HUD - Thanh Quản lý Tài Nguyên Mobile AAA -->
+  <!-- ============================================================ -->
+  <div id="top-currency-bar" class="top-currency-bar">
 
-  <!-- 1. Màn hình tải tài nguyên phong cách Cyberpunk Sci-Fi (Futuristic Loading Screen) -->
+    <!-- 1. Gems Pill (Kim Cương) -->
+    <div id="pill-gems" class="resource-pill pill-gems" title="Kim Cương">
+      <div class="pill-icon-wrap">
+        <span class="pill-emoji">💎</span>
+      </div>
+      <div class="pill-val-wrap">
+        <span id="val-gems" class="pill-val">50</span>
+      </div>
+      <button id="btn-add-gems" class="btn-pill-add" title="Thêm Kim Cương">+</button>
+    </div>
+
+    <!-- 2. Gold Coins Pill (Xu Vàng) -->
+    <div id="pill-coins" class="resource-pill pill-coins" title="Xu Vàng">
+      <div class="pill-icon-wrap">
+        <span class="pill-emoji">🪙</span>
+      </div>
+      <div class="pill-val-wrap">
+        <span id="val-coins" class="pill-val">0</span>
+      </div>
+      <button id="btn-add-coins" class="btn-pill-add" title="Thêm Xu">+</button>
+    </div>
+
+    <!-- 3. Meat Energy Pill (Thịt Thể Lực) -->
+    <div id="pill-meat" class="resource-pill pill-meat" title="Thịt Thể Lực (Tốn 10 Thịt / trận)">
+      <div class="pill-icon-wrap">
+        <span class="pill-emoji">🍖</span>
+      </div>
+      <div class="pill-val-wrap">
+        <span id="val-meat" class="pill-val">1,000</span>
+      </div>
+      <button id="btn-add-meat" class="btn-pill-add" title="Nạp Thịt">+</button>
+    </div>
+
+  </div>
+
+  <!-- Pop-up Thông Báo Không Đủ Thịt (Insufficient Meat Modal) -->
+  <div id="meat-alert-modal" class="meat-alert-modal" aria-hidden="true">
+    <div class="meat-alert-backdrop"></div>
+    <div class="meat-alert-card">
+      <div class="alert-icon-wrap">🍖</div>
+      <h3 class="alert-title">KHÔNG ĐỦ THỊT NĂNG LƯỢNG!</h3>
+      <p class="alert-message">Bạn cần ít nhất <strong>10 Thịt</strong> để tham gia lượt chơi mới.</p>
+      <div class="alert-actions">
+        <button id="btn-quick-fill-meat" class="btn-alert-fill">🎁 Nhận +100 Thịt Miễn Phí</button>
+        <button id="btn-close-meat-alert" class="btn-alert-close">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOP PHU GIAO DIEN (UI OVERLAYS) -->
+
+  <!-- 1. Man hinh tai tai nguyen phong cach Cyberpunk Sci-Fi -->
   <div id="loading-screen" class="ui-screen active">
     <!-- Animated Cyberpunk Matrix Grid Background -->
     <div class="cyber-grid-bg"></div>
-    
+
     <div class="glass-panel text-center cyber-loading-card">
-      <h1 class="game-logo glow-text animated-logo">THÁI BÌNH RUSH</h1>
+      <h1 class="game-logo glow-text animated-logo">THAI BINH RUSH</h1>
       <p class="subtitle cyber-subtitle">CYBERPUNK ENDLESS RUNNER 3D</p>
-      
+
       <!-- Concentric Dual Rotating Tech Core Spinner -->
       <div class="cyber-spinner-wrapper">
         <div class="spinner-ring outer-ring"></div>
         <div class="spinner-ring inner-ring"></div>
-        <div class="spinner-core">⚡</div>
+        <div class="spinner-core">&#9889;</div>
       </div>
-      
+
       <div class="loading-container">
         <div class="loading-bar cyber-progress-bar">
           <div id="loading-bar-fill" style="width: 0%">
@@ -42,82 +102,151 @@
           </div>
         </div>
         <div class="loading-status-wrapper">
-          <p id="loading-text" class="cyber-status-text">ĐANG KÍCH HOẠT ĐỘNG CƠ CÔNG NGHỆ...</p>
+          <p id="loading-text" class="cyber-status-text">DANG KICH HOAT DONG CO CONG NGHE...</p>
           <span id="loading-percent" class="cyber-percent">0%</span>
         </div>
       </div>
 
       <div class="loading-tips cyber-tips">
-        <p class="tip-title">💡 MẸO THÁI BÌNH:</p>
-        <p id="tip-content" class="tip-content">Thu thập Cà Phê Sữa Đá để bùng nổ năng lượng Rush Fever siêu tốc!</p>
+        <p class="tip-title">&#128161; MEO THAI BINH:</p>
+        <p id="tip-content" class="tip-content">Thu thap Ca Phe Sua Da de bung no nang luong Rush Fever sieu toc!</p>
       </div>
     </div>
   </div>
 
-  <!-- 2. Menu chính (Main Menu) -->
+  <!-- 2. Menu Chính (Main Menu) - Redesign AAA Glassmorphic -->
   <div id="main-menu" class="ui-screen">
-    <div class="glass-panel">
-      <h1 class="game-logo glow-text animated-logo">THÁI BÌNH RUSH</h1>
-      <p class="subtitle">Endless Runner Việt Nam</p>
+    <div class="menu-glass-panel">
 
-      <div class="high-score-board">
-        <span>KỶ LỤC CỦA BẠN:</span>
-        <span id="menu-high-score" class="score-value">0</span>
+      <!-- Header: Logo + Subtitle (Phong cách cũ) -->
+      <div class="menu-header">
+        <h1 class="game-logo glow-text animated-logo">THÁI BÌNH <span class="text-orange">RUSH</span></h1>
+        <p class="subtitle">ĐƯỜNG PHỐ VIỆT NAM</p>
       </div>
 
-      <!-- Khu vực chọn nhân vật -->
-      <div class="character-select-container">
-        <h3>CHỌN NHÂN VẬT</h3>
-        <div class="character-carousel">
-          <button id="char-prev" class="carousel-btn prev-btn">&lt;</button>
-          <div class="character-card active">
-            <div id="char-avatar" class="character-avatar shipper-skin"></div>
-            <div class="character-info">
-              <span id="char-name" class="char-name">Anh Shipper Công Nghệ</span>
-              <span id="char-desc" class="char-desc">+10% tốc độ sạc Fever</span>
+      <!-- Kỷ lục -->
+      <div class="menu-highscore">
+        <span class="hs-label">🏆 KỶ LỤC CỦA BẠN</span>
+        <span id="menu-high-score" class="hs-value">0</span>
+      </div>
+
+      <!-- Chọn Nhân Vật -->
+      <div class="char-select-section">
+        <p class="char-section-label">CHỌN NHÂN VẬT</p>
+        <div class="char-carousel">
+          <button id="char-prev" class="char-arrow-btn" aria-label="Nhân vật trước">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+
+          <div class="char-card" id="char-card">
+            <div id="char-avatar" class="char-avatar shipper-skin"></div>
+            <div class="char-card-info">
+              <span id="char-name" class="char-name-text">Anh Shipper Công Nghệ</span>
+              <span id="char-desc" class="char-desc-text">⚡ +10% tốc độ sạc Fever Mode</span>
             </div>
+            <div class="char-card-glow"></div>
           </div>
-          <button id="char-next" class="carousel-btn next-btn">&gt;</button>
+
+          <button id="char-next" class="char-arrow-btn" aria-label="Nhân vật tiếp theo">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
         </div>
       </div>
 
-      <div class="menu-actions">
-        <button id="btn-start" class="btn-primary glow-btn">CHƠI NGAY</button>
-        <button id="btn-mute" class="btn-secondary">
-          <span class="sound-icon">🔊</span> Âm Thanh: Bật
+      <!-- Nút hành động -->
+      <div class="menu-actions-group">
+        <!-- Nút chính: CHƠI NGAY -->
+        <button id="btn-start" class="btn-play-now">
+          <span class="btn-play-shimmer"></span>
+          <span class="btn-play-icon">▶</span>
+          <span class="btn-play-text">CHƠI NGAY</span>
+          <span class="cost-badge-meat">x10 🍖</span>
         </button>
+
+        <!-- Nút phụ -->
+        <div class="menu-secondary-btns">
+          <button id="btn-view-360" class="btn-outline-neon btn-neon-cyan">
+            <span>🔍</span>
+            <span>Xem Nhân Vật 360°</span>
+          </button>
+          <button id="btn-view-lamborghini" class="btn-outline-neon btn-neon-amber">
+            <span>🏎️</span>
+            <span>Xem Lamborghini</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- 2b. Giao dien Phong Xem 360 (Character Viewer Room Overlay) -->
+  <div id="character-viewer-panel" class="ui-screen hidden">
+
+    <!--
+      VUNG KEO THU DIEN TICH RIENG CHO ORBITCONTROLS
+      z-index: 902 -> nam DUOI cac UI button (z-index: 910+)
+      -> OrbitControls nhan drag/xoay tai day
+      -> Buttons van nhan click vi z-index cao hon
+    -->
+    <div id="viewer-drag-area"></div>
+
+    <!-- Top bar: title + nut back (z-index 910, tren drag area) -->
+    <div class="viewer-top-bar">
+      <div class="viewer-title-group">
+        <h2 id="viewer-char-name" class="glow-text">NHAN VAT 360&#176;</h2>
+        <p id="viewer-char-desc" class="viewer-subtitle">Keo chuot / Vuot de xoay tu do 720&#176;</p>
+      </div>
+      <button id="btn-close-viewer" class="btn-close-viewer">&#9664; QUAY LAI MENU</button>
+    </div>
+
+    <!-- Huong dan & Nut dieu khien xoay (z-index 910) -->
+    <div class="viewer-controls-hint">
+      <div class="hint-badges">
+        <span class="hint-badge">&#128433;&#65039; Keo chuot / Vuot 1 ngon: Xoay tu do 720&#176;</span>
+        <span class="hint-badge">&#9996;&#65039; Chum 2 ngon / Cuon chuot: Zoom</span>
+      </div>
+      <div class="viewer-actions-row">
+        <button id="btn-toggle-auto-rotate" class="btn-viewer-action">&#128260; Tu Dong Xoay: Bat</button>
+        <button id="btn-reset-viewer-cam" class="btn-viewer-action">&#127919; Reset Goc Nhin</button>
       </div>
     </div>
   </div>
 
-  <!-- 3. Giao diện chơi game (HUD) -->
+  <!-- 3. Giao dien choi game (HUD) -->
   <div id="hud" class="ui-hud">
     <div class="hud-top-bar">
-      <!-- Bộ thu thập Cà phê -->
+      <!-- Bo thu thap Ca phe -->
       <div class="hud-item coffee-counter">
         <div class="hud-icon-wrapper">
-          <span class="hud-icon">☕</span>
+          <span class="hud-icon">&#9749;</span>
         </div>
         <div class="hud-info-text">
-          <span class="hud-label">CÀ PHÊ</span>
+          <span class="hud-label">CA PHE</span>
           <span id="hud-coffee-count" class="hud-value">0</span>
         </div>
       </div>
 
-      <!-- Điểm số hiện tại -->
+      <!-- Diem so hien tai -->
       <div class="hud-item score-counter">
         <div class="hud-icon-wrapper">
-          <span class="hud-icon">🏆</span>
+          <span class="hud-icon">&#127942;</span>
         </div>
         <div class="hud-info-text">
-          <span class="hud-label">ĐIỂM SỐ</span>
+          <span class="hud-label">DIEM SO</span>
           <span id="hud-score" class="hud-value">000000</span>
         </div>
       </div>
     </div>
 
 
-    <!-- Thanh năng lượng Fever (Fever Gauge) -->
+    <!-- Thanh nang luong Fever (Fever Gauge) -->
     <div class="hud-bottom-bar">
       <div class="fever-gauge-container">
         <div class="fever-label-wrapper">
@@ -130,40 +259,582 @@
       </div>
     </div>
 
-    <!-- Hướng dẫn điều khiển nhanh trên desktop (Tự ẩn sau 5 giây) -->
+    <!-- Huong dan dieu khien nhanh tren desktop (Tu an sau 5 giay) -->
     <div id="desktop-instructions" class="instructions-panel">
-      <p>Vuốt/kéo chuột hoặc Nhấn [A]/[D] chuyển làn | [W] Nhảy | [S] Trượt</p>
+      <p>Vuot/keo chuot hoac Nhan [A]/[D] chuyen lan | [W] Nhay | [S] Truot</p>
     </div>
   </div>
 
-  <!-- 4. Màn hình Game Over -->
+  <!-- 4. Man hinh Game Over -->
   <div id="game-over-screen" class="ui-screen">
     <div class="glass-panel text-center">
-      <h2 class="game-over-title glow-text-red">BỊ LẬP BIÊN BẢN!</h2>
-      <p class="subtitle">Bạn đã va chạm trên đường chạy</p>
+      <h2 class="game-over-title glow-text-red">BI LAP BIEN BAN!</h2>
+      <p class="subtitle">Ban da va cham tren duong chay</p>
 
       <div class="stats-panel">
         <div class="stat-row">
-          <span>Quãng đường:</span>
+          <span>Quang duong:</span>
           <span id="over-score" class="stat-value">0 m</span>
         </div>
         <div class="stat-row">
-          <span>Cà phê thu thập:</span>
+          <span>Ca phe thu thap:</span>
           <span id="over-coffee" class="stat-value">0 ly</span>
         </div>
         <div class="stat-row highlight">
-          <span>Kỷ lục mới:</span>
+          <span>Ky luc moi:</span>
           <span id="over-high-score" class="stat-value">12,450</span>
         </div>
       </div>
 
       <div class="game-over-actions">
-        <button id="btn-restart" class="btn-primary glow-btn-red">CHƠI LẠI</button>
-        <button id="btn-home" class="btn-secondary">TRANG CHỦ</button>
+        <button id="btn-restart" class="btn-primary glow-btn-red">CHOI LAI</button>
+        <button id="btn-home" class="btn-secondary">TRANG CHU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- AUDIO CONTROL PANEL - Goc PHAI tren (chi hien o Menu chinh) -->
+  <!-- ============================================================ -->
+  <div id="audio-control-panel" class="audio-control-panel">
+
+    <!-- Nut Mute/Unmute + Volume Slider (hover de mo) -->
+    <div class="mute-volume-group">
+      <button id="btn-audio-mute" class="audio-btn mute-btn" title="Bat/Tat am thanh / Hover de chinh am luong">
+        <!-- Icon Loa (hien khi bat am thanh) -->
+        <svg id="icon-sound-on" class="audio-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" />
+          <path d="M15.54 8.46a5 5 0 010 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path d="M19.07 4.93a10 10 0 010 14.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <!-- Icon Loa Tat (hien khi tat am thanh) -->
+        <svg id="icon-sound-off" class="audio-icon hidden" viewBox="0 0 24 24" fill="none"
+          xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" opacity="0.5" />
+          <line x1="23" y1="9" x2="17" y2="15" stroke="#ff4444" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="17" y1="9" x2="23" y2="15" stroke="#ff4444" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        <span class="mute-ring-indicator"></span>
+      </button>
+      <!-- Volume slider hien khi hover vao mute button - truot ra ben trai -->
+      <div id="volume-slider-wrap" class="volume-slider-wrap collapsed">
+        <div class="volume-slider-track">
+          <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="60" step="1">
+          <div class="volume-fill-bar" id="volume-fill-bar" style="width:60%"></div>
+        </div>
+        <span id="volume-label" class="volume-label">60%</span>
+      </div>
+    </div>
+
+    <!-- Jukebox Button -->
+    <button id="btn-jukebox" class="audio-btn jukebox-btn" title="Chọn nhạc nền">
+      <svg class="audio-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="6" cy="18" r="3" fill="currentColor"/>
+        <circle cx="18" cy="16" r="3" fill="currentColor"/>
+      </svg>
+      <span class="jukebox-spin-dot"></span>
+    </button>
+
+    <!-- Match History Button -->
+    <button id="btn-history" class="audio-btn history-btn" title="Lịch Sử Thi Đấu">
+      <i data-lucide="trophy" class="history-lucide-icon"></i>
+      <span class="history-badge-dot"></span>
+    </button>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MATCH HISTORY MODAL - Lịch Sử Thi Đấu                       -->
+  <!-- ============================================================ -->
+  <div id="history-modal" class="history-modal" aria-hidden="true">
+    <div class="history-backdrop"></div>
+    <div class="history-panel">
+      <!-- Header -->
+      <div class="history-header">
+        <div class="history-title-group">
+          <i data-lucide="history" class="header-icon-glow"></i>
+          <div>
+            <h3 class="history-title glow-text-gold">LỊCH SỬ THI ĐẤU</h3>
+            <p class="history-subtitle">15 Trận Gần Nhất & Thống Kê</p>
+          </div>
+        </div>
+        <button id="btn-close-history" class="btn-close-history">✕</button>
+      </div>
+
+      <!-- Content Scrollable Body -->
+      <div class="history-body">
+
+        <!-- Top Personal Best High Score Card -->
+        <div id="personal-best-card" class="personal-best-card">
+          <div class="pb-badge">🏆 KỶ LỤC CAO NHẤT</div>
+          <div class="pb-main-info">
+            <div class="pb-score-wrap">
+              <span class="pb-score-label">BEST SCORE</span>
+              <span id="pb-score-value" class="pb-score-val">0</span>
+            </div>
+            <div class="pb-meta-grid">
+              <div class="pb-meta-item">
+                <i data-lucide="coins" class="pb-icon gold"></i>
+                <span id="pb-coins-value">0 Xu</span>
+              </div>
+              <div class="pb-meta-item">
+                <i data-lucide="timer" class="pb-icon cyan"></i>
+                <span id="pb-time-value">00:00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Container: Điểm số qua các trận gần đây -->
+        <div class="history-chart-card">
+          <div class="chart-header">
+            <i data-lucide="trending-up" class="chart-icon"></i>
+            <span>TIẾN TRÌNH ĐIỂM SỐ GẦN ĐÂY</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="match-history-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Section Label for List -->
+        <div class="history-list-header">
+          <i data-lucide="list" class="list-icon"></i>
+          <span>DANH SÁCH TRẬN ĐẤU</span>
+        </div>
+
+        <!-- Match Cards List Container -->
+        <div id="history-track-list" class="history-track-list">
+          <!-- Populated dynamically in Game.js -->
+        </div>
+
+      </div>
+
+      <!-- Footer Action -->
+      <div class="history-footer">
+        <button id="btn-clear-history" class="btn-clear-history">
+          <i data-lucide="trash-2" class="trash-icon"></i>
+          <span>Xóa Lịch Sử</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================ -->
+  <!-- JUKEBOX MODAL - Chon bai nhac nen                           -->
+  <!-- ============================================================ -->
+  <div id="jukebox-modal" class="jukebox-modal" aria-hidden="true">
+    <div class="jukebox-backdrop"></div>
+    <div class="jukebox-panel">
+      <!-- Header -->
+      <div class="jukebox-header">
+        <div class="jukebox-title-group">
+          <span class="jukebox-disc-icon">🎵</span>
+          <div>
+            <h3 class="jukebox-title">CHỌN NHẠC NỀN</h3>
+            <p class="jukebox-subtitle">7 Ca Khúc Hot Streaming + 3 Nhạc Game BGM</p>
+          </div>
+        </div>
+        <button id="btn-close-jukebox" class="btn-close-jukebox">✕</button>
+      </div>
+
+      <!-- Now Playing Bar -->
+      <div class="now-playing-bar">
+        <div class="now-playing-waveform">
+          <span class="wave-bar" style="animation-delay:0s"></span>
+          <span class="wave-bar" style="animation-delay:0.15s"></span>
+          <span class="wave-bar" style="animation-delay:0.3s"></span>
+          <span class="wave-bar" style="animation-delay:0.45s"></span>
+          <span class="wave-bar" style="animation-delay:0.1s"></span>
+        </div>
+        <span id="now-playing-label" class="now-playing-label">Đang phát: Original Theme</span>
+      </div>
+
+      <!-- Track List -->
+      <div class="track-list" id="jukebox-track-list">
+
+        <!-- === SECTION: STREAMING MUSIC === -->
+        <div class="track-section-header streaming-header">
+          <span class="section-badge streaming-badge">🔴 STREAMING HOT</span>
+        </div>
+
+        <!-- Khung cuộn riêng dành cho mục STREAMING HOT -->
+        <div class="streaming-tracks-wrapper" id="streaming-tracks-wrapper">
+          <!-- Track 1: Chắc Ai Đó Sẽ Về -->
+          <div class="track-item streaming-track" data-track="chac_ai_do_se_ve" data-type="streaming" id="track-item-chac_ai_do_se_ve">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">❄️</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Chắc Ai Đó Sẽ Về</span>
+              <span class="track-artist">Sơn Tùng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 2: Chúng Ta Không Thuộc Về Nhau -->
+          <div class="track-item streaming-track" data-track="chung_ta_khong_thuoc_ve_nhau" data-type="streaming" id="track-item-chung_ta_khong_thuoc_ve_nhau">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">💔</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Chúng Ta Không Thuộc Về Nhau</span>
+              <span class="track-artist">Sơn Tùng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 3: Có Chắc Yêu Là Đây -->
+          <div class="track-item streaming-track" data-track="co_chac_yeu_la_day" data-type="streaming" id="track-item-co_chac_yeu_la_day">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">🌸</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Có Chắc Yêu Là Đây</span>
+              <span class="track-artist">Sơn Tùng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 4: Đừng Làm Trái Tim Anh Đau -->
+          <div class="track-item streaming-track" data-track="dung_lam_trai_tim_anh_dau" data-type="streaming" id="track-item-dung_lam_trai_tim_anh_dau">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">💖</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Đừng Làm Trái Tim Anh Đau</span>
+              <span class="track-artist">Sơn Tùng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 5: Không Phải Dạng Vừa Đâu -->
+          <div class="track-item streaming-track" data-track="khong_phai_dang_vua_dau" data-type="streaming" id="track-item-khong_phai_dang_vua_dau">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">🔥</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Không Phải Dạng Vừa Đâu</span>
+              <span class="track-artist">Sơn Tùng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 6: Không Thời Gian -->
+          <div class="track-item streaming-track" data-track="khong_thoi_gian" data-type="streaming" id="track-item-khong_thoi_gian">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">⏳</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Không Thời Gian</span>
+              <span class="track-artist">Dương Domic</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 7: Lạc Trôi -->
+          <div class="track-item streaming-track" data-track="lac_troi" data-type="streaming" id="track-item-lac_troi">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">🐉</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Lạc Trôi</span>
+              <span class="track-artist">Sơn Tùng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 8: Mất Kết Nối -->
+          <div class="track-item streaming-track" data-track="mat_ket_noi" data-type="streaming" id="track-item-mat_ket_noi">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">📡</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Mất Kết Nối</span>
+              <span class="track-artist">Dương Domic</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 9: Nắng Ấm Xa Dần -->
+          <div class="track-item streaming-track" data-track="nang_am_xa_dan" data-type="streaming" id="track-item-nang_am_xa_dan">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">☀️</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Nắng Ấm Xa Dần</span>
+              <span class="track-artist">Sơn Tùng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 10: Nơi Này Có Anh -->
+          <div class="track-item streaming-track" data-track="noi_nay_co_anh" data-type="streaming" id="track-item-noi_nay_co_anh">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">❄️</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Nơi Này Có Anh</span>
+              <span class="track-artist">Sơn Tùng M-TP</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+
+          <!-- Track 11: Tràn Bộ Nhớ -->
+          <div class="track-item streaming-track" data-track="tran_bo_nho" data-type="streaming" id="track-item-tran_bo_nho">
+            <div class="track-icon-wrap">
+              <span class="track-emoji">💾</span>
+              <div class="track-active-ring"></div>
+              <span class="streaming-dot" title="Direct MP3 Stream"></span>
+            </div>
+            <div class="track-info">
+              <span class="track-name">Tràn Bộ Nhớ</span>
+              <span class="track-artist">Dương Domic</span>
+            </div>
+            <div class="track-meta">
+              <span class="track-stream-badge">MP3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- === SECTION: GAME BGM === -->
+
+        <div class="track-section-header">
+          <span class="section-badge procedural-badge">&#9836; GAME BGM</span>
+          <span class="section-label">Nhac procedural - Offline</span>
+        </div>
+
+        <div class="track-item active" data-track="track_1" data-type="procedural" id="track-item-track_1">
+          <div class="track-icon-wrap">
+            <span class="track-emoji">&#127925;</span>
+            <div class="track-active-ring"></div>
+          </div>
+          <div class="track-info">
+            <span class="track-name">Original Theme</span>
+            <span class="track-sub">Pentatonic Viet Nam &#127756;</span>
+          </div>
+          <div class="track-meta">
+            <div class="track-waveform">
+              <span class="tw-bar" style="animation-delay:0.0s"></span>
+              <span class="tw-bar" style="animation-delay:0.2s"></span>
+              <span class="tw-bar" style="animation-delay:0.1s"></span>
+              <span class="tw-bar" style="animation-delay:0.3s"></span>
+            </div>
+            <span class="track-bpm">120 BPM</span>
+          </div>
+        </div>
+
+        <div class="track-item" data-track="track_2" data-type="procedural" id="track-item-track_2">
+          <div class="track-icon-wrap">
+            <span class="track-emoji">&#127748;</span>
+            <div class="track-active-ring"></div>
+          </div>
+          <div class="track-info">
+            <span class="track-name">Night City Synthwave</span>
+            <span class="track-sub">Lo-Fi Saigon Night &#129311;</span>
+          </div>
+          <div class="track-meta">
+            <div class="track-waveform">
+              <span class="tw-bar" style="animation-delay:0.15s"></span>
+              <span class="tw-bar" style="animation-delay:0.05s"></span>
+              <span class="tw-bar" style="animation-delay:0.25s"></span>
+              <span class="tw-bar" style="animation-delay:0.35s"></span>
+            </div>
+            <span class="track-bpm">130 BPM</span>
+          </div>
+        </div>
+
+        <div class="track-item" data-track="track_3" data-type="procedural" id="track-item-track_3">
+          <div class="track-icon-wrap">
+            <span class="track-emoji">&#9889;</span>
+            <div class="track-active-ring"></div>
+          </div>
+          <div class="track-info">
+            <span class="track-name">Cyberpunk Run</span>
+            <span class="track-sub">Aggressive Electronic &#128293;</span>
+          </div>
+          <div class="track-meta">
+            <div class="track-waveform">
+              <span class="tw-bar" style="animation-delay:0.1s"></span>
+              <span class="tw-bar" style="animation-delay:0.3s"></span>
+              <span class="tw-bar" style="animation-delay:0.0s"></span>
+              <span class="tw-bar" style="animation-delay:0.2s"></span>
+            </div>
+            <span class="track-bpm">140 BPM</span>
+          </div>
+        </div>
+
+      </div><!-- /.track-list -->
+
+    </div><!-- /.jukebox-panel -->
+  </div><!-- /#jukebox-modal -->
+
+  <!-- ============================================================ -->
+  <!-- AUDIO CONTROL PANEL & HISTORY BUTTON (Góc trên bên phải Menu) -->
+  <!-- ============================================================ -->
+  <div id="audio-control-panel" class="audio-control-panel">
+
+    <!-- Mute / Unmute Button -->
+    <div class="audio-mute-group">
+      <button id="btn-audio-mute" class="audio-btn mute-btn" title="Bật/Tắt âm thanh">
+        <svg id="icon-sound-on" class="audio-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" />
+          <path d="M15.54 8.46a5 5 0 010 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path d="M19.07 4.93a10 10 0 010 14.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <svg id="icon-sound-off" class="audio-icon hidden" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor" opacity="0.5" />
+          <line x1="23" y1="9" x2="17" y2="15" stroke="#ff4444" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="17" y1="9" x2="23" y2="15" stroke="#ff4444" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        <span class="mute-ring-indicator"></span>
+      </button>
+      <!-- Volume slider hien khi hover vao mute button - truot ra ben trai -->
+      <div id="volume-slider-wrap" class="volume-slider-wrap collapsed">
+        <div class="volume-slider-track">
+          <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="60" step="1">
+          <div class="volume-fill-bar" id="volume-fill-bar" style="width:60%"></div>
+        </div>
+        <span id="volume-label" class="volume-label">60%</span>
+      </div>
+    </div>
+
+    <!-- Jukebox Button -->
+    <button id="btn-jukebox" class="audio-btn jukebox-btn" title="Chọn nhạc nền">
+      <svg class="audio-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 18V5l12-2v13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="6" cy="18" r="3" fill="currentColor"/>
+        <circle cx="18" cy="16" r="3" fill="currentColor"/>
+      </svg>
+      <span class="jukebox-spin-dot"></span>
+    </button>
+
+    <!-- Match History Button (LỊCH SỬ THI ĐẤU) -->
+    <button id="btn-history" class="audio-btn history-btn" title="Lịch Sử Thi Đấu">
+      <span class="history-emoji-icon">🏆</span>
+      <span class="history-badge-dot"></span>
+    </button>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MATCH HISTORY MODAL - Lịch Sử Thi Đấu                       -->
+  <!-- ============================================================ -->
+  <div id="history-modal" class="history-modal" aria-hidden="true">
+    <div class="history-backdrop"></div>
+    <div class="history-panel">
+      <!-- Header -->
+      <div class="history-header">
+        <div class="history-title-group">
+          <span class="header-icon-glow">🏆</span>
+          <div>
+            <h3 class="history-title glow-text-gold">LỊCH SỬ THI ĐẤU</h3>
+            <p class="history-subtitle">15 Trận Gần Nhất & Thống Kê</p>
+          </div>
+        </div>
+        <button id="btn-close-history" class="btn-close-history">✕</button>
+      </div>
+
+      <!-- Content Scrollable Body -->
+      <div class="history-body">
+
+        <!-- Top Personal Best High Score Card -->
+        <div id="personal-best-card" class="personal-best-card">
+          <div class="pb-badge">🏆 KỶ LỤC CAO NHẤT</div>
+          <div class="pb-main-info">
+            <div class="pb-score-wrap">
+              <span class="pb-score-label">BEST SCORE</span>
+              <span id="pb-score-value" class="pb-score-val">0</span>
+            </div>
+            <div class="pb-meta-grid">
+              <div class="pb-meta-item">
+                <span class="pb-icon gold">🪙</span>
+                <span id="pb-coins-value">0 Xu</span>
+              </div>
+              <div class="pb-meta-item">
+                <span class="pb-icon cyan">⏱️</span>
+                <span id="pb-time-value">00:00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Container: Điểm số qua các trận gần đây -->
+        <div class="history-chart-card">
+          <div class="chart-header">
+            <span class="chart-icon">📈</span>
+            <span>TIẾN TRÌNH ĐIỂM SỐ GẦN ĐÂY</span>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="match-history-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Section Label for List -->
+        <div class="history-list-header">
+          <span class="list-icon">📋</span>
+          <span>DANH SÁCH TRẬN ĐẤU</span>
+        </div>
+
+        <!-- Match Cards List Container -->
+        <div id="history-track-list" class="history-track-list">
+          <!-- Dynamically populated in Game.js -->
+        </div>
+
+      </div>
+
+      <!-- Footer Action -->
+      <div class="history-footer">
+        <button id="btn-clear-history" class="btn-clear-history">
+          <span class="trash-icon">🗑️</span>
+          <span>Xóa Lịch Sử</span>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Entry Point script -->
 </body>
+
 </html>

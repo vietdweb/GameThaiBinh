@@ -390,17 +390,29 @@ export class Collectible {
     }
 
     // === Nam châm Fever Mode / Boost ===
+    // Vật phẩm CHỈ bắt đầu hút vào người khi nó đã ĐẾN GẦN (dz < 8m phía trước) 
+    // tránh tình trạng vật phẩm ở xa đã bay vào giữa đường rồi mới bay vào người
     if (isFeverActive && playerPosition) {
       const dx = playerPosition.x - this.meshGroup.position.x;
       const dy = playerPosition.y - this.meshGroup.position.y;
       const dz = playerPosition.z - this.meshGroup.position.z;
-      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      // dz < 0 nghĩa là vật phẩm ở PHÍA TRƯỚC (âm Z là phía trước camera)
+      // Chỉ hút khi vật phẩm ở trong khoảng 12m phía trước người chơi
+      const aheadDist = -dz; // khoảng cách theo chiều di chuyển (dương = vật phẩm đang đến gần)
+      
+      if (aheadDist > -2 && aheadDist < 12) {
+        // Tỉ lệ hút: càng gần 0 thì hút càng mạnh (đường cong tự nhiên)
+        const attractRatio = Math.max(0, 1.0 - aheadDist / 12.0); // 0 khi xa, 1 khi đến nơi
+        
+        // Kéo X về đúng làn của người chơi (lerp theo tỉ lệ khoảng cách)
+        const lerpX = Math.min(1.0, deltaTime * 10 * attractRatio);
+        const lerpY = Math.min(1.0, deltaTime * 8 * attractRatio);
+        this.meshGroup.position.x = THREE.MathUtils.lerp(this.meshGroup.position.x, playerPosition.x, lerpX);
+        this.meshGroup.position.y = THREE.MathUtils.lerp(this.meshGroup.position.y, playerPosition.y, lerpY);
 
-      if (dist < 10) {
-        const force = (this.magnetStrength * deltaTime) / Math.max(dist, 0.5);
-        this.meshGroup.position.x += dx * force;
-        this.meshGroup.position.z += dz * force;
-        this.meshGroup.position.y += dy * force * 0.5;
+        // Tăng tốc trục Z khi đã vào tầm hút (bù lại chênh lệch vận tốc với tốc độ game)
+        const speedBoostZ = this.magnetStrength * attractRatio * deltaTime;
+        this.meshGroup.position.z += dz * Math.min(1.0, speedBoostZ);
       }
     }
   }

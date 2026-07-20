@@ -1471,11 +1471,9 @@ body {
   z-index: 200;
   display: flex;
   align-items: center;
-  /* Căn giữa theo chiều dọc */
   justify-content: flex-end;
-  /* Căn bên phải màn hình */
-  padding: 16px 20px;
-  /* Chỉ chừa đúng 16px trên/dưới và 20px lề phải */
+  /* Padding: trên/dưới 16px cách mép màn hình, phải 70px tránh nút Audio Control */
+  padding: 16px 70px 16px 20px;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -1500,8 +1498,8 @@ body {
   position: relative;
   width: min(350px, 90vw);
   height: auto;
-  /* Ôm sát vừa vặn theo nội dung */
-  max-height: calc(100vh - 40px);
+  /* Giới hạn chiều cao để không chạm mép màn hình (trừ 32px padding trên + dưới) */
+  max-height: calc(100vh - 32px);
   display: flex;
   flex-direction: column;
   background: rgba(10, 10, 22, 0.94);
@@ -1667,10 +1665,11 @@ body {
 
 /* Track List Container */
 .track-list {
-  padding: 12px 14px 16px;
+  /* Bỏ overflow-y ở đây vì streaming wrapper tự cuộn riêng */
+  padding: 8px 14px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -1680,10 +1679,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 205px;
-  /* Giới hạn vừa khít 4-5 bài -> Muốn xem bài 6 & 7 bắt buộc phải cuộn xuống */
+  /* ~52px mỗi bài x 5 bài = 260px; dùng max-height để tự co nếu ít hơn 5 bài */
+  max-height: 265px;
   overflow-y: scroll;
-  /* Bật thanh cuộn */
   overflow-x: hidden;
   padding-right: 6px;
   margin-bottom: 4px;

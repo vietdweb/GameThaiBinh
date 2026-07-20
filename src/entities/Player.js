@@ -726,7 +726,17 @@ export class Player {
   }
 
   slide() {
-    if (!this.isJumping && !this.isSliding) {
+    if (this.isJumping) {
+      // Bấm nút xuống trong khi nhảy -> lập tức cho nhân vật cúi xuống (tiếp đất ngay lập tức và bắt đầu trượt)
+      const effectiveGroundY = PHYSICS.PLAYER_GROUND_Y + this.currentPlatformY;
+      this.meshGroup.position.y = effectiveGroundY;
+      this.isJumping = false;
+      this.velocityY = 0;
+      
+      this.isSliding = true;
+      this.slideTimer = PHYSICS.SLIDE_DURATION;
+      this.visualGroup.scale.y = 0.5;
+    } else if (!this.isSliding) {
       this.isSliding = true;
       this.slideTimer = PHYSICS.SLIDE_DURATION;
       this.visualGroup.scale.y = 0.5;
