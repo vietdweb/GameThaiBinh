@@ -579,33 +579,29 @@ export class Game {
   _syncAudioPanelUI() {
     const am = this.audioManager;
     const dom = this.domElements;
-    const settings = am.getSettings();
+
+    if (!am) return;
 
     // Mute button state
     if (dom.btnAudioMute) {
-      dom.btnAudioMute.classList.toggle('muted', settings.muted);
+      dom.btnAudioMute.classList.toggle('muted', !am.enabled);
     }
-    if (dom.iconSoundOn) dom.iconSoundOn.classList.toggle('hidden', settings.muted);
-    if (dom.iconSoundOff) dom.iconSoundOff.classList.toggle('hidden', !settings.muted);
+    if (dom.iconSoundOn) dom.iconSoundOn.classList.toggle('hidden', !am.enabled);
+    if (dom.iconSoundOff) dom.iconSoundOff.classList.toggle('hidden', am.enabled);
 
     // Volume slider
-    const volPct = Math.round(settings.volume * 100);
+    const volPct = Math.round(am.masterVolume * 100);
     if (dom.volumeSlider) dom.volumeSlider.value = String(volPct);
     if (dom.volumeFillBar) dom.volumeFillBar.style.width = `${volPct}%`;
     if (dom.volumeLabel) dom.volumeLabel.textContent = `${volPct}%`;
 
-    // Track active state - ưu tiên streaming nếu đang phát
-    if (settings.isStreaming && settings.currentStreamId) {
-      this._updateJukeboxActiveTrack(null, settings.currentStreamId);
-    } else {
-      this._updateJukeboxActiveTrack(settings.trackId, null);
-    }
+    // Highlight active track in Jukebox
+    const activeId = am.currentTrackId || am.currentStreamId || 'co_chac_yeu_la_day';
+    this._updateJukeboxActiveTrack(null, activeId);
   }
 
   /**
    * Cập nhật track active trong Jukebox
-   * @param {string|null} proceduralId - ID của procedural track (track_1/2/3) hoặc null
-   * @param {string|null} streamId - ID của streaming track hoặc null
    */
   _updateJukeboxActiveTrack(proceduralId, streamId) {
     const am = this.audioManager;
@@ -613,42 +609,16 @@ export class Game {
 
     // Xóa active khỏi tất cả items
     document.querySelectorAll('.track-item').forEach(el => {
-      el.classList.remove('active');
-      el.classList.remove('loading');
-      el.classList.remove('error');
+      el.classList.remove('active', 'loading', 'error');
     });
 
-    // Ẩn tất cả loading rings
-    document.querySelectorAll('.track-loading-ring').forEach(r => r.classList.remove('visible'));
+    const activeId = streamId || proceduralId || 'co_chac_yeu_la_day';
+    const el = document.getElementById(`track-item-${activeId}`);
+    if (el) el.classList.add('active');
 
-    if (streamId) {
-      // Streaming track active
-      const el = document.getElementById(`track-item-${streamId}`);
-      if (el) el.classList.add('active');
-
-      // Now-playing bar - streaming mode
-      const nowPlayingBar = document.querySelector('.now-playing-bar');
-      if (nowPlayingBar) nowPlayingBar.classList.add('streaming-mode');
-
-      // Update now-playing label
-      const track = am.streamingPlaylist?.find(t => t.id === streamId);
-      if (track && dom.nowPlayingLabel) {
-        dom.nowPlayingLabel.textContent = `\u25B6 ${track.title} - ${track.artist}`;
-      }
-    } else if (proceduralId) {
-      // Procedural track active
-      const el = document.getElementById(`track-item-${proceduralId}`);
-      if (el) el.classList.add('active');
-
-      // Now-playing bar - normal mode
-      const nowPlayingBar = document.querySelector('.now-playing-bar');
-      if (nowPlayingBar) nowPlayingBar.classList.remove('streaming-mode');
-
-      // Update now-playing label
-      const track = am.tracks[proceduralId];
-      if (track && dom.nowPlayingLabel) {
-        dom.nowPlayingLabel.textContent = `\u25B6 ${track.name}`;
-      }
+    const track = am.streamingPlaylist?.find(t => t.id === activeId);
+    if (track && dom.nowPlayingLabel) {
+      dom.nowPlayingLabel.textContent = `▶ ${track.title}`;
     }
   }
 
