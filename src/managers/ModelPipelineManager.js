@@ -1,10 +1,10 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
- * ModelPipelineManager.js - Quáº£n lÃ½ Táº£i & Override Váº­t Liá»‡u PBR cho MÃ´ HÃ¬nh GLB
+ * ModelPipelineManager.js - Quản lý Tải & Override Vật Liệu PBR cho Mô Hình GLB
  */
 export class ModelPipelineManager {
   constructor() {
@@ -23,7 +23,7 @@ export class ModelPipelineManager {
   }
 
   /**
-   * 1. Táº£i cÃ¡c mÃ´ hÃ¬nh GLTF/GLB vá»›i Ä‘áº¿m báº¥t Ä‘á»“ng bá»™ fail-safe 100%
+   * 1. Tải các mô hình GLTF/GLB với đếm bất đồng bộ fail-safe 100%
    */
   loadModels(modelManifest, onProgress, onLoad) {
     if (this.isLoaded) {
@@ -41,62 +41,39 @@ export class ModelPipelineManager {
     }
 
     let completedItems = 0;
-    let isDone = false;
-
-    // Fail-safe timeout 3.5 giÃ¢y Ä‘áº£m báº£o 100% khÃ´ng bao giá» Ä‘Æ¡ mÃ n hÃ¬nh loading
-    const failSafeTimer = setTimeout(() => {
-      if (!isDone) {
-        isDone = true;
-        this.isLoaded = true;
-        console.warn('âš ï¸ [ModelPipeline] Háº¿t thá»i gian náº¡p 3D, tá»± Ä‘á»™ng kÃ­ch hoáº¡t game!');
-        if (onLoad) onLoad();
-      }
-    }, 3500);
 
     const checkItemCompleted = () => {
-      if (isDone) return;
       completedItems++;
       const progressPercentage = Math.min((completedItems / totalItems) * 100, 100);
       if (onProgress) onProgress(progressPercentage);
 
       if (completedItems >= totalItems) {
-        isDone = true;
-        clearTimeout(failSafeTimer);
         this.isLoaded = true;
-        console.log('âœ… [ModelPipeline] Táº¥t cáº£ mÃ´ hÃ¬nh 3D Ä‘Ã£ Ä‘Æ°á»£c náº¡p thÃ nh cÃ´ng!');
+        console.log('✅ [ModelPipeline] Tất cả mô hình 3D đã được nạp thành công!');
         if (onLoad) onLoad();
       }
     };
 
     entries.forEach(([key, path]) => {
-      try {
-        this.gltfLoader.load(
-          path,
-          (gltf) => {
-            try {
-              this.loadedGLTFs[key] = gltf;
+      this.gltfLoader.load(
+        path,
+        (gltf) => {
+          this.loadedGLTFs[key] = gltf;
 
-              // Chá»‰ xá»­ lÃ½ Shader Ä‘á»¥c lÃ¡ cho mÃ´ hÃ¬nh CÃ¢y
-              if (key.includes('tree')) {
-                this.processGLTFMaterials(gltf.scene);
-              }
-
-              this.loadedModels[key] = gltf.scene;
-            } catch (err) {
-              console.warn(`[ModelPipeline] Lá»—i xá»­ lÃ½ model '${key}':`, err);
-            } finally {
-              checkItemCompleted();
-            }
-          },
-          undefined,
-          (error) => {
-            console.warn(`[ModelPipeline] KhÃ´ng tÃ¬m tháº¥y file 3D '${key}' táº¡i '${path}'. Bá» qua an toÃ n.`);
-            checkItemCompleted();
+          // Chỉ xử lý Shader đục lá cho mô hình Cây
+          if (key.includes('tree')) {
+            this.processGLTFMaterials(gltf.scene);
           }
-        );
-      } catch (e) {
-        checkItemCompleted();
-      }
+
+          this.loadedModels[key] = gltf.scene;
+          checkItemCompleted();
+        },
+        undefined,
+        (error) => {
+          console.warn(`[ModelPipeline] Không tìm thấy file 3D '${key}' tại '${path}'. Bỏ qua an toàn.`);
+          checkItemCompleted();
+        }
+      );
     });
   }
 
@@ -170,17 +147,17 @@ export class ModelPipelineManager {
   }
 
   /**
-   * 3. Thuáº­t toÃ¡n Gá»™p HÃ¬nh Há»c (BufferGeometryUtils.mergeGeometries) & Khá»Ÿi Táº¡o InstancedMesh
-   * Gá»™p táº¥t cáº£ sub-mesh cá»§a maple_tree.glb thÃ nh 1-2 geometry duy nháº¥t Ä‘á»ƒ giáº£m Draw Calls tá»« 1000s xuá»‘ng 1-2!
-   * @param {string} modelKey Key mÃ´ hÃ¬nh (vd: 'maple_tree')
-   * @param {number} maxCount Sá»‘ lÆ°á»£ng thá»±c thá»ƒ tá»‘i Ä‘a (máº·c Ä‘á»‹nh 100)
-   * @param {number} targetHeight Chiá»u cao má»¥c tiÃªu chuáº©n (máº·c Ä‘á»‹nh 4.8m)
+   * 3. Thuật toán Gộp Hình Học (BufferGeometryUtils.mergeGeometries) & Khởi Tạo InstancedMesh
+   * Gộp tất cả sub-mesh của maple_tree.glb thành 1-2 geometry duy nhất để giảm Draw Calls từ 1000s xuống 1-2!
+   * @param {string} modelKey Key mô hình (vd: 'maple_tree')
+   * @param {number} maxCount Số lượng thực thể tối đa (mặc định 100)
+   * @param {number} targetHeight Chiều cao mục tiêu chuẩn (mặc định 4.8m)
    */
   createInstancedTreeGroup(modelKey, maxCount = 100, targetHeight = 5.8) {
     const rawModel = this.cloneModel(modelKey);
     if (!rawModel) return null;
 
-    // 3a. Auto-scale mÃ´ hÃ¬nh gá»‘c vá» chiá»u cao chuáº©n 5.8m cao lá»›n thanh thoÃ¡t
+    // 3a. Auto-scale mô hình gốc về chiều cao chuẩn 5.8m cao lớn thanh thoát
     const bbox = new THREE.Box3().setFromObject(rawModel);
     const size = bbox.getSize(new THREE.Vector3());
     if (size.y > 0 && isFinite(size.y)) {
@@ -188,10 +165,10 @@ export class ModelPipelineManager {
       rawModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
     }
 
-    // Cáº­p nháº­t ma tráº­n toÃ n cá»¥c trÆ°á»›c khi trÃ­ch xuáº¥t Geometry
+    // Cập nhật ma trận toàn cục trước khi trích xuất Geometry
     rawModel.updateMatrixWorld(true);
 
-    // 3b. Gom nhÃ³m cÃ¡c geometry theo cháº¥t liá»‡u (Material)
+    // 3b. Gom nhóm các geometry theo chất liệu (Material)
     const materialMap = new Map();
 
     rawModel.traverse((child) => {
@@ -212,12 +189,12 @@ export class ModelPipelineManager {
     const instancedGroup = new THREE.Group();
     const instancedMeshes = [];
 
-    // 3c. Gá»™p geometry (mergeGeometries) & Táº¡o InstancedMesh cho tá»«ng cháº¥t liá»‡u
+    // 3c. Gộp geometry (mergeGeometries) & Tạo InstancedMesh cho từng chất liệu
     materialMap.forEach((geometries, mat) => {
       if (geometries.length > 0) {
         const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries, false);
         if (mergedGeometry) {
-          mat.transparent = false; // Táº¯t transparent dáº¡ng blend Ä‘á»ƒ loáº¡i bá» Depth Sorting Bug
+          mat.transparent = false; // Tắt transparent dạng blend để loại bỏ Depth Sorting Bug
           mat.depthWrite = true;
           mat.depthTest = true;
           mat.side = THREE.DoubleSide;
@@ -225,9 +202,9 @@ export class ModelPipelineManager {
           if (mat.map) {
             mat.map.colorSpace = THREE.SRGBColorSpace;
             
-            // Xá»­ lÃ½ Ä‘á»™ sÃ¡ng riÃªng cho CÃ¢y ThÃ´ng (Pine Tree): Báº­t emissive phÃ¡t sÃ¡ng nháº¹ trong Ä‘Ãªm
+            // Xử lý độ sáng riêng cho Cây Thông (Pine Tree): Bật emissive phát sáng nhẹ trong đêm
             if (modelKey === 'pine_tree') {
-              mat.emissive = new THREE.Color(0x333333); // Tá»± phÃ¡t sÃ¡ng nháº¹ xÃ¡m/xanh tá»‘i kÃ­ch sÃ¡ng chi tiáº¿t
+              mat.emissive = new THREE.Color(0x333333); // Tự phát sáng nhẹ xám/xanh tối kích sáng chi tiết
               mat.emissiveIntensity = 1.0;
               mat.color.setHex(0xaaaaaa);
             } else {
@@ -259,7 +236,7 @@ export class ModelPipelineManager {
           const instancedMesh = new THREE.InstancedMesh(mergedGeometry, mat, maxCount);
           instancedMesh.castShadow = true;
           instancedMesh.receiveShadow = true;
-          instancedMesh.count = 0; // Ban Ä‘áº§u 0 thá»±c thá»ƒ
+          instancedMesh.count = 0; // Ban đầu 0 thực thể
 
           instancedGroup.add(instancedMesh);
           instancedMeshes.push(instancedMesh);
@@ -267,7 +244,7 @@ export class ModelPipelineManager {
       }
     });
 
-    // Dummy Matrix4 cho viá»‡c tÃ­nh toÃ¡n biáº¿n Ä‘á»•i vá»‹ trÃ­
+    // Dummy Matrix4 cho việc tính toán biến đổi vị trí
     const dummyMatrix = new THREE.Matrix4();
     const dummyPos = new THREE.Vector3();
     const dummyQuat = new THREE.Quaternion();
@@ -278,15 +255,15 @@ export class ModelPipelineManager {
       instancedMeshes: instancedMeshes,
 
       /**
-       * Cáº­p nháº­t ma tráº­n vá»‹ trÃ­ thá»±c thá»ƒ cÃ¢y táº¡i chá»‰ sá»‘ index (0..maxCount-1)
+       * Cập nhật ma trận vị trí thực thể cây tại chỉ số index (0..maxCount-1)
        */
       setInstanceTransform(index, x, y, z, scale = 1.0, rotY = 0) {
-        if (index < 0 || index >= maxCount) return; // Báº£o vá»‡ an toÃ n chá»‘ng lá»—i crash/Ä‘Æ¡ mÃ n hÃ¬nh náº¿u vÆ°á»£t maxCount
+        if (index < 0 || index >= maxCount) return; // Bảo vệ an toàn chống lỗi crash/đơ màn hình nếu vượt maxCount
 
         dummyPos.set(x, y, z);
         dummyQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rotY);
 
-        // KÃ©o giÃ£n riÃªng trá»¥c Y (chiá»u cao) cho cáº£ CÃ¢y ThÃ´ng (1.65x) vÃ  CÃ¢y Phong (1.5x)
+        // Kéo giãn riêng trục Y (chiều cao) cho cả Cây Thông (1.65x) và Cây Phong (1.5x)
         const scaleX = scale;
         const scaleY = (modelKey === 'pine_tree') ? scale * 1.65 : scale * 1.5;
         const scaleZ = scale;
@@ -300,7 +277,7 @@ export class ModelPipelineManager {
       },
 
       /**
-       * ThÃ´ng bÃ¡o cho GPU cáº­p nháº­t ma tráº­n biáº¿n Ä‘á»•i & sá»‘ lÆ°á»£ng thá»±c thá»ƒ hiá»ƒn thá»‹
+       * Thông báo cho GPU cập nhật ma trận biến đổi & số lượng thực thể hiển thị
        */
       updateInstances(activeCount) {
         const count = Math.min(Math.max(0, activeCount), maxCount);

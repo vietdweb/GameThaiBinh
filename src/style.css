@@ -1,14 +1,14 @@
-﻿/* CSS cho game SÃ i GÃ²n Rush - Premium Glassmorphism & Neon Theme */
+/* CSS cho game Sài Gòn Rush - Premium Glassmorphism & Neon Theme */
 
 :root {
   --primary-color: #ff6f00;
-  /* MÃ u cam cÃ  phÃª */
+  /* Màu cam cà phê */
   --primary-glow: rgba(255, 111, 0, 0.5);
   --secondary-color: #ffd600;
-  /* MÃ u vÃ ng */
+  /* Màu vàng */
   --secondary-glow: rgba(255, 214, 0, 0.5);
   --danger-color: #ff1744;
-  /* MÃ u Ä‘á» nguy hiá»ƒm */
+  /* Màu đỏ nguy hiểm */
   --danger-glow: rgba(255, 23, 68, 0.5);
   --neon-blue: #00e5ff;
   --neon-blue-glow: rgba(0, 229, 255, 0.5);
@@ -39,7 +39,7 @@ body {
   color: #f3f4f6;
 }
 
-/* Canvas Three.js luÃ´n á»Ÿ dÆ°á»›i cÃ¹ng */
+/* Canvas Three.js luôn ở dưới cùng */
 #game-canvas {
   position: absolute;
   top: 0;
@@ -49,7 +49,7 @@ body {
   z-index: 1;
 }
 
-/* Lá»›p phá»§ mÃ n hÃ¬nh giao diá»‡n chung */
+/* Lớp phủ màn hình giao diện chung */
 .ui-screen {
   position: absolute;
   top: 0;
@@ -61,7 +61,7 @@ body {
   justify-content: center;
   align-items: center;
   pointer-events: none;
-  /* Chá»‰ cho phÃ©p click vÃ o panel bÃªn trong */
+  /* Chỉ cho phép click vào panel bên trong */
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.5s ease, visibility 0.5s ease;
@@ -73,7 +73,7 @@ body {
   visibility: visible;
 }
 
-/* Khung kÃ­nh má» (Glass Panel) */
+/* Khung kính mờ (Glass Panel) */
 .glass-panel {
   background: var(--bg-glass);
   backdrop-filter: blur(16px);
@@ -107,7 +107,7 @@ body {
   text-align: center;
 }
 
-/* Logo & TiÃªu Ä‘á» */
+/* Logo & Tiêu đề */
 .game-logo {
   font-family: var(--font-heading);
   font-size: 3rem;
@@ -142,7 +142,7 @@ body {
   margin-bottom: 30px;
 }
 
-/* MÃ n hÃ¬nh táº£i (Loading Screen) */
+/* Màn hình tải (Loading Screen) */
 .loading-container {
   width: 100%;
   margin: 30px 0;
@@ -197,7 +197,7 @@ body {
   text-shadow: 0 0 10px rgba(0, 229, 255, 0.8);
 }
 
-/* SPINNER VÃ’NG Äá»’NG TÃ‚M XOAY KÃ‰P NÄ‚NG LÆ¯á»¢NG */
+/* SPINNER VÒNG ĐỒNG TÂM XOAY KÉP NĂNG LƯỢNG */
 .cyber-spinner-wrapper {
   position: relative;
   width: 80px;
@@ -267,7 +267,7 @@ body {
   }
 }
 
-/* THANH TIáº¾N TRÃŒNH NEON CÃ“ Äáº¦U TIA LASER */
+/* THANH TIẾN TRÌNH NEON CÓ ĐẦU TIA LASER */
 .cyber-progress-bar {
   position: relative;
   background: rgba(0, 0, 0, 0.6) !important;
@@ -340,7 +340,7 @@ body {
   line-height: 1.4;
 }
 
-/* Menu chÃ­nh (Main Menu) */
+/* Menu chính (Main Menu) */
 .high-score-board {
   display: flex;
   flex-direction: column;
@@ -368,7 +368,7 @@ body {
   text-shadow: 0 0 8px var(--secondary-glow);
 }
 
-/* Chá»n nhÃ¢n váº­t */
+/* Chọn nhân vật */
 .character-select-container {
   width: 100%;
   margin-bottom: 30px;
@@ -432,7 +432,7 @@ body {
 }
 
 .character-avatar::after {
-  content: "ðŸ›µ";
+  content: "🛵";
   font-size: 1.8rem;
   position: absolute;
   top: 50%;
@@ -457,7 +457,7 @@ body {
   margin-top: 2px;
 }
 
-/* NÃºt báº¥m */
+/* Nút bấm */
 .menu-actions {
   display: flex;
   flex-direction: column;
@@ -505,7 +505,7 @@ body {
   box-shadow: 0 6px 22px rgba(0, 229, 255, 0.55) !important;
 }
 
-/* NÃºt XEM LAMBORGHINI - Gold sang trá»ng */
+/* Nút XEM LAMBORGHINI - Gold sang trọng */
 .glow-btn-lambo {
   background: linear-gradient(135deg, #f59e0b, #d97706, #fbbf24) !important;
   color: #07070a !important;
@@ -527,7 +527,7 @@ body {
 }
 
 /* =========================================================
-   GIAO DIá»†N PHÃ’NG XEM CHI TIáº¾T 360Â° (CHARACTER VIEWER ROOM)
+   GIAO DIỆN PHÒNG XEM CHI TIẾT 360° (CHARACTER VIEWER ROOM)
    ========================================================= */
 #character-viewer-panel {
   position: fixed;
@@ -680,7 +680,7 @@ body {
   height: 100%;
   z-index: 5;
   pointer-events: none;
-  /* Cho phÃ©p click xuyÃªn qua Ä‘á»ƒ Ä‘iá»u khiá»ƒn game */
+  /* Cho phép click xuyên qua để điều khiển game */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -712,7 +712,7 @@ body {
   align-items: center;
   gap: 12px;
   pointer-events: auto;
-  /* Cho phÃ©p click náº¿u cÃ³ nÃºt */
+  /* Cho phép click nếu có nút */
 }
 
 .hud-icon-wrapper {
@@ -747,7 +747,7 @@ body {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
-/* Coffee counter mÃ u cam, score mÃ u vÃ ng */
+/* Coffee counter màu cam, score màu vàng */
 .coffee-counter .hud-icon-wrapper {
   background: rgba(255, 111, 0, 0.15);
   border: 1px solid var(--primary-color);
@@ -822,7 +822,7 @@ body {
   transition: width 0.3s ease;
 }
 
-/* HÆ°á»›ng dáº«n desktop */
+/* Hướng dẫn desktop */
 .instructions-panel {
   position: absolute;
   bottom: 100px;
@@ -840,7 +840,7 @@ body {
   transition: opacity 1s ease;
 }
 
-/* MÃ n hÃ¬nh Game Over */
+/* Màn hình Game Over */
 .game-over-title {
   font-family: var(--font-heading);
   font-size: 2.2rem;
@@ -908,7 +908,7 @@ body {
   color: white;
 }
 
-/* ÄIá»€U CHá»ˆNH RESPONSIVE CHO DI Äá»˜NG */
+/* ĐIỀU CHỈNH RESPONSIVE CHO DI ĐỘNG */
 @media (max-width: 480px) {
   .glass-panel {
     padding: 24px;
@@ -939,7 +939,7 @@ body {
 
   .instructions-panel {
     display: none;
-    /* áº¨n trÃªn mobile vÃ¬ dÃ¹ng vuá»‘t */
+    /* Ẩn trên mobile vì dùng vuốt */
   }
 }
 
@@ -1073,10 +1073,10 @@ body {
 }
 
 .character-avatar.car_driver-skin:after {
-  content: "ðŸš—";
+  content: "🚗";
 }
 
-/* Lá»šP PHá»¦ VIá»€N Tá»C Äá»˜ 2 BÃŠN MÃ‰P (SUBTLE SPEED VIGNETTE - Sáº®C NÃ‰T 100%) */
+/* LỚP PHỦ VIỀN TỐC ĐỘ 2 BÊN MÉP (SUBTLE SPEED VIGNETTE - SẮC NÉT 100%) */
 .speed-motion-blur {
   position: fixed;
   top: 0;
@@ -1126,8 +1126,8 @@ body {
 }
 
 /* ================================================================
-   AUDIO CONTROL PANEL - GÃ³c trÃ¡i trÃªn mÃ n hÃ¬nh
-   Glassmorphism AAA / z-index 50 (trÃªn canvas, dÆ°á»›i modal)
+   AUDIO CONTROL PANEL - Góc trái trên màn hình
+   Glassmorphism AAA / z-index 50 (trên canvas, dưới modal)
    ================================================================ */
 
 .audio-control-panel {
@@ -1140,14 +1140,14 @@ body {
   flex-direction: column;
   gap: 8px;
   align-items: flex-end;
-  /* Máº·c Ä‘á»‹nh áº©n hoÃ n toÃ n khi load trang / trong game / khi xem 360 */
+  /* Mặc định ẩn hoàn toàn khi load trang / trong game / khi xem 360 */
   opacity: 0;
   pointer-events: none;
   transform: translateX(20px);
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-/* Chá»‰ hiá»ƒn thá»‹ duy nháº¥t khi á»Ÿ Menu chÃ­nh */
+/* Chỉ hiển thị duy nhất khi ở Menu chính */
 .audio-control-panel.visible-in-menu {
   opacity: 1;
   pointer-events: auto;
@@ -1236,7 +1236,7 @@ body {
     0 0 20px rgba(0, 200, 255, 0.2);
 }
 
-/* Khi muted: viá»n Ä‘á», glow Ä‘á» */
+/* Khi muted: viền đỏ, glow đỏ */
 .mute-btn.muted {
   border-color: rgba(255, 60, 60, 0.5);
   background: rgba(30, 10, 10, 0.82);
@@ -1252,7 +1252,7 @@ body {
     0 0 24px rgba(255, 60, 60, 0.35);
 }
 
-/* Ring pulse indicator khi Ä‘ang phÃ¡t */
+/* Ring pulse indicator khi đang phát */
 .mute-ring-indicator {
   position: absolute;
   inset: -3px;
@@ -1393,7 +1393,7 @@ body {
   cursor: pointer;
 }
 
-/* Fill bar mÃ u vÃ ng-cam gradient */
+/* Fill bar màu vàng-cam gradient */
 .volume-fill-bar {
   position: absolute;
   top: 0;
@@ -1430,7 +1430,7 @@ body {
     0 0 20px rgba(160, 60, 255, 0.3);
 }
 
-/* Dot xoay nhá» gÃ³c pháº£i dÆ°á»›i button khi Ä‘ang phÃ¡t */
+/* Dot xoay nhỏ góc phải dưới button khi đang phát */
 .jukebox-spin-dot {
   position: absolute;
   bottom: 7px;
@@ -1471,11 +1471,11 @@ body {
   z-index: 200;
   display: flex;
   align-items: center;
-  /* CÄƒn giá»¯a theo chiá»u dá»c */
+  /* Căn giữa theo chiều dọc */
   justify-content: flex-end;
-  /* CÄƒn bÃªn pháº£i mÃ n hÃ¬nh */
+  /* Căn bên phải màn hình */
   padding: 16px 20px;
-  /* Chá»‰ chá»«a Ä‘Ãºng 16px trÃªn/dÆ°á»›i vÃ  20px lá» pháº£i */
+  /* Chỉ chừa đúng 16px trên/dưới và 20px lề phải */
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -1500,7 +1500,7 @@ body {
   position: relative;
   width: min(350px, 90vw);
   height: auto;
-  /* Ã”m sÃ¡t vá»«a váº·n theo ná»™i dung */
+  /* Ôm sát vừa vặn theo nội dung */
   max-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
@@ -1675,15 +1675,15 @@ body {
   overflow-x: hidden;
 }
 
-/* KHUNG CUá»˜N RIÃŠNG DÃ€NH CHO Má»¤C STREAMING HOT (Hiá»ƒn thá»‹ Ä‘Ãºng 4-5 bÃ i, cÃ¡c bÃ i sau pháº£i cuá»™n xuá»‘ng má»›i tháº¥y) */
+/* KHUNG CUỘN RIÊNG DÀNH CHO MỤC STREAMING HOT (Hiển thị đúng 4-5 bài, các bài sau phải cuộn xuống mới thấy) */
 .streaming-tracks-wrapper {
   display: flex;
   flex-direction: column;
   gap: 6px;
   max-height: 205px;
-  /* Giá»›i háº¡n vá»«a khÃ­t 4-5 bÃ i -> Muá»‘n xem bÃ i 6 & 7 báº¯t buá»™c pháº£i cuá»™n xuá»‘ng */
+  /* Giới hạn vừa khít 4-5 bài -> Muốn xem bài 6 & 7 bắt buộc phải cuộn xuống */
   overflow-y: scroll;
-  /* Báº­t thanh cuá»™n */
+  /* Bật thanh cuộn */
   overflow-x: hidden;
   padding-right: 6px;
   margin-bottom: 4px;
@@ -1694,7 +1694,7 @@ body {
   flex-shrink: 0;
 }
 
-/* Custom Scrollbar Ná»”I Báº¬T DÃ€NH RIÃŠNG CHO Má»¤C STREAMING HOT */
+/* Custom Scrollbar NỔI BẬT DÀNH RIÊNG CHO MỤC STREAMING HOT */
 .streaming-tracks-wrapper::-webkit-scrollbar {
   width: 8px;
 }
@@ -1983,14 +1983,14 @@ body {
 }
 
 /* ================================================================
-   HUD z-index fix - audio panel hiá»‡n á»Ÿ trÃªn HUD khi chÆ¡i game
+   HUD z-index fix - audio panel hiện ở trên HUD khi chơi game
    ================================================================ */
 .ui-hud {
   z-index: 20;
 }
 
 /* ================================================================
-   STREAMING TRACKS - SÆ¡n TÃ¹ng M-TP / YouTube
+   STREAMING TRACKS - Sơn Tùng M-TP / YouTube
    ================================================================ */
 
 /* Section Header divider trong Jukebox */
@@ -2016,7 +2016,7 @@ body {
   white-space: nowrap;
 }
 
-/* ðŸ”´ STREAMING badge - Ä‘á» neon */
+/* 🔴 STREAMING badge - đỏ neon */
 .streaming-badge {
   background: linear-gradient(90deg, rgba(255, 40, 80, 0.25), rgba(255, 100, 140, 0.2));
   border: 1px solid rgba(255, 60, 100, 0.5);
@@ -2024,7 +2024,7 @@ body {
   box-shadow: 0 0 8px rgba(255, 60, 100, 0.2);
 }
 
-/* â™© GAME BGM badge - tÃ­m */
+/* ♩ GAME BGM badge - tím */
 .procedural-badge {
   background: linear-gradient(90deg, rgba(120, 60, 255, 0.2), rgba(0, 180, 255, 0.15));
   border: 1px solid rgba(120, 60, 255, 0.35);
@@ -2038,7 +2038,7 @@ body {
   flex: 1;
 }
 
-/* Streaming track item - gradient há»“ng-tÃ­m Ä‘áº·c trÆ°ng */
+/* Streaming track item - gradient hồng-tím đặc trưng */
 .track-item.streaming-track {
   border-color: rgba(255, 100, 160, 0.08);
   background: rgba(255, 80, 120, 0.04);
@@ -2077,7 +2077,7 @@ body {
   animation: icon-bounce 1.2s ease-in-out infinite;
 }
 
-/* Streaming dot (cháº¥m Ä‘á» nháº¥p nhÃ¡y - tráº¡ng thÃ¡i live) */
+/* Streaming dot (chấm đỏ nhấp nháy - trạng thái live) */
 .streaming-dot {
   position: absolute;
   bottom: 2px;
@@ -2104,7 +2104,7 @@ body {
   }
 }
 
-/* áº¨n dot khi inactive Ä‘á»ƒ khÃ´ng bá»‹ nhiá»…u */
+/* Ẩn dot khi inactive để không bị nhiễu */
 .track-item:not(.active) .streaming-dot {
   opacity: 0.35;
   animation: none;
@@ -2142,7 +2142,7 @@ body {
   margin-bottom: 4px;
 }
 
-/* Loading ring spinner (khi Ä‘ang buffer YouTube) */
+/* Loading ring spinner (khi đang buffer YouTube) */
 .track-loading-ring {
   width: 14px;
   height: 14px;
@@ -2175,7 +2175,7 @@ body {
 }
 
 .track-item.streaming-track.loading .track-name::after {
-  content: ' â‹¯';
+  content: ' ⋯';
   animation: dot-blink 1s steps(3, end) infinite;
 }
 
@@ -2208,7 +2208,7 @@ body {
   background: linear-gradient(to top, #ff6b9d, #ff9fc4);
 }
 
-/* Toast notification "Äang chuyá»ƒn vá» nháº¡c máº·c Ä‘á»‹nh" */
+/* Toast notification "Đang chuyển về nhạc mặc định" */
 .stream-toast {
   position: fixed;
   bottom: 90px;
@@ -2238,10 +2238,10 @@ body {
 
 /* ================================================================
    MAIN MENU - AAA GLASSMORPHIC REDESIGN
-   Cyberpunk / Modern Arcade - ThÃ¡i BÃ¬nh Rush
+   Cyberpunk / Modern Arcade - Thái Bình Rush
    ================================================================ */
 
-/* ---- Pop-in animation khi Menu xuáº¥t hiá»‡n ---- */
+/* ---- Pop-in animation khi Menu xuất hiện ---- */
 @keyframes menu-pop-in {
   0% {
     opacity: 0;
@@ -2301,7 +2301,7 @@ body {
   }
 }
 
-/* ---- Glass Panel chÃ­nh ---- */
+/* ---- Glass Panel chính ---- */
 .menu-glass-panel {
   position: relative;
   width: min(520px, 94vw);
@@ -2320,11 +2320,11 @@ body {
   gap: 22px;
   animation: menu-pop-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 
-  /* ÄÆ°á»ng viá»n accent gradient á»Ÿ Ä‘á»‰nh */
+  /* Đường viền accent gradient ở đỉnh */
   border-top: 1.5px solid rgba(245, 158, 11, 0.55);
 }
 
-/* ÄÆ°á»ng káº» accent gradient dá»c theo viá»n trÃ¡i */
+/* Đường kẻ accent gradient dọc theo viền trái */
 .menu-glass-panel::before {
   content: '';
   position: absolute;
@@ -2380,7 +2380,7 @@ body {
   text-transform: uppercase;
 }
 
-/* ---- Ká»· Lá»¥c ---- */
+/* ---- Kỷ Lục ---- */
 .menu-highscore {
   display: flex;
   align-items: center;
@@ -2409,7 +2409,7 @@ body {
   letter-spacing: 1px;
 }
 
-/* ---- Chá»n NhÃ¢n Váº­t ---- */
+/* ---- Chọn Nhân Vật ---- */
 .char-select-section {
   display: flex;
   flex-direction: column;
@@ -2484,7 +2484,7 @@ body {
     0 8px 30px rgba(245, 158, 11, 0.35);
 }
 
-/* Hiá»‡u á»©ng glow ná»n card */
+/* Hiệu ứng glow nền card */
 .char-card-glow {
   position: absolute;
   inset: 0;
@@ -2535,7 +2535,7 @@ body {
   text-overflow: ellipsis;
 }
 
-/* ---- NÃºt HÃ nh Äá»™ng ---- */
+/* ---- Nút Hành Động ---- */
 .menu-actions-group {
   display: flex;
   flex-direction: column;
@@ -2543,7 +2543,7 @@ body {
   margin-top: 4px;
 }
 
-/* ===== NÃºt CHÆ I NGAY - Primary CTA ===== */
+/* ===== Nút CHƠI NGAY - Primary CTA ===== */
 .btn-play-now {
   position: relative;
   width: 100%;
@@ -2581,7 +2581,7 @@ body {
   box-shadow: 0 4px 14px rgba(221, 36, 118, 0.45);
 }
 
-/* Shimmer quÃ©t qua nÃºt má»—i 3 giÃ¢y */
+/* Shimmer quét qua nút mỗi 3 giây */
 .btn-play-shimmer {
   position: absolute;
   top: 0;
@@ -2607,7 +2607,7 @@ body {
   z-index: 1;
 }
 
-/* ===== NÃºt phá»¥ - Secondary: 2 cá»™t ===== */
+/* ===== Nút phụ - Secondary: 2 cột ===== */
 .menu-secondary-btns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2643,7 +2643,7 @@ body {
   transform: scale(0.94);
 }
 
-/* Cyan variant - Xem nhÃ¢n váº­t */
+/* Cyan variant - Xem nhân vật */
 .btn-neon-cyan {
   border-color: rgba(0, 210, 255, 0.45);
   color: rgba(0, 230, 255, 0.9);
@@ -2703,27 +2703,26 @@ body {
 }
 
 /* ================================================================
-   AUDIO CONTROL PANEL & TOP RIGHT BUTTONS (GÃ“C TRÃŠN BÃŠN PHáº¢I MENU)
+   AUDIO CONTROL PANEL & TOP RIGHT BUTTONS (GÓC TRÊN BÊN PHẢI MENU)
    ================================================================ */
 .audio-control-panel {
   position: fixed;
   top: 18px;
   right: 20px;
-  z-index: 9999;
+  z-index: 500;
   display: flex;
   align-items: center;
   gap: 10px;
-  pointer-events: auto !important;
-  opacity: 1;
-  visibility: visible;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .audio-control-panel.visible-in-menu {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  display: flex !important;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .audio-btn {
@@ -2856,7 +2855,7 @@ body {
    MATCH HISTORY MODAL & BUTTON STYLES
    ================================================================ */
 
-/* History Button trÃªn Top Control Panel */
+/* History Button trên Top Control Panel */
 .history-btn {
   background: rgba(245, 158, 11, 0.15);
   border-color: rgba(245, 158, 11, 0.4);
@@ -2887,7 +2886,7 @@ body {
   box-shadow: 0 0 8px #f59e0b;
 }
 
-/* Badge x10 Thá»‹t trÃªn NÃºt CHÆ I NGAY */
+/* Badge x10 Thịt trên Nút CHƠI NGAY */
 .cost-badge-meat {
   display: inline-flex;
   align-items: center;
@@ -3336,24 +3335,22 @@ body {
   top: 18px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999;
+  z-index: 100;
   display: flex;
   align-items: center;
   gap: 12px;
-  pointer-events: auto !important;
-  opacity: 1;
-  visibility: visible;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
 }
-
 .top-currency-bar.visible-in-menu {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  display: flex !important;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
-/* Resource Pill (ViÃªn nang tÃ i nguyÃªn) */
+/* Resource Pill (Viên nang tài nguyên) */
 .resource-pill {
   position: relative;
   display: flex;
