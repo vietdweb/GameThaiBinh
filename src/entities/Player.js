@@ -73,195 +73,98 @@ export class Player {
     this.buildCharacterSkin(skinId);
   }
 
+  // BẢNG CẤU HÌNH SKIN (Đã fix cho Shipper & Barista dùng hình vẽ Three.js) Code viet anh sửa start
+  SKIN_CONFIGS = {
+    student: { modelKey: 'student', targetHeight: 1.6 },
+    shipper: { customBuild: '_buildShipperSkin' }, // Gọi trực tiếp hàm vẽ Three.js thủ công
+    barista: { customBuild: '_buildBaristaSkin' }, // Gọi trực tiếp hàm vẽ Three.js thủ công
+    car_driver: { modelKey: 'lamborghini', targetWidth: 1.85, isCar: true },
+    lamborghini: { modelKey: 'lamborghini', targetWidth: 1.85, isCar: true },
+    cyberpsycho_car: { modelKey: 'cyberpsycho_car', targetWidth: 3.5, rotationY: 120 * (Math.PI / 180), isCar: true },
+    futuristic_car: { modelKey: 'futuristic_car', targetWidth: 2.2, isCar: true },
+    flying_car: { modelKey: 'flying_car', targetWidth: 3.0, isCar: true }
+  };
+
   buildCharacterSkin(skinId) {
-    if (skinId === 'student') {
-      const glbStudentModel = AssetManager.getModel('student');
-      if (glbStudentModel) {
-        const studentClone = glbStudentModel.clone();
-
-        // Tự động căn chỉnh chiều cao 1.6m và đặt chân chạm đúng mặt đất (Y = 0)
-        const bbox = new THREE.Box3().setFromObject(studentClone);
-        const size = bbox.getSize(new THREE.Vector3());
-        if (size.y > 0) {
-          const targetHeight = 1.6;
-          const scaleFactor = targetHeight / size.y;
-          studentClone.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-          const scaledBbox = new THREE.Box3().setFromObject(studentClone);
-          studentClone.position.y = -scaledBbox.min.y;
-        }
-
-        this.visualGroup.add(studentClone);
-        return;
-      }
-      this._buildAoDaiSkin();
+    const config = this.SKIN_CONFIGS[skinId];
+    if (!config) {
+      if (typeof this._buildShipperSkin === 'function') this._buildShipperSkin();
       return;
     }
 
-    const glbPlayerModel = AssetManager.getModel('player');
-    if (glbPlayerModel && skinId === 'shipper') {
-      const playerClone = glbPlayerModel.clone();
-      playerClone.position.set(0, 0, 0);
-      playerClone.scale.set(1, 1, 1);
-      this.visualGroup.add(playerClone);
+    // 1. NẾU LÀ SKIN VẼ BẰNG THREE.JS THỦ CÔNG (Shipper / Barista)
+    if (config.customBuild && typeof this[config.customBuild] === 'function') {
+      this[config.customBuild]();
+      this.saveOriginalMaterials();
       return;
     }
 
-    if (skinId === 'barista') {
-      const glbBaristaModel = AssetManager.getModel('barista');
-      if (glbBaristaModel) {
-        const baristaClone = glbBaristaModel.clone();
-        baristaClone.traverse(function (object) {
-          if (object.isMesh) {
-            if (object.name === 'vanguard_Mesh') {
-              object.castShadow = true;
-              object.receiveShadow = true;
-              object.material.metalness = 1.0;
-              object.material.roughness = 0.2;
-              object.material.color.set(1, 1, 1);
-              if (object.material.map) object.material.metalnessMap = object.material.map;
-            } else {
-              object.material.metalness = 1.0;
-              object.material.roughness = 0.0;
-              object.material.transparent = true;
-              object.material.opacity = 0.8;
-              object.material.color.set(1, 1, 1);
-            }
-          }
-        });
-
-        const bbox = new THREE.Box3().setFromObject(baristaClone);
-        const size = bbox.getSize(new THREE.Vector3());
-        if (size.y > 0) {
-          const targetHeight = 1.6;
-          const scaleFactor = targetHeight / size.y;
-          baristaClone.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-          const scaledBbox = new THREE.Box3().setFromObject(baristaClone);
-          baristaClone.position.y = -scaledBbox.min.y;
-        }
-
-        this.visualGroup.add(baristaClone);
-        this.saveOriginalMaterials();
-        return;
-      }
-
-      this._buildBaristaSkin();
-    } else if (skinId === 'lamborghini') {
-      const glbCarModel = AssetManager.getModel('lamborghini') || AssetManager.getModel('ferrari');
-      if (glbCarModel) {
-        // Lấy mô hình siêu xe đã pre-merge thành 1 Mesh nguyên khối trong bộ nhớ Cache (0ms lag khi chọn trong Menu!)
-        const carModel = glbCarModel.clone();
-
-        // 1. SỬA HƯỚNG ĐẦU XE (Đầu xe hướng về phía trước -Z theo đúng chiều đường phố)
-        carModel.rotation.y = 0;
-
-        // 2. TỐI ƯU HÓA VẬT LIỆU MƯỢT MÀ 60 FPS (Ép FrontSide & Tắt Transparent thừa)
-        carModel.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-
-            if (child.material) {
-              const materials = Array.isArray(child.material) ? child.material : [child.material];
-              materials.forEach(mat => {
-                mat.side = THREE.FrontSide; // Ép GPU render 1 chiều mượt như Student model 16MB
-                if (mat.emissive) {
-                  mat.emissive.setHex(0x000000); // Tắt hiệu ứng đèn LED phát quang thừa
-                  mat.emissiveIntensity = 0;
-                }
-                const matName = (mat.name || '').toLowerCase();
-                const nodeName = (child.name || '').toLowerCase();
-                if (!matName.includes('glass') && !nodeName.includes('glass') && mat.transparent) {
-                  mat.transparent = false;
-                  mat.depthWrite = true;
-                }
-              });
-            }
-          }
-        });
-
-        // 3. CĂN CHỈNH TỈ LỆ XE TO BỀ THẾ (1.85m) & ĐẶT XE CHÍNH GIỮA CHUẨN LÀN ĐƯỜNG
-        const bbox = new THREE.Box3().setFromObject(carModel);
-        const size = bbox.getSize(new THREE.Vector3());
-        if (size.y > 0) {
-          const targetWidth = 1.85; // Xe rộng 1.85m bề thế sang trọng
-          const scaleFactor = targetWidth / size.x;
-          carModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-          const scaledBbox = new THREE.Box3().setFromObject(carModel);
-          const scaledCenter = scaledBbox.getCenter(new THREE.Vector3());
-          carModel.position.x = -scaledCenter.x;
-          carModel.position.z = -scaledCenter.z;
-          carModel.position.y = -scaledBbox.min.y;
-        }
-
-        this.carShadowMesh = null;
-        this.visualGroup.add(carModel);
-
-        // 4. LƯU VẬT LIỆU GỐC ĐỂ KHÔI PHỤC MÀU XE BAN ĐẦU SAU KHI HẾT TĂNG TỐC (FEVER MODE / BOOST)
-        this.saveOriginalMaterials();
-        return;
-      }
-
-      this._buildCarDriverSkin();
-      // Xe CYBERPSYCHO_CAR
-    } else if (skinId === 'cyberpsycho_car') { //code tu viet them xe
-      const glbCarModel = AssetManager.getModel('cyberpsycho_car');
-      if (glbCarModel) {
-        const carModel = glbCarModel.clone();
-        carModel.rotation.y = 120 * (Math.PI / 180);
-        carModel.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-
-            if (child.material) {
-              const materials = Array.isArray(child.material) ? child.material : [child.material];
-              materials.forEach(mat => {
-                mat.side = THREE.FrontSide;
-                if (mat.emissive) {
-                  mat.emissive.setHex(0x000000);
-                  mat.emissiveIntensity = 0;
-                }
-                const matName = (mat.name || '').toLowerCase();
-                const nodeName = (child.name || '').toLowerCase();
-                if (!matName.includes('glass') && !nodeName.includes('glass') && mat.transparent) {
-                  mat.transparent = false;
-                  mat.depthWrite = true;
-                }
-              });
-            }
-          }
-        });
-
-        //Căn chỉnh kích thước cho xe Cyberpsycho
-        const bbox = new THREE.Box3().setFromObject(carModel);
-        const size = bbox.getSize(new THREE.Vector3());
-        if (size.y > 0) {
-          const targetWidth = 3.5; // Xe rộng 1.85m bề thế sang trọng
-          const scaleFactor = targetWidth / size.x;
-          carModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-          const scaledBbox = new THREE.Box3().setFromObject(carModel);
-          const scaledCenter = scaledBbox.getCenter(new THREE.Vector3());
-          carModel.position.x = -scaledCenter.x;
-          carModel.position.z = -scaledCenter.z;
-          carModel.position.y = -scaledBbox.min.y;
-        }
-
-        this.carShadowMesh = null;
-        this.visualGroup.add(carModel);
-        this.saveOriginalMaterials();
-        return;
-      }
-      this._buildCarDriverSkin(); // code tu them xe
-    } else {
-      this._buildShipperSkin();
+    // 2. NẾU LÀ SKIN LOAD TỪ FILE GLB (Student / Lamborghini / Cyberpsycho)
+    const rawModel = AssetManager.getModel(config.modelKey);
+    if (!rawModel) {
+      if (typeof this._buildShipperSkin === 'function') this._buildShipperSkin();
+      return;
     }
 
+    const modelClone = rawModel.clone();
+
+    // A. Xử lý Vật liệu (Material & Shadow)
+    modelClone.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+
+        if (config.isCar && child.material) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          materials.forEach(mat => {
+            mat.side = THREE.FrontSide;
+            if (mat.emissive) { mat.emissive.setHex(0x000000); mat.emissiveIntensity = 0; }
+            const matName = (mat.name || '').toLowerCase();
+            const nodeName = (child.name || '').toLowerCase();
+            if (!matName.includes('glass') && !nodeName.includes('glass') && mat.transparent) {
+              mat.transparent = false;
+              mat.depthWrite = true;
+            }
+          });
+        }
+      }
+    });
+
+    // B. Căn chỉnh Kích thước (Scale) & Vị trí
+    const bbox = new THREE.Box3().setFromObject(modelClone);
+    const size = bbox.getSize(new THREE.Vector3());
+
+    if (size.y > 0) {
+      if (config.targetHeight) {
+        const scaleFactor = config.targetHeight / size.y;
+        modelClone.scale.set(scaleFactor, scaleFactor, scaleFactor);
+      } else if (config.targetWidth) {
+        const scaleFactor = config.targetWidth / size.x;
+        modelClone.scale.set(scaleFactor, scaleFactor, scaleFactor);
+      } else if (config.scale) {
+        modelClone.scale.set(...config.scale);
+      }
+
+      const scaledBbox = new THREE.Box3().setFromObject(modelClone);
+      const scaledCenter = scaledBbox.getCenter(new THREE.Vector3());
+
+      if (config.isCar) {
+        modelClone.position.x = -scaledCenter.x;
+        modelClone.position.z = -scaledCenter.z;
+      }
+      modelClone.position.y = -scaledBbox.min.y;
+    }
+
+    // C. Xoay hướng xe
+    if (config.rotationY !== undefined) {
+      modelClone.rotation.y = config.rotationY;
+    }
+
+    // D. Hoàn tất & Render
+    if (config.isCar) this.carShadowMesh = null;
+    this.visualGroup.add(modelClone);
     this.saveOriginalMaterials();
-  }
+  } //Code viet anh sửa end
 
   saveOriginalMaterials() {
     this.visualGroup.traverse(child => {

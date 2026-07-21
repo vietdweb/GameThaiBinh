@@ -118,7 +118,7 @@ export class CharacterViewerManager {
     }
 
     // Load model
-    const modelKey = skinId === 'cyberpsycho_car' ? 'cyberpsycho_car' : skinId === 'student' ? 'student' : skinId;
+    const modelKey = skinId === 'car_driver' ? 'lamborghini' : skinId;
     const rawModel = AssetManager.getModel(modelKey) || AssetManager.getModel('student');
 
     let targetPos = new THREE.Vector3(0, 0.8, 0);

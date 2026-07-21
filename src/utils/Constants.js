@@ -97,6 +97,22 @@ export const CHARACTERS = {
     feverChargeBonus: 1.3,
     scoreMultBonus: 1.5,
     coffeeBonus: 1.2
+  },
+  FUTURISTIC_CAR: {
+    id: 'futuristic_car',
+    name: 'Siêu Xe Vụ Trụ',
+    desc: 'Siêu xe tương lai tăng tốc x2 điểm!',
+    feverChargeBonus: 1.4,
+    scoreMultBonus: 1.6,
+    coffeeBonus: 1.3
+  },
+  FLYING_CAR: {
+    id: 'flying_car',
+    name: 'Siêu Xe Bay Vũ Trụ',
+    desc: 'Bất chấp mọi địa hình & Tăng tốc cực đỉnh!',
+    feverChargeBonus: 1.6,
+    scoreMultBonus: 2.0,
+    coffeeBonus: 1.5
   }
 };
 

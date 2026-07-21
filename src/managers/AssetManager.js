@@ -21,7 +21,9 @@ class AssetManagerClass {
       lamborghini: '/models/lamborghini.glb',
       maple_tree: '/models/maple_tree.glb',
       pine_tree: '/models/pine_tree.glb',
-      cyberpsycho_car: '/models/cyberpsycho_car.glb'
+      cyberpsycho_car: '/models/cyberpsycho_car.glb',
+      futuristic_car: '/models/futuristic_car.glb',
+      flying_car: '/models/flying_car.glb'
     };
 
     this.pipeline.loadModels(
