@@ -289,12 +289,14 @@ export class Game {
         localStorage.setItem('saigon_high_score', this.score.toString());
       }
 
-      // Tự động lưu trận đấu mới vào Lịch Sử Đấu
-      const charConfig = CHARACTERS[this.selectedCharId] || { name: 'Nam Suố' };
+      // Tự động lưu trận đấu mới vào Lịch Sử Đấu (Fix lấy chuẩn tên nhân vật & số giây)
+      const skinKey = this.skinKeys[this.selectedSkinIndex] || 'SHIPPER';
+      const charConfig = CHARACTERS[skinKey] || { name: 'Nam Suối', id: 'shipper' };
+
       this.matchHistoryManager.saveMatch({
         score: this.score,
         coins: this.coffees || 0,
-        characterId: this.selectedCharId,
+        characterId: charConfig.id || 'shipper',
         characterName: charConfig.name,
         survivalSeconds: this.gameTimer || 0
       });
@@ -370,9 +372,7 @@ export class Game {
     });
   }
 
-  // =========================================================
-  // AUDIO CONTROL PANEL - Setup đầy đủ
-  // =========================================================
+  /* AUDIO CONTROL PANEL - Setup đầy đủ */
   _setupAudioControlPanel() {
     const am = this.audioManager;
     const dom = this.domElements;
@@ -444,7 +444,7 @@ export class Game {
       });
     }
 
-    // Event Delegation fallback cho nút Lịch sử 🏆
+    // Event Delegation fallback cho nút Lịch sử
     document.addEventListener('click', (e) => {
       const historyBtn = e.target.closest('#btn-history, .history-btn');
       if (historyBtn) {
@@ -466,10 +466,13 @@ export class Game {
         this._setHistoryOpen(false);
       });
     }
+
+    // Nút Xóa Lịch Sử - Sử dụng Game Box Confirm tùy chỉnh
     const btnClearHistoryEl = this.domElements.btnClearHistory || document.getElementById('btn-clear-history');
     if (btnClearHistoryEl) {
-      btnClearHistoryEl.addEventListener('click', () => {
-        if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử thi đấu?')) {
+      btnClearHistoryEl.addEventListener('click', async () => {
+        const confirmed = await this._showCustomConfirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử thi đấu không?');
+        if (confirmed) {
           this.matchHistoryManager.clearHistory();
           this._renderHistoryModal();
         }
@@ -571,6 +574,44 @@ export class Game {
       };
       document.addEventListener('click', restoreOnce, { once: true });
     }
+  }
+
+  /* Helper hiển thị Custom Game Confirm Modal */
+  _showCustomConfirm(message) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('confirm-modal');
+      const msgElem = modal?.querySelector('.confirm-modal-message');
+      const btnAccept = document.getElementById('btn-accept-clear');
+      const btnCancel = document.getElementById('btn-cancel-clear');
+
+      if (!modal || !btnAccept || !btnCancel) {
+        resolve(confirm(message));
+        return;
+      }
+
+      if (message && msgElem) msgElem.textContent = message;
+
+      modal.classList.remove('hidden');
+
+      const handleAccept = () => {
+        cleanup();
+        resolve(true);
+      };
+
+      const handleCancel = () => {
+        cleanup();
+        resolve(false);
+      };
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        btnAccept.removeEventListener('click', handleAccept);
+        btnCancel.removeEventListener('click', handleCancel);
+      };
+
+      btnAccept.addEventListener('click', handleAccept);
+      btnCancel.addEventListener('click', handleCancel);
+    });
   }
 
   /**
@@ -1163,6 +1204,7 @@ export class Game {
 
     this.score = 0;
     this.coffees = 0;
+    this.gameTimer = 0;
     this.feverEnergy = 0;
     this.isFeverActive = false;
     this.feverTimer = 0;
@@ -1608,13 +1650,17 @@ export class Game {
     }
     this.currentSpeed = THREE.MathUtils.lerp(this.currentSpeed, targetSpeed, deltaTime * 2);
 
-    // --- 2. Tính điểm ---
+    // --- 2. Tính điểm & Thời gian sinh tồn ---
     const skinKey = this.skinKeys[this.selectedSkinIndex] || 'SHIPPER';
     const perk = CHARACTERS[skinKey] || CHARACTERS.SHIPPER;
     const scoreMult = (this.doubleScoreTimer > 0 ? 2 : 1) * (perk.scoreMultBonus || 1.0);
 
     const scoreGain = (this.isFeverActive || this.boostTimer > 0 ? 40 : 15) * deltaTime * scoreMult;
     this.score += scoreGain;
+
+    // Cộng dồn thời gian chơi tính theo giây
+    this.gameTimer = (this.gameTimer || 0) + deltaTime;
+
     this._updateHUDDisplay();
 
     // --- 3. Xử lý FOV camera, Motion Blur, Camera Shake & Audio Shift khi Tăng tốc ---
@@ -1709,8 +1755,6 @@ export class Game {
         }
       );
 
-      // Nếu Khiên Nón Lá vừa đỡ 1 va chạm làm player.hasShield chuyển từ true -> false
-      // lập tức gọi _updateHUDDisplay() để gỡ ngay thẻ Khiên khỏi màn hình!
       if (hadShieldBefore && this.player && !this.player.hasShield) {
         this._updateHUDDisplay();
       }
@@ -1721,7 +1765,6 @@ export class Game {
       const col = this.collectibles[i];
       col.update(deltaTime, this.currentSpeed, playerPos, this.isFeverActive || this.boostTimer > 0);
 
-      // Kiểm tra thu thập
       if (playerPos && col.checkCollection(playerPos)) {
         const pType = col.type;
         col.collect();
@@ -1735,7 +1778,6 @@ export class Game {
         continue;
       }
 
-      // Dọn dẹp item đã qua camera
       if (col.meshGroup.position.z > 15) {
         col.dispose();
         this.collectibles.splice(i, 1);

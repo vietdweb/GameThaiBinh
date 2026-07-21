@@ -1431,19 +1431,6 @@ body {
     0 0 20px rgba(160, 60, 255, 0.3);
 }
 
-/* Dot xoay nhỏ góc phải dưới button khi đang phát */
-.jukebox-spin-dot {
-  position: absolute;
-  bottom: 7px;
-  right: 7px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #a040ff;
-  box-shadow: 0 0 8px #a040ff;
-  animation: spin-dot-pulse 1.8s ease-in-out infinite;
-}
-
 @keyframes spin-dot-pulse {
 
   0%,
@@ -1457,10 +1444,6 @@ body {
     opacity: 0.4;
   }
 }
-
-/* ================================================================
-   JUKEBOX MODAL
-   ================================================================ */
 
 /* ================================================================
    JUKEBOX MODAL
@@ -2890,19 +2873,6 @@ body {
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
 }
 
-/* Chấm nhỏ góc nút */
-.history-badge-dot {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #00e5ff;
-  /* Đổi sang màu xanh Neon đồng bộ */
-  box-shadow: 0 0 8px #00e5ff;
-}
-
 /* Badge x10 Thịt trên Nút CHƠI NGAY */
 .cost-badge-meat {
   display: inline-flex;
@@ -3273,14 +3243,19 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  text-align: right;
+  margin-left: auto;
+  margin-right: 12px;
 }
 
 .match-score {
   font-family: var(--font-number, 'Rajdhani', sans-serif);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: #00e5ff;
-  line-height: 1.1;
+  line-height: 1.2;
+  text-align: right;
+  width: 100%;
 }
 
 .match-card.is-new-record .match-score {
@@ -3291,9 +3266,11 @@ body {
 .match-meta-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 10px;
   font-size: 11px;
   color: rgba(200, 200, 240, 0.7);
+  width: 100%;
 }
 
 .match-right {
@@ -3669,4 +3646,129 @@ body {
 .btn-alert-close:hover {
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
+}
+
+/* CONFIRM MODAL GAME BOX - XÁC NHẬN XÓA LỊCH SỬ */
+.confirm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  pointer-events: auto;
+}
+
+.confirm-modal-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Glass Panel Box */
+.confirm-modal-box {
+  background: rgba(12, 16, 32, 0.95);
+  border: 1px solid rgba(255, 70, 85, 0.4);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.85),
+    0 0 30px rgba(255, 70, 85, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px 28px;
+  width: 90%;
+  max-width: 380px;
+  text-align: center;
+  transform: scale(1);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.confirm-modal-overlay.hidden .confirm-modal-box {
+  transform: scale(0.85);
+}
+
+.confirm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.confirm-modal-header .warning-icon {
+  font-size: 1.4rem;
+  filter: drop-shadow(0 0 8px rgba(255, 70, 85, 0.6));
+}
+
+.confirm-modal-header h3 {
+  font-family: var(--font-heading);
+  color: #ff4655;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(255, 70, 85, 0.5);
+}
+
+.confirm-modal-message {
+  font-family: var(--font-body);
+  color: #e0e0e0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* Nút bấm Confirm */
+.btn-confirm {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ff4655 0%, #b3002d 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(255, 70, 85, 0.4);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #ff5e6c 0%, #d60036 100%);
+  box-shadow: 0 6px 22px rgba(255, 70, 85, 0.7);
+  transform: translateY(-2px);
+}
+
+.btn-danger:active,
+.btn-cancel:active {
+  transform: translateY(1px);
 }
