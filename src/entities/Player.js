@@ -72,7 +72,7 @@ export class Player {
     }
     this.buildCharacterSkin(skinId);
   }
-
+  // code viet anh fix start
   buildCharacterSkin(skinId) {
     // Lấy cấu hình trực tiếp từ Constants.js dựa vào id (hoặc modelKey)
     const config = Object.values(CHARACTERS).find(c => c.id === skinId || c.modelKey === skinId);
@@ -159,49 +159,39 @@ export class Player {
   }
 
   saveOriginalMaterials() {
-    this.visualGroup.traverse(child => {
-      if (child.isMesh && child.material) {
-        if (!Array.isArray(child.material)) {
-          child.material = child.material.clone();
-          if (child.material.color) {
-            child.userData.originalColor = child.material.color.clone();
-          }
-          if (child.material.emissive) {
-            child.userData.originalEmissive = child.material.emissive.clone();
-            child.userData.originalEmissiveIntensity = child.material.emissiveIntensity || 0;
-          }
-        }
+    this.visualGroup.traverse((child) => {
+      if (!child.isMesh || !child.material || Array.isArray(child.material)) return;
+      child.material = child.material.clone();
+      const { color, emissive, emissiveIntensity } = child.material;
+      if (color) child.userData.originalColor = color.clone();
+      if (emissive) {
+        child.userData.originalEmissive = emissive.clone();
+        child.userData.originalEmissiveIntensity = emissiveIntensity || 0;
       }
     });
   }
 
   restoreOriginalSkin() {
-    this.stopSliding();
+    this.stopSliding?.();
     this.visualGroup.scale.set(1.0, 1.0, 1.0);
     this.visualGroup.rotation.set(0, 0, 0);
 
-    this.visualGroup.traverse(child => {
-      if (child.isMesh && child.material) {
-        if (child.userData.originalColor && child.material.color) {
-          child.material.color.copy(child.userData.originalColor);
-        }
-        if (child.material.emissive) {
-          if (child.userData.originalEmissive) {
-            child.material.emissive.copy(child.userData.originalEmissive);
-            child.material.emissiveIntensity = child.userData.originalEmissiveIntensity || 0;
-          } else {
-            child.material.emissive.setHex(0x000000);
-            child.material.emissiveIntensity = 0;
-          }
-        }
+    this.visualGroup.traverse((child) => {
+      const mat = child.material;
+      if (!child.isMesh || !mat) return;
+
+      if (child.userData.originalColor) mat.color?.copy(child.userData.originalColor);
+      if (mat.emissive) {
+        mat.emissive.copy(child.userData.originalEmissive || new THREE.Color(0x000000));
+        mat.emissiveIntensity = child.userData.originalEmissiveIntensity ?? 0;
       }
     });
 
     if (this.boostAuraRing) {
       this.boostAuraRing.visible = false;
-      this.boostAuraRing.material.opacity = 0;
+      if (this.boostAuraRing.material) this.boostAuraRing.material.opacity = 0;
     }
-  }
+  } // code viet anh fix end
 
   _buildShipperSkin() {
     // 1. Thân xe tay ga công nghệ khí động học (Sleek Tech Scooter / Motorbike)

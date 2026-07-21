@@ -123,7 +123,6 @@ export const CHARACTERS = {
     modelKey: 'futuristic_car',
     modelPath: '/models/futuristic_car.glb',
     targetWidth: 2.2,
-    rotationY: Math.PI,
     isCar: true
   },
   FLYING_CAR: {
