@@ -1,12 +1,12 @@
 ﻿/**
- * CurrencyManager - Quáº£n lÃ½ TÃ i NguyÃªn (Meat Energy, Gold Coins, Gems) & LocalStorage
+ * CurrencyManager - Quản lý Tài Nguyên (Meat Energy, Gold Coins, Gems) & LocalStorage
  */
 const CURRENCY_KEY = 'tb_rush_currency';
 
 const DEFAULT_CURRENCY = {
   coins: 0,
   gems: 50,
-  meat: 1000 // Táº·ng 1000 thá»‹t free khi láº§n Ä‘áº§u vÃ o game
+  meat: 1000 // Tặng 1000 thịt free khi lần đầu vào game
 };
 
 export class CurrencyManager {
@@ -15,7 +15,7 @@ export class CurrencyManager {
   }
 
   /**
-   * Äá»c tÃ i nguyÃªn tá»« localStorage hoáº·c khá»Ÿi táº¡o máº·c Ä‘á»‹nh 1000 thá»‹t
+   * Đọc tài nguyên từ localStorage hoặc khởi tạo mặc định 1000 thịt
    */
   _loadData() {
     try {
@@ -31,13 +31,13 @@ export class CurrencyManager {
     } catch (e) {
       console.warn('[CurrencyManager] Error loading currency data:', e);
     }
-    // Khá»Ÿi táº¡o máº·c Ä‘á»‹nh cho ngÆ°á»i chÆ¡i má»›i
+    // Khởi tạo mặc định cho người chơi mới
     this._saveData(DEFAULT_CURRENCY);
     return { ...DEFAULT_CURRENCY };
   }
 
   /**
-   * Äá»“ng bá»™ dá»¯ liá»‡u vÃ o localStorage
+   * Đồng bộ dữ liệu vào localStorage
    */
   _saveData(data = this.data) {
     try {
@@ -48,21 +48,21 @@ export class CurrencyManager {
   }
 
   /**
-   * Láº¥y sá»‘ lÆ°á»£ng tÃ i nguyÃªn hiá»‡n táº¡i
+   * Lấy số lượng tài nguyên hiện tại
    */
   getCurrencies() {
     return this.data;
   }
 
   /**
-   * Kiá»ƒm tra xem cÃ³ Ä‘á»§ Thá»‹t khÃ´ng (máº·c Ä‘á»‹nh cáº§n 10 thá»‹t Ä‘á»ƒ chÆ¡i)
+   * Kiểm tra xem có đủ Thịt không (mặc định cần 10 thịt để chơi)
    */
   hasEnoughMeat(amount = 10) {
     return this.data.meat >= amount;
   }
 
   /**
-   * Trá»« Thá»‹t khi vÃ o tráº­n Ä‘áº¥u (VD: trá»« 10 thá»‹t)
+   * Trừ Thịt khi vào trận đấu (VD: trừ 10 thịt)
    */
   deductMeat(amount = 10) {
     if (this.data.meat < amount) {
@@ -75,7 +75,7 @@ export class CurrencyManager {
   }
 
   /**
-   * ThÃªm Xu thu tháº­p Ä‘Æ°á»£c sau tráº­n Ä‘áº¥u
+   * Thêm Xu thu thập được sau trận đấu
    */
   addCoins(amount) {
     if (!amount || amount <= 0) return;
@@ -85,7 +85,7 @@ export class CurrencyManager {
   }
 
   /**
-   * ThÃªm Kim CÆ°Æ¡ng
+   * Thêm Kim Cương
    */
   addGems(amount) {
     if (!amount || amount <= 0) return;
@@ -95,7 +95,7 @@ export class CurrencyManager {
   }
 
   /**
-   * ThÃªm/Náº¡p Thá»‹t Thá»ƒ Lá»±c
+   * Thêm/Nạp Thịt Thể Lực
    */
   addMeat(amount) {
     if (!amount || amount <= 0) return;
@@ -105,7 +105,7 @@ export class CurrencyManager {
   }
 
   /**
-   * Äá»‹nh dáº¡ng sá»‘ Ä‘áº¹p (VD: 1000 -> 1,000; 24500 -> 24.5K)
+   * Định dạng số đẹp (VD: 1000 -> 1,000; 24500 -> 24.5K)
    */
   formatNumber(num) {
     if (num >= 1000000) {
@@ -118,7 +118,7 @@ export class CurrencyManager {
   }
 
   /**
-   * Cáº­p nháº­t sá»‘ dÆ° trÃªn giao diá»‡n Top Bar HUD
+   * Cập nhật số dư trên giao diện Top Bar HUD
    */
   updateUI(changedElementId = null) {
     const elMeat = document.getElementById('val-meat');
@@ -129,7 +129,7 @@ export class CurrencyManager {
     if (elCoins) elCoins.textContent = this.formatNumber(this.data.coins);
     if (elGems) elGems.textContent = this.formatNumber(this.data.gems);
 
-    // KÃ­ch hoáº¡t hiá»‡u á»©ng pop-scale náº¿u cÃ³ thay Ä‘á»•i
+    // Kích hoạt hiệu ứng pop-scale nếu có thay đổi
     if (changedElementId) {
       const el = document.getElementById(changedElementId);
       if (el) {

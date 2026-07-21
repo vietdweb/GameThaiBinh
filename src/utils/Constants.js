@@ -34,12 +34,12 @@ export const GAME_CONFIG = {
   MAX_SPEED: 35,        // Tốc độ giới hạn tối đa
   FEVER_SPEED_MULTIPLIER: 1.5, // Hệ số nhân tốc độ khi Fever Mode
   FEVER_DURATION: 7000,  // Thời gian Fever Mode (ms)
-  
+
   // Tầm nhìn camera và môi trường
   CAMERA_FOV: 60,
   CAMERA_FEVER_FOV: 75,
   CAMERA_LERP_SPEED: 5,
-  
+
   ROAD_SEGMENT_LENGTH: 40, // Độ dài mỗi block đường chạy (Z)
   VISIBLE_ROAD_SEGMENTS: 6 // Số lượng block đường chạy kết xuất đồng thời (phủ đủ 240m)
 };
@@ -89,6 +89,14 @@ export const CHARACTERS = {
     feverChargeBonus: 1.15,
     scoreMultBonus: 1.2,
     coffeeBonus: 1.1
+  },
+  CYBERPSYCHO: {
+    id: 'cyberpsycho_car',
+    name: 'Cyberpsycho Supercar',
+    desc: 'Siêu xe Cyberpunk cực ngầu!',
+    feverChargeBonus: 1.3,
+    scoreMultBonus: 1.5,
+    coffeeBonus: 1.2
   }
 };
 

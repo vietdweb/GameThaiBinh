@@ -205,6 +205,56 @@ export class Player {
       }
 
       this._buildCarDriverSkin();
+    } else if (skinId === 'cyberpsycho_car') { //code tu viet them xe
+      const glbCarModel = AssetManager.getModel('cyberpsycho_car');
+      if (glbCarModel) {
+        const carModel = glbCarModel.clone();
+        carModel.rotation.y = 0;
+        carModel.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+
+            if (child.material) {
+              const materials = Array.isArray(child.material) ? child.material : [child.material];
+              materials.forEach(mat => {
+                mat.side = THREE.FrontSide;
+                if (mat.emissive) {
+                  mat.emissive.setHex(0x000000);
+                  mat.emissiveIntensity = 0;
+                }
+                const matName = (mat.name || '').toLowerCase();
+                const nodeName = (child.name || '').toLowerCase();
+                if (!matName.includes('glass') && !nodeName.includes('glass') && mat.transparent) {
+                  mat.transparent = false;
+                  mat.depthWrite = true;
+                }
+              });
+            }
+          }
+        });
+
+        //Căn chỉnh kích thước cho xe Cyberpsycho
+        const bbox = new THREE.Box3().setFromObject(carModel);
+        const size = bbox.getSize(new THREE.Vector3());
+        if (size.y > 0) {
+          const targetWidth = 1.85; // Xe rộng 1.85m bề thế sang trọng
+          const scaleFactor = targetWidth / size.x;
+          carModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+          const scaledBbox = new THREE.Box3().setFromObject(carModel);
+          const scaledCenter = scaledBbox.getCenter(new THREE.Vector3());
+          carModel.position.x = -scaledCenter.x;
+          carModel.position.z = -scaledCenter.z;
+          carModel.position.y = -scaledBbox.min.y;
+        }
+
+        this.carShadowMesh = null;
+        this.visualGroup.add(carModel);
+        this.saveOriginalMaterials();
+        return;
+      }
+      this._buildCarDriverSkin(); // code tu them xe
     } else {
       this._buildShipperSkin();
     }
@@ -732,7 +782,7 @@ export class Player {
       this.meshGroup.position.y = effectiveGroundY;
       this.isJumping = false;
       this.velocityY = 0;
-      
+
       this.isSliding = true;
       this.slideTimer = PHYSICS.SLIDE_DURATION;
       this.visualGroup.scale.y = 0.5;
