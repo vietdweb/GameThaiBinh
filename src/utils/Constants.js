@@ -1,4 +1,4 @@
-// Hằng số cấu hình cho Sài Gòn Rush
+// Hằng số cấu hình cho Thái Bình Rush Code viet anh sửa start
 
 export const GAME_STATES = {
   LOADING: 'LOADING',
@@ -57,6 +57,7 @@ export const POWERUP_CONFIG = {
   HIGH_JUMP_DURATION: 8000      // 8 giây
 };
 
+// Danh sách Nhân vật & Siêu xe (Tập trung dữ liệu 1 nơi duy nhất)
 export const CHARACTERS = {
   SHIPPER: {
     id: 'shipper',
@@ -64,7 +65,8 @@ export const CHARACTERS = {
     desc: '+10% tốc độ sạc Fever Mode',
     feverChargeBonus: 1.1,
     scoreMultBonus: 1.0,
-    coffeeBonus: 1.0
+    coffeeBonus: 1.0,
+    customBuild: '_buildShipperSkin'
   },
   STUDENT: {
     id: 'student',
@@ -72,7 +74,10 @@ export const CHARACTERS = {
     desc: '+15% hệ số điểm số tổng',
     feverChargeBonus: 1.0,
     scoreMultBonus: 1.15,
-    coffeeBonus: 1.0
+    coffeeBonus: 1.0,
+    modelKey: 'student',
+    modelPath: '/models/student.glb',
+    targetHeight: 1.6
   },
   BARISTA: {
     id: 'barista',
@@ -80,7 +85,8 @@ export const CHARACTERS = {
     desc: '+25% điểm bonus khi nhặt cà phê',
     feverChargeBonus: 1.0,
     scoreMultBonus: 1.0,
-    coffeeBonus: 1.25
+    coffeeBonus: 1.25,
+    customBuild: '_buildBaristaSkin'
   },
   LAMBORGHINI: {
     id: 'lamborghini',
@@ -88,7 +94,11 @@ export const CHARACTERS = {
     desc: '+20% tổng điểm & Khung xe bọc thép sang trọng',
     feverChargeBonus: 1.15,
     scoreMultBonus: 1.2,
-    coffeeBonus: 1.1
+    coffeeBonus: 1.1,
+    modelKey: 'lamborghini',
+    modelPath: '/models/lamborghini.glb',
+    targetWidth: 1.85,
+    isCar: true
   },
   CYBERPSYCHO: {
     id: 'cyberpsycho_car',
@@ -96,7 +106,12 @@ export const CHARACTERS = {
     desc: 'Siêu xe Cyberpunk cực ngầu!',
     feverChargeBonus: 1.3,
     scoreMultBonus: 1.5,
-    coffeeBonus: 1.2
+    coffeeBonus: 1.2,
+    modelKey: 'cyberpsycho_car',
+    modelPath: '/models/cyberpsycho_car.glb',
+    targetWidth: 3.5,
+    rotationY: 120 * (Math.PI / 180),
+    isCar: true
   },
   FUTURISTIC_CAR: {
     id: 'futuristic_car',
@@ -104,7 +119,12 @@ export const CHARACTERS = {
     desc: 'Siêu xe tương lai tăng tốc x2 điểm!',
     feverChargeBonus: 1.4,
     scoreMultBonus: 1.6,
-    coffeeBonus: 1.3
+    coffeeBonus: 1.3,
+    modelKey: 'futuristic_car',
+    modelPath: '/models/futuristic_car.glb',
+    targetWidth: 2.2,
+    rotationY: Math.PI,
+    isCar: true
   },
   FLYING_CAR: {
     id: 'flying_car',
@@ -112,7 +132,31 @@ export const CHARACTERS = {
     desc: 'Bất chấp mọi địa hình & Tăng tốc cực đỉnh!',
     feverChargeBonus: 1.6,
     scoreMultBonus: 2.0,
-    coffeeBonus: 1.5
+    coffeeBonus: 1.5,
+    modelKey: 'flying_car',
+    modelPath: '/models/flying_car.glb',
+    targetWidth: 2.4,
+    rotationY: Math.PI,
+    isCar: true
+  },
+  ORION_SKYLARK: {
+    id: 'orion_skylark',
+    name: 'Siêu Xe Orion Skylark',
+    desc: 'Thiết kế khí động học siêu cấp!',
+    feverChargeBonus: 1.7,
+    scoreMultBonus: 2.2,
+    coffeeBonus: 1.6,
+    modelKey: 'orion_skylark',
+    modelPath: '/models/orion_skylark.glb',
+    targetWidth: 4.0,
+    rotationY: Math.PI / 2,
+    isCar: true
   }
 };
 
+// Môi trường cây cối
+export const EXTRA_MODELS = {
+  maple_tree: '/models/maple_tree.glb',
+  pine_tree: '/models/pine_tree.glb'
+};
+//Code viet anh sửa end

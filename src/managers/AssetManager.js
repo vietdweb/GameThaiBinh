@@ -1,6 +1,6 @@
-import * as THREE from 'three';
+import * as THREE from 'three'; //Code viet anh sửa start
 import { PipelineManager } from './ModelPipelineManager.js';
-import { createPremiumStylizedTree } from '../entities/StylizedTree.js';
+import { CHARACTERS, EXTRA_MODELS } from '../utils/Constants.js';
 
 class AssetManagerClass {
   constructor() {
@@ -8,23 +8,25 @@ class AssetManagerClass {
     this.loaded = false;
   }
 
+  // Tải TOÀN BỘ model GLB ngay khi bật game -> Đảm bảo Showroom & Game không bao giờ bị trắng/mất model
   loadAll(onProgress, onLoad) {
     if (this.loaded) {
       if (onLoad) onLoad();
       return;
     }
 
-    // Danh sách các mô hình GLB thực tế trong public/models/
-    const modelsToLoad = {
-      student: '/models/student.glb',
-      ferrari: '/models/ferrari.glb',
-      lamborghini: '/models/lamborghini.glb',
-      maple_tree: '/models/maple_tree.glb',
-      pine_tree: '/models/pine_tree.glb',
-      cyberpsycho_car: '/models/cyberpsycho_car.glb',
-      futuristic_car: '/models/futuristic_car.glb',
-      flying_car: '/models/flying_car.glb'
-    };
+    // Tự động gom toàn bộ file GLB khai báo từ Constants
+    const modelsToLoad = { ...EXTRA_MODELS };
+
+    Object.values(CHARACTERS).forEach((char) => {
+      if (char.modelKey && char.modelPath) {
+        modelsToLoad[char.modelKey] = char.modelPath;
+      }
+    });
+
+    // Thêm các alias để tương thích ngược 100% với code cũ
+    if (modelsToLoad.student) modelsToLoad.player = modelsToLoad.student;
+    if (modelsToLoad.lamborghini) modelsToLoad.car_driver = modelsToLoad.lamborghini;
 
     this.pipeline.loadModels(
       modelsToLoad,
@@ -48,7 +50,6 @@ class AssetManagerClass {
 
   /**
    * Khởi tạo cụm InstancedMesh cho mô hình Cây 3D (maple_tree.glb hoặc pine_tree.glb)
-   * Gộp geometry theo material, giảm Draw Calls xuống còn 1-2 Draw Calls duy nhất!
    */
   createInstancedTreeGroup(modelKey = 'maple_tree', maxCount = 100, targetHeight = 5.8) {
     return this.pipeline.createInstancedTreeGroup(modelKey, maxCount, targetHeight);
@@ -56,3 +57,4 @@ class AssetManagerClass {
 }
 
 export const AssetManager = new AssetManagerClass();
+//Code viet anh sửa end

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LANE, PHYSICS } from '../utils/Constants.js';
+import { LANE, PHYSICS, CHARACTERS } from '../utils/Constants.js';
 import { AssetManager } from '../managers/AssetManager.js';
 
 export class Player {
@@ -73,20 +73,10 @@ export class Player {
     this.buildCharacterSkin(skinId);
   }
 
-  // BẢNG CẤU HÌNH SKIN (Đã fix cho Shipper & Barista dùng hình vẽ Three.js) Code viet anh sửa start
-  SKIN_CONFIGS = {
-    student: { modelKey: 'student', targetHeight: 1.6 },
-    shipper: { customBuild: '_buildShipperSkin' }, // Gọi trực tiếp hàm vẽ Three.js thủ công
-    barista: { customBuild: '_buildBaristaSkin' }, // Gọi trực tiếp hàm vẽ Three.js thủ công
-    car_driver: { modelKey: 'lamborghini', targetWidth: 1.85, isCar: true },
-    lamborghini: { modelKey: 'lamborghini', targetWidth: 1.85, isCar: true },
-    cyberpsycho_car: { modelKey: 'cyberpsycho_car', targetWidth: 3.5, rotationY: 120 * (Math.PI / 180), isCar: true },
-    futuristic_car: { modelKey: 'futuristic_car', targetWidth: 2.2, isCar: true },
-    flying_car: { modelKey: 'flying_car', targetWidth: 3.0, isCar: true }
-  };
-
   buildCharacterSkin(skinId) {
-    const config = this.SKIN_CONFIGS[skinId];
+    // Lấy cấu hình trực tiếp từ Constants.js dựa vào id (hoặc modelKey)
+    const config = Object.values(CHARACTERS).find(c => c.id === skinId || c.modelKey === skinId);
+
     if (!config) {
       if (typeof this._buildShipperSkin === 'function') this._buildShipperSkin();
       return;
@@ -99,8 +89,10 @@ export class Player {
       return;
     }
 
-    // 2. NẾU LÀ SKIN LOAD TỪ FILE GLB (Student / Lamborghini / Cyberpsycho)
-    const rawModel = AssetManager.getModel(config.modelKey);
+    // 2. NẾU LÀ SKIN LOAD TỪ FILE GLB (Student / Lamborghini / Cyberpsycho / Orion Skylark...)
+    const modelKey = config.modelKey || skinId;
+    const rawModel = AssetManager.getModel(modelKey);
+
     if (!rawModel) {
       if (typeof this._buildShipperSkin === 'function') this._buildShipperSkin();
       return;
@@ -164,7 +156,7 @@ export class Player {
     if (config.isCar) this.carShadowMesh = null;
     this.visualGroup.add(modelClone);
     this.saveOriginalMaterials();
-  } //Code viet anh sửa end
+  }
 
   saveOriginalMaterials() {
     this.visualGroup.traverse(child => {
