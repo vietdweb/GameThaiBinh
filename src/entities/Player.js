@@ -660,7 +660,10 @@ export class Player {
   }
 
   jump() {
-    if (!this.isJumping && !this.isSliding) {
+    if (this.isSliding) {
+      this.stopSliding();
+    }
+    if (!this.isJumping) {
       this.isJumping = true;
       const force = this.isHighJumpActive ? PHYSICS.HIGH_JUMP_FORCE : PHYSICS.JUMP_FORCE;
       this.velocityY = force;
@@ -679,16 +682,13 @@ export class Player {
 
   slide() {
     if (this.isJumping) {
-      // Bấm nút xuống trong khi nhảy -> lập tức cho nhân vật cúi xuống (tiếp đất ngay lập tức và bắt đầu trượt)
-      const effectiveGroundY = PHYSICS.PLAYER_GROUND_Y + this.currentPlatformY;
-      this.meshGroup.position.y = effectiveGroundY;
+      this.velocityY = -PHYSICS.JUMP_FORCE * 0.8;
       this.isJumping = false;
-      this.velocityY = 0;
-
       this.isSliding = true;
       this.slideTimer = PHYSICS.SLIDE_DURATION;
       this.visualGroup.scale.y = 0.5;
-    } else if (!this.isSliding) {
+    }
+    else if (!this.isSliding) {
       this.isSliding = true;
       this.slideTimer = PHYSICS.SLIDE_DURATION;
       this.visualGroup.scale.y = 0.5;

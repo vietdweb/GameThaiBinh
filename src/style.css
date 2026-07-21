@@ -432,6 +432,7 @@ body {
 }
 
 .character-avatar::after {
+  content: "\1F6F5";
   content: "🛵";
   font-size: 1.8rem;
   position: absolute;
@@ -2853,29 +2854,43 @@ body {
    MATCH HISTORY MODAL & BUTTON STYLES
    ================================================================ */
 
-/* History Button trên Top Control Panel */
+/* History Button trên Top Control Panel (Fix tông màu tối & Icon) */
 .history-btn {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.4);
-  color: #fbbf24;
+  background: rgba(22, 24, 35, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  position: relative;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease-in-out;
 }
 
 .history-btn:hover {
-  background: rgba(245, 158, 11, 0.3);
-  border-color: rgba(245, 158, 11, 0.8);
-  color: #fff;
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+  transform: translateY(-2px) scale(1.08) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  background: rgba(22, 28, 52, 0.95) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 229, 255, 0.3) !important;
+  color: #fff !important;
 }
 
+/* Định dạng Icon Cúp bên trong nút */
 .history-lucide-icon,
 .history-emoji-icon {
-  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.6));
+  color: #ffffff;
+  stroke: #ffffff;
+  font-style: normal;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
 }
 
+/* Chấm nhỏ góc nút */
 .history-badge-dot {
   position: absolute;
   top: 5px;
@@ -2883,8 +2898,9 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #f59e0b;
-  box-shadow: 0 0 8px #f59e0b;
+  background: #00e5ff;
+  /* Đổi sang màu xanh Neon đồng bộ */
+  box-shadow: 0 0 8px #00e5ff;
 }
 
 /* Badge x10 Thịt trên Nút CHƠI NGAY */
