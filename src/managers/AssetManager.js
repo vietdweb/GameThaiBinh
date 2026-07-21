@@ -16,11 +16,9 @@ class AssetManagerClass {
 
     // Danh sách các mô hình GLB thực tế trong public/models/
     const modelsToLoad = {
-      player: '/models/student.glb',
       student: '/models/student.glb',
       ferrari: '/models/ferrari.glb',
       lamborghini: '/models/lamborghini.glb',
-      car_driver: '/models/lamborghini.glb',
       maple_tree: '/models/maple_tree.glb',
       pine_tree: '/models/pine_tree.glb',
       cyberpsycho_car: '/models/cyberpsycho_car.glb'

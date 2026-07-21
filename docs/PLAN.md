@@ -148,7 +148,7 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
 
 ### Checklist công việc chi tiết
 - [x] **Task 7.1: Định nghĩa cấu hình hằng số cho Power-ups & Character Skins**
-  - [x] Bổ sung `POWERUP_TYPES` (`SHIELD`, `DOUBLE_SCORE`, `BOOST`), `POWERUP_CONFIG` và `CHARACTERS` (`SHIPPER`, `AO_DAI`, `BARISTA`) trong `src/utils/Constants.js`.
+  - [x] Bổ sung `POWERUP_TYPES` (`SHIELD`, `DOUBLE_SCORE`, `BOOST`), `POWERUP_CONFIG` và `CHARACTERS` `BARISTA`) trong `src/utils/Constants.js`.
 - [x] **Task 7.2: Hệ thống Chọn Nhân vật & Skin Models**
   - [x] Xây dựng 3 mô hình 3D xe & trang phục low-poly độc đáo trong `Player.js`: Anh Shipper Công Nghệ (Scooter xanh), Nữ Sinh Áo Dài (Vespa trắng), Anh Chàng Barista (Scooter nâu hoài cổ).
   - [x] Tích hợp hiệu ứng Giáp Nón Lá 3D xoay mượt mà với hào quang vàng kim bao quanh nhân vật.
@@ -191,13 +191,13 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
 
 ---
 
-## Phase 12: Thêm Nhân Vật Thứ 4 "Đại Gia Đi Ô Tô" (CAR_DRIVER)
+## Phase 12: Thêm Nhân Vật Thứ 4 "Đại Gia Đi Ô Tô" (LAMBORGHINI)
 **Mục tiêu:** Bổ sung lựa chọn nhân vật thứ 4 đi xe Ô tô 3D thể thao sang trọng kèm hiệu ứng perk +20% điểm số tổng.
 
 ### Checklist công việc chi tiết
 - [x] **Task 12.1: Cấu hình `Constants.js` & Avatar UI (`style.css`)**
-  - [x] Thêm `CAR_DRIVER` với tên "Đại Gia Đi Ô Tô" & perk `scoreMultBonus: 1.2`.
-  - [x] Thêm class CSS `.character-avatar.car_driver-skin` với icon biểu tượng 🚗.
+  - [x] Thêm `LAMBORGHINI` với tên "Đại Gia Đi Ô Tô" & perk `scoreMultBonus: 1.2`.
+  - [x] Thêm class CSS `.character-avatar.LAMBORGHINI-skin` với icon biểu tượng 🚗.
 - [x] **Task 12.2: Lập trình Mô Hình 3D Ô Tô & Quý Ông Lái Xe (`Player.js`)**
   - [x] Thân xe sedan/coupe 3D mượt mà màu xanh navy ánh kim (`0x0d47a1`, `metalness: 0.85`), lưới tản nhiệt mạ vàng và kính chắn gió mờ.
   - [x] 4 bánh xe cao su mâm mạ crom và hệ thống đèn LED pha trắng + đèn hậu đỏ.
@@ -242,20 +242,6 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
 
 ---
 
-## Phase 17: Nạp Trực Tiếp Mô Hình 3D Siêu Xe Ferrari 458 Italia (`ferrari.glb`)
-**Mục tiêu:** Tải và nạp trực tiếp mô hình 3D thực tế `ferrari.glb` (1.68 MB) và shadow texture `ferrari_ao.png` vào game cho nhân vật thứ 4, đạt độ chính xác 100% giống hệt hình ảnh reference.
-
-### Checklist công việc chi tiết
-- [x] **Task 17.1: Nạp Tài Nguyên `ferrari.glb` & `ferrari_ao.png` (`AssetManager.js`)**
-  - [x] Khai báo tải mô hình `ferrari: '/models/ferrari.glb'` và `car_driver: '/models/ferrari.glb'`.
-- [x] **Task 17.2: Gán Vật Liệu 100% Chuẩn Reference (`Player.js`)**
-  - [x] Gán `body`: `MeshPhysicalMaterial` đen Metallic (`0x0d0d0d`, `clearcoat: 1.0`).
-  - [x] Gán `rim_fl/fr/rr/rl` & `trim`: `MeshStandardMaterial` mâm 5 chấu mạ bạc crom (`0xffffff`, `metalness: 1.0`).
-  - [x] Gán `glass`: `MeshPhysicalMaterial` khúc xạ mờ (`transmission: 1.0`) và đệm bóng `ferrari_ao.png`.
-  - [x] Xoay `rotation.y = Math.PI` và thu tỷ lệ vừa vặn 1.25m làn đường.
-
----
-
 ## Phase 18: Nâng Cấp Hệ Thống Chướng Ngại Vật & Platforming Nóc Xe
 **Mục tiêu:** Phân loại 3 nhóm chướng ngại vật (Thấp - Nhảy qua, Cao - Cúi qua, Dài & Phẳng - Chạy trên nóc) và viết lớp `ObstacleManager` xử lý va chạm AABB +Platforming.
 
@@ -295,7 +281,7 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
 
 ### Checklist công việc chi tiết
 - [x] **Task 20.1: Đăng Ký Mô Hình Lamborghini (`AssetManager.js`)**
-  - [x] Nạp `lamborghini.glb` và gán cho skin `car_driver` ("Đại Gia Ô Tô").
+  - [x] Nạp `lamborghini.glb` vào game.
 - [x] **Task 20.2: Cấu Trúc Bọc Bánh Xe Group Pivot Wrapper Pattern (`Player.js`)**
   - [x] Trích xuất 4 bánh xe (`Object_36`, `Object_37`, `Object_38`, `Object_39`) DUY NHẤT 1 LẦN trong callback `buildCharacterSkin()`.
   - [x] Bọc từng Mesh bánh xe vào một `THREE.Group` Pivot tại vị trí gốc của bánh xe, đưa Mesh bánh xe về tâm (0,0,0) của Group.

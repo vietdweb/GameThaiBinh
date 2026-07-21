@@ -118,7 +118,7 @@ export class CharacterViewerManager {
     }
 
     // Load model
-    const modelKey = skinId === 'car_driver' ? 'lamborghini' : skinId === 'cyberpsycho_car' ? 'cyberpsycho_car' : skinId === 'ao_dai' ? 'student' : skinId;
+    const modelKey = skinId === 'cyberpsycho_car' ? 'cyberpsycho_car' : skinId === 'student' ? 'student' : skinId;
     const rawModel = AssetManager.getModel(modelKey) || AssetManager.getModel('student');
 
     let targetPos = new THREE.Vector3(0, 0.8, 0);
@@ -147,7 +147,7 @@ export class CharacterViewerManager {
       const bbox = new THREE.Box3().setFromObject(modelClone);
       const size = bbox.getSize(new THREE.Vector3());
 
-      if (skinId === 'car_driver' || skinId === 'cyberpsycho_car') {
+      if (skinId === 'lamborghini' || skinId === 'cyberpsycho_car') {
         const scaleFactor = 1.85 / size.x;
         modelClone.scale.setScalar(scaleFactor);
         const sb = new THREE.Box3().setFromObject(modelClone);

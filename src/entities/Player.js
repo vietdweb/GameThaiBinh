@@ -74,7 +74,7 @@ export class Player {
   }
 
   buildCharacterSkin(skinId) {
-    if (skinId === 'ao_dai' || skinId === 'student') {
+    if (skinId === 'student') {
       const glbStudentModel = AssetManager.getModel('student');
       if (glbStudentModel) {
         const studentClone = glbStudentModel.clone();
@@ -147,8 +147,8 @@ export class Player {
       }
 
       this._buildBaristaSkin();
-    } else if (skinId === 'car_driver') {
-      const glbCarModel = AssetManager.getModel('car_driver') || AssetManager.getModel('lamborghini') || AssetManager.getModel('ferrari');
+    } else if (skinId === 'lamborghini') {
+      const glbCarModel = AssetManager.getModel('lamborghini') || AssetManager.getModel('ferrari');
       if (glbCarModel) {
         // Lấy mô hình siêu xe đã pre-merge thành 1 Mesh nguyên khối trong bộ nhớ Cache (0ms lag khi chọn trong Menu!)
         const carModel = glbCarModel.clone();
@@ -205,11 +205,12 @@ export class Player {
       }
 
       this._buildCarDriverSkin();
+      // Xe CYBERPSYCHO_CAR
     } else if (skinId === 'cyberpsycho_car') { //code tu viet them xe
       const glbCarModel = AssetManager.getModel('cyberpsycho_car');
       if (glbCarModel) {
         const carModel = glbCarModel.clone();
-        carModel.rotation.y = 0;
+        carModel.rotation.y = 120 * (Math.PI / 180);
         carModel.traverse((child) => {
           if (child.isMesh) {
             child.castShadow = true;
@@ -238,7 +239,7 @@ export class Player {
         const bbox = new THREE.Box3().setFromObject(carModel);
         const size = bbox.getSize(new THREE.Vector3());
         if (size.y > 0) {
-          const targetWidth = 1.85; // Xe rộng 1.85m bề thế sang trọng
+          const targetWidth = 3.5; // Xe rộng 1.85m bề thế sang trọng
           const scaleFactor = targetWidth / size.x;
           carModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
 

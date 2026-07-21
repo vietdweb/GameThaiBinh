@@ -66,8 +66,8 @@ export const CHARACTERS = {
     scoreMultBonus: 1.0,
     coffeeBonus: 1.0
   },
-  AO_DAI: {
-    id: 'ao_dai',
+  STUDENT: {
+    id: 'student',
     name: 'Nữ Sinh Áo Dài',
     desc: '+15% hệ số điểm số tổng',
     feverChargeBonus: 1.0,
@@ -82,8 +82,8 @@ export const CHARACTERS = {
     scoreMultBonus: 1.0,
     coffeeBonus: 1.25
   },
-  CAR_DRIVER: {
-    id: 'car_driver',
+  LAMBORGHINI: {
+    id: 'lamborghini',
     name: 'Đại Gia Đi Ô Tô',
     desc: '+20% tổng điểm & Khung xe bọc thép sang trọng',
     feverChargeBonus: 1.15,

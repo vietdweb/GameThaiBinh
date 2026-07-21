@@ -332,8 +332,8 @@ export class Game {
         this.audioManager._ensureContext();
         // Đặt override model Lamborghini trước khi chuyển state
         this.pendingViewerOverride = {
-          id: 'car_driver',
-          name: '🏎️ Lamborghini Huận',
+          id: 'lamborghini',
+          name: '🏎️ Lamborghini',
           desc: 'Siêu xe thể thao đỉnh cao | Kéo chuột / Vuốt để xoay 360°'
         };
         this.stateMachine.transition(GAME_STATES.VIEWER);
