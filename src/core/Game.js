@@ -268,7 +268,7 @@ export class Game {
       this._activateFeverVisuals();
       this.isFeverActive = true;
       this.feverTimer = GAME_CONFIG.FEVER_DURATION;
-      this.audioManager.startFeverBGM();
+      this.audioManager?.startFeverBGM?.();
       this._setAudioPanelVisible(false);
     });
 
@@ -1223,7 +1223,7 @@ export class Game {
     if (this.stateMachine.is(GAME_STATES.PLAYING)) {
       this.feverEnergy = 100;
       this.stateMachine.transition(GAME_STATES.FEVER);
-      this.audioManager.playFeverActivate();
+      this.audioManager?.playFeverActivate?.();
       this._createFeverParticles();
     }
   }
@@ -1338,7 +1338,18 @@ export class Game {
 
     this.coffees += count;
     this.score += Math.floor(150 * count * coffeeBonus * scoreMult);
-    this.audioManager.playCoffeeCollect();
+
+    this.audioManager?.playCoffeeCollect?.();
+
+    // Đồng bộ số cà phê sang Player để đếm mốc 10 ly
+    if (this.player && typeof this.player.collectCoffee === 'function') {
+      this.player.collectCoffee(10, (speedTier) => {
+        this.currentSpeed += 3.0;
+        if (typeof this._showStreamToast === 'function') {
+          this._showStreamToast(`⚡ TĂNG TỐC! Đã ăn đủ 10 Cà phê (Cấp ${speedTier})`);
+        }
+      });
+    }
 
     if (!this.isFeverActive) {
       const feverCharge = 10 * count * (perk.feverChargeBonus || 1.0);
@@ -1352,9 +1363,10 @@ export class Game {
   }
 
   _onPowerUpCollected(type) {
-    this.audioManager.playPowerUp();
+    this.audioManager?.playPowerUp?.();
+
     if (type === POWERUP_TYPES.SHIELD) {
-      if (this.player) this.player.enableShield();
+      if (this.player) this.player.enableShield(); // Khiên 3D sẽ hiện lên chuẩn 100%!
     } else if (type === POWERUP_TYPES.DOUBLE_SCORE) {
       this.doubleScoreTimer = POWERUP_CONFIG.DOUBLE_SCORE_DURATION;
     } else if (type === POWERUP_TYPES.BOOST) {
@@ -1677,8 +1689,10 @@ export class Game {
 
     const playerPos = this.player ? this.player.meshGroup.position : null;
 
-    // --- 8. Cập nhật Obstacles & Kiểm tra Va chạm Nâng cao & Platforming chạy trên nóc xe ---
+    // --- 8. Cập nhật Obstacles & Kiểm tra Va chạm Nâng cao & Platforming running on roof ---
     if (this.obstacleManager) {
+      const hadShieldBefore = this.player ? this.player.hasShield : false;
+
       this.obstacleManager.update(deltaTime, this.currentSpeed);
       this.obstacleManager.checkCollisionAndPlatforming(
         this.player,
@@ -1694,6 +1708,12 @@ export class Game {
           }
         }
       );
+
+      // Nếu Khiên Nón Lá vừa đỡ 1 va chạm làm player.hasShield chuyển từ true -> false
+      // lập tức gọi _updateHUDDisplay() để gỡ ngay thẻ Khiên khỏi màn hình!
+      if (hadShieldBefore && this.player && !this.player.hasShield) {
+        this._updateHUDDisplay();
+      }
     }
 
     // --- 9. Cập nhật Collectibles ---

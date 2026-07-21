@@ -187,16 +187,27 @@ export class ObstacleManager {
 
       if (!isStandingSafelyOnTop && playerBox.intersectsBox(obsBox)) {
         if (isFeverOrBoost) {
-          // Chế độ Fever/Boost: đâm phá tất cả
+          // Chế độ Fever/Boost: Đâm phá tất cả vật cản (Bất tử & Lướt siêu mượt)
+          obs.isAlive = false;
+
+          // Xóa sạch Hộp bao va chạm AABB ngay lập tức để không bị kẹt hay giật lag khi đi xuyên
+          if (obs.boundingBox) {
+            obs.boundingBox.min.set(0, 0, 0);
+            obs.boundingBox.max.set(0, 0, 0);
+          }
+
           if (callbacks.onSmash) callbacks.onSmash(obs);
-          audioManager.playSmash();
+
+          // Phát âm thanh văng vật cản an toàn
+          audioManager?.playSmash?.();
+
           obs.dispose();
           this.obstacles.splice(i, 1);
           continue;
         } else if (player.hasShield && this._shieldCooldown <= 0) {
           // Khiên Nón Lá: kháng 1 va chạm, trao vô địch 1.5 giây để không dính liên tiếp
           player.consumeShield();
-          audioManager.playShieldBreak();
+          audioManager?.playShieldBreak?.();
           this._shieldCooldown = 1.5;
           obs.dispose();
           this.obstacles.splice(i, 1);

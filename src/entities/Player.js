@@ -23,6 +23,10 @@ export class Player {
     this.shieldMeshGroup = null;
     this.shieldRotation = 0;
 
+    // === BỔ SUNG QUẢN LÝ CÀ PHÊ & TỐC ĐỘ ===
+    this.coffeeCount = 0;
+    this.speedTier = 1;
+
     // Các biến lưu trữ kích thước hình học gốc
     this.originalHeight = 1.6;
 
@@ -30,15 +34,13 @@ export class Player {
     this.carFrontWheelPivots = [];
     this.carAllWheelMeshes = [];
     this.currentSteerAngle = 0;
-    this.carWheelRollAngle = 0; // Tích lũy góc quay bánh xe dạng primitive float (Khóa cứng tâm bánh xe)
+    this.carWheelRollAngle = 0;
 
     // Nhóm đối tượng chứa toàn bộ Mesh nhân vật
     this.meshGroup = new THREE.Group();
-    // Nhóm con chứa phần hiển thị trực quan (để dễ dàng xoay và scale độc lập)
     this.visualGroup = new THREE.Group();
     this.meshGroup.add(this.visualGroup);
 
-    // Hộp bao va chạm (AABB Bounding Box)
     this.boundingBox = new THREE.Box3();
 
     this.init();
@@ -610,6 +612,7 @@ export class Player {
     this.meshGroup.add(this.shieldMeshGroup);
   }
 
+  // --- HỆ THỐNG KHIÊN BẢO VỆ CHUẨN ĐÉT KHỚP VỚI OBSTACLE MANAGER ---
   enableShield() {
     this.hasShield = true;
     if (this.shieldMeshGroup) {
@@ -622,6 +625,19 @@ export class Player {
     if (this.shieldMeshGroup) {
       this.shieldMeshGroup.visible = false;
     }
+  }
+
+  // --- HỆ THỐNG ĐẾM CÀ PHÊ & KÍCH HOẠT TĂNG TỐC ---
+  collectCoffee(coffeesPerTier = 10, onSpeedUp) {
+    this.coffeeCount++;
+    if (this.coffeeCount >= coffeesPerTier) {
+      this.coffeeCount = 0;
+      this.speedTier++;
+      if (typeof onSpeedUp === 'function') {
+        onSpeedUp(this.speedTier);
+      }
+    }
+    return this.coffeeCount;
   }
 
   moveLeft() {
