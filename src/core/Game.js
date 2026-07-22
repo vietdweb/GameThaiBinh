@@ -23,6 +23,8 @@ import { ExhaustFlameBoostEffect } from '../effects/ExhaustFlameBoostEffect.js';
 import { AssetManager } from '../managers/AssetManager.js';
 import { MatchHistoryManager } from '../managers/MatchHistoryManager.js';
 import { CurrencyManager } from '../managers/CurrencyManager.js';
+import { PlayerManager } from '../managers/PlayerManager.js';
+import { UIManager } from '../ui/UIManager.js';
 import { Collectible } from '../entities/Collectible.js';
 import {
   Roadblock,
@@ -43,6 +45,8 @@ export class Game {
     this.sceneManager = new SceneManager('game-canvas', debugMode);
     this.matchHistoryManager = new MatchHistoryManager();
     this.currencyManager = new CurrencyManager();
+    this.playerManager = new PlayerManager();
+    this.uiManager = new UIManager(this.playerManager);
 
     // 3. Sau khi đã có sceneManager & currencyManager -> Mới khởi tạo Cửa Hàng 3D
     this.shopManager = new ShopManager(this.currencyManager);
@@ -1433,6 +1437,11 @@ export class Game {
 
     this.coffees += count;
     this.score += Math.floor(150 * count * coffeeBonus * scoreMult);
+
+    // Tăng EXP cho người chơi khi ăn Cà phê (Mỗi cốc cà phê cho 25 EXP)
+    if (this.playerManager) {
+      this.playerManager.addExp(25 * count);
+    }
 
     this.audioManager?.playCoffeeCollect?.();
 
