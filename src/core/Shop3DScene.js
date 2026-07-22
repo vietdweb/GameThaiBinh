@@ -957,7 +957,6 @@ export class Shop3DScene {
         // Đẩy toàn bộ các ngôi nhà phụ sang bờ Đông x >= 44 né xa khu vực Cung điện (x = -22 -> 22, z = 16 -> 44)
         const housesData = [
             { x: 44, z: -18, w: 10, h: 7, d: 8, wallColor: 0xffffff, roofColor: 0xe76f51, label: 'COASTAL VILLA' },
-            { x: 44, z: 0, w: 9, h: 6, d: 7, wallColor: 0xffe066, roofColor: 0x264653, label: 'BAKERY & CAFE' },
             { x: 45, z: 38, w: 11, h: 8, d: 9, wallColor: 0x48cae4, roofColor: 0xf72585, label: 'BEACH HOTEL' },
             { x: 34, z: -28, w: 10, h: 7, d: 8, wallColor: 0xa8e6cf, roofColor: 0xe76f51, label: 'MOTORS CLUB' }
         ];
@@ -999,6 +998,9 @@ export class Shop3DScene {
 
         // 🛒 KHỞI TẠO QUẦY BÁN HÀNG 3D NGOÀI TRỜI ĐẶT TRƯỚC NHÀ (z = -7.0)
         this._initArmoryShopCounter();
+
+        // 🏆 XÂY DỰNG CĂN NHÀ VÀNG RỘNG MỞ VÀ TRƯNG BÀY 3 MÔ HÌNH 3D BABY GOKU BÊN TRONG NHÀ
+        this._initBabyGokuExhibitionYellowHouse();
     }
 
     /* 🛒 10A. QUẦY BÁN HÀNG 3D NGOÀI TRỜI (ARMORY SHOP COUNTER WITH 3D ITEMS ON TOP) */
@@ -1105,6 +1107,331 @@ export class Shop3DScene {
         this.armoryItemIcons.push(magnetIcon);
 
         this.scene.add(counterGroup);
+    }
+
+    /* 🪟 HÀM VẼ CỬA SỔ CÓ MÁI CHE NÓNG CONG CHÓP NÓN NHƯ TRONG ẢNH MẪU (WINDOW WITH MINI-ROOF CANOPY & TILED OVERHANG) */
+    _createWindowWithMiniRoof(width = 2.2, height = 2.4) {
+        const group = new THREE.Group();
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+        const glassMat = new THREE.MeshStandardMaterial({ color: 0x8ad2f1, roughness: 0.1, transparent: true, opacity: 0.6 });
+        const roofMat = new THREE.MeshStandardMaterial({ color: 0x264653, roughness: 0.7 });
+        const woodMat = new THREE.MeshStandardMaterial({ color: 0x3d271d, roughness: 0.8 });
+
+        // 1. Kính Cửa Sổ Trong Suốt
+        const glass = new THREE.Mesh(new THREE.PlaneGeometry(width - 0.2, height - 0.2), glassMat);
+        glass.position.z = 0.02;
+        group.add(glass);
+
+        // 2. Khung Viền Cửa Sổ Trắng Sắc Nét
+        const frameOuter = new THREE.Mesh(new THREE.BoxGeometry(width, height, 0.12), frameMat);
+        group.add(frameOuter);
+
+        // Chia Ô Cửa Sổ Sọc Ngang & Sọc Dọc
+        const mullionH = new THREE.Mesh(new THREE.BoxGeometry(width - 0.2, 0.08, 0.14), frameMat);
+        mullionH.position.z = 0.03;
+        group.add(mullionH);
+
+        const mullionV = new THREE.Mesh(new THREE.BoxGeometry(0.08, height - 0.2, 0.14), frameMat);
+        mullionV.position.z = 0.03;
+        group.add(mullionV);
+
+        // 3. MÁI NGÓI MÁI HIÊN CHE CỬA SỔ CHUẨN 100% ẢNH MẪU CỦA USER (MINI-ROOF EAVES CANOPY)
+        const canopyGroup = new THREE.Group();
+        canopyGroup.position.set(0, height / 2 + 0.35, 0.35);
+
+        // Mái Ngói Cong Khối Kim Tự Tháp Nón Chóp (Cone Geometry rotated 45 deg)
+        const miniRoof = new THREE.Mesh(new THREE.ConeGeometry(width * 0.75, 0.7, 4), roofMat);
+        miniRoof.rotation.y = Math.PI / 4;
+        miniRoof.position.y = 0.35;
+        miniRoof.castShadow = true;
+        canopyGroup.add(miniRoof);
+
+        // Nẹp xà gồ gỗ đỡ phía dưới mái ngói
+        [-width / 2 + 0.3, width / 2 - 0.3].forEach(bx => {
+            const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.45, 0.45), woodMat);
+            bracket.position.set(bx, -0.1, -0.2);
+            bracket.rotation.x = Math.PI / 4;
+            bracket.castShadow = true;
+            canopyGroup.add(bracket);
+        });
+
+        group.add(canopyGroup);
+        return group;
+    }
+
+    /* 🏆 10B. XÂY DỰNG CĂN NHÀ VÀNG TRIỂN LÃM RỘNG MỞ & NẠP 4 MÔ HÌNH 3D GOKU GLTF THẬT VÀO TRONG NHÀ */
+    _initBabyGokuExhibitionYellowHouse() {
+        const houseGroup = new THREE.Group();
+        // Vị trí căn nhà vàng x = 44, z = 0, xoay mặt tiền sang trái (rotation.y = -Math.PI / 2)
+        houseGroup.position.set(44.0, 0, 0);
+        houseGroup.rotation.y = -Math.PI / 2;
+
+        const width = 22.0;  // MỞ RỘNG CĂN NHÀ VÀNG RỘNG THOÁNG 22.0M CHO 4 MÔ HÌNH
+        const height = 8.5;
+        const depth = 14.0;
+
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0xffe066, roughness: 0.8, metalness: 0.05 });
+        const roofMat = new THREE.MeshStandardMaterial({ color: 0x264653, roughness: 0.7 });
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4 });
+        const pedestalGoldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.8 });
+        const cyanNeonMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff });
+        const magentaNeonMat = new THREE.MeshBasicMaterial({ color: 0xff007f });
+        const goldNeonMat = new THREE.MeshBasicMaterial({ color: 0xffb703 });
+
+        // 1. SÀN NHÀ & MÁI NHÀ VÀNG THIẾT KẾ RỘNG NÂNG CẤP
+        const floorMesh = new THREE.Mesh(new THREE.BoxGeometry(width, 0.2, depth), floorMat);
+        floorMesh.position.y = 0.1;
+        floorMesh.receiveShadow = true;
+        houseGroup.add(floorMesh);
+
+        // Mái Nhà Hình Kim Tự Tháp/Khối Tam Giác
+        const roofMesh = new THREE.Mesh(new THREE.ConeGeometry(width * 0.72, height * 0.55, 4), roofMat);
+        roofMesh.rotation.y = Math.PI / 4;
+        roofMesh.position.y = height + (height * 0.55) / 2;
+        roofMesh.castShadow = true;
+        houseGroup.add(roofMesh);
+
+        // 2. TƯỜNG NHÀ RỖNG KHÔNG GIAN NỘI THẤT RỘNG MỞ (KHE CỬA VÒM RỖNG 100% KHÔNG BỊ TẤM ĐEN CHE LẠI)
+        const wallThickness = 0.4;
+        const doorW = 5.2;
+
+        // Tường Tiền Trái
+        const frontLeftW = (width - doorW) / 2;
+        const frontLeftWall = new THREE.Mesh(new THREE.BoxGeometry(frontLeftW, height, wallThickness), wallMat);
+        frontLeftWall.position.set(-(doorW / 2 + frontLeftW / 2), height / 2, depth / 2);
+        frontLeftWall.castShadow = true;
+        frontLeftWall.receiveShadow = true;
+        houseGroup.add(frontLeftWall);
+
+        // Tường Tiền Phải
+        const frontRightWall = new THREE.Mesh(new THREE.BoxGeometry(frontLeftW, height, wallThickness), wallMat);
+        frontRightWall.position.set(doorW / 2 + frontLeftW / 2, height / 2, depth / 2);
+        frontRightWall.castShadow = true;
+        frontRightWall.receiveShadow = true;
+        houseGroup.add(frontRightWall);
+
+        // Tường Trên Cửa Lanh Tô
+        const lintelH = height - 4.5;
+        const lintelWall = new THREE.Mesh(new THREE.BoxGeometry(doorW, lintelH, wallThickness), wallMat);
+        lintelWall.position.set(0, height - lintelH / 2, depth / 2);
+        lintelWall.castShadow = true;
+        lintelWall.receiveShadow = true;
+        houseGroup.add(lintelWall);
+
+        // Tường Hậu & Tường 2 Bên
+        const backWall = new THREE.Mesh(new THREE.BoxGeometry(width, height, wallThickness), wallMat);
+        backWall.position.set(0, height / 2, -depth / 2);
+        backWall.castShadow = true;
+        backWall.receiveShadow = true;
+        houseGroup.add(backWall);
+
+        const sideWallL = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, height, depth), wallMat);
+        sideWallL.position.set(-width / 2, height / 2, 0);
+        sideWallL.castShadow = true;
+        sideWallL.receiveShadow = true;
+        houseGroup.add(sideWallL);
+
+        const sideWallR = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, height, depth), wallMat);
+        sideWallR.position.set(width / 2, height / 2, 0);
+        sideWallR.castShadow = true;
+        sideWallR.receiveShadow = true;
+        houseGroup.add(sideWallR);
+
+        // 🪟 VẼ 2 CỬA SỔ CÓ MÁI NGÓI CHE NHƯ ẢNH MẪU 100% TẠI MẶT TIỀN TƯỜNG VÀNG
+        const winLeft = this._createWindowWithMiniRoof(2.2, 2.4);
+        winLeft.position.set(-6.8, 4.2, depth / 2 + 0.06);
+        houseGroup.add(winLeft);
+
+        const winRight = this._createWindowWithMiniRoof(2.2, 2.4);
+        winRight.position.set(6.8, 4.2, depth / 2 + 0.06);
+        houseGroup.add(winRight);
+
+        // 3. BIỂN HIỆU CHỮ 3D "🏆 BABY GOKU EXHIBITION" GẮN NỔI BẬT TRÊN MÁI NHÀ VÀNG (ROOF SIGNBOARD)
+        const signBoardGroup = new THREE.Group();
+        signBoardGroup.position.set(0, height + 1.8, depth / 2 + 0.3);
+
+        // Khung biển đen mạ LED Cyan
+        const signBackerMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.8 });
+        const signBacker = new THREE.Mesh(new THREE.BoxGeometry(14.2, 2.8, 0.16), signBackerMat);
+        signBoardGroup.add(signBacker);
+
+        const signNeonTrim = new THREE.Mesh(new THREE.BoxGeometry(14.4, 3.0, 0.08), cyanNeonMat);
+        signNeonTrim.position.z = -0.05;
+        signBoardGroup.add(signNeonTrim);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.clearRect(0, 0, 1024, 256);
+            ctx.font = 'bold 78px "Outfit", "Inter", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 14;
+            ctx.strokeText('🏆 BABY GOKU EXHIBITION', 512, 128);
+
+            ctx.fillStyle = '#00f5ff';
+            ctx.fillText('🏆 BABY GOKU EXHIBITION', 512, 128);
+        }
+        const signTexture = new THREE.CanvasTexture(canvas);
+        signTexture.minFilter = THREE.LinearFilter;
+        const signMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(13.8, 2.6),
+            new THREE.MeshBasicMaterial({ map: signTexture, transparent: true, side: THREE.DoubleSide })
+        );
+        signMesh.position.z = 0.09;
+        signBoardGroup.add(signMesh);
+        houseGroup.add(signBoardGroup);
+
+        // 4. BỘ CỬA GỖ NÂU RỖNG KHÔNG CÓ TẤM ĐEN CHE LẠI (HOLLOW FRAME & DOUBLE HINGED DOORS)
+        const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x3d271d, roughness: 0.8 });
+        const doorMat = new THREE.MeshStandardMaterial({ color: 0x5c3d2e, roughness: 0.7 });
+        const handleMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.2 });
+
+        const exhibitionDoorGroup = new THREE.Group();
+        exhibitionDoorGroup.position.set(0, 0, depth / 2);
+
+        // KHUNG VIỀN RỖNG TÁCH BỆNH (Không dùng BoxGeometry lớn đặc làm đen cửa nữa)
+        const postL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 4.5, 0.44), doorFrameMat);
+        postL.position.set(-2.425, 2.25, 0);
+        postL.castShadow = true;
+        exhibitionDoorGroup.add(postL);
+
+        const postR = new THREE.Mesh(new THREE.BoxGeometry(0.35, 4.5, 0.44), doorFrameMat);
+        postR.position.set(2.425, 2.25, 0);
+        postR.castShadow = true;
+        exhibitionDoorGroup.add(postR);
+
+        const headerTop = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.35, 0.44), doorFrameMat);
+        headerTop.position.set(0, 4.325, 0);
+        headerTop.castShadow = true;
+        exhibitionDoorGroup.add(headerTop);
+
+        // Bản Lề Cửa Trái (Hinge Left) - Căn mép vừa khít 100% không còn khe hở dọc giữa
+        const hingeL = new THREE.Group();
+        hingeL.position.set(-2.4, 2.1, 0.05);
+
+        const doorLeafL = new THREE.Mesh(new THREE.BoxGeometry(2.43, 4.1, 0.16), doorMat);
+        doorLeafL.position.set(1.215, 0, 0);
+        doorLeafL.castShadow = true;
+        hingeL.add(doorLeafL);
+
+        const knobL = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), handleMat);
+        knobL.position.set(2.1, 0, 0.14);
+        hingeL.add(knobL);
+
+        exhibitionDoorGroup.add(hingeL);
+
+        // Bản Lề Cửa Phải (Hinge Right) - Căn mép vừa khít 100% không còn khe hở dọc giữa
+        const hingeR = new THREE.Group();
+        hingeR.position.set(2.4, 2.1, 0.05);
+
+        const doorLeafR = new THREE.Mesh(new THREE.BoxGeometry(2.43, 4.1, 0.16), doorMat);
+        doorLeafR.position.set(-1.215, 0, 0);
+        doorLeafR.castShadow = true;
+        hingeR.add(doorLeafR);
+
+        const knobR = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), handleMat);
+        knobR.position.set(-2.1, 0, 0.14);
+        hingeR.add(knobR);
+
+        exhibitionDoorGroup.add(hingeR);
+
+        houseGroup.add(exhibitionDoorGroup);
+
+        this.exhibitionDoorHingeL = hingeL;
+        this.exhibitionDoorHingeR = hingeR;
+
+        // 5. ĐẶT 4 MÔ HÌNH 3D GOKU GLTF THẬT TRONG NHÀ (goku-0, goku-1, goku-3, goku-4)
+        this.gokuExhibitionModels = [];
+        const modelPaths = [
+            '/models/goku-0.glb',
+            '/models/goku-1.glb',
+            '/models/goku-3.glb',
+            '/models/goku-4.glb'
+        ];
+
+        const pedestalOffsets = [
+            { x: -7.5, z: -1.8, neonMat: goldNeonMat },
+            { x: -2.5, z: -3.2, neonMat: cyanNeonMat },
+            { x: 2.5, z: -3.2, neonMat: magentaNeonMat },
+            { x: 7.5, z: -1.8, neonMat: goldNeonMat }
+        ];
+
+        const gltfLoader = new GLTFLoader();
+
+        pedestalOffsets.forEach((ped, idx) => {
+            const pGroup = new THREE.Group();
+            pGroup.position.set(ped.x, 0.2, ped.z);
+
+            // Bệ Tròn Mạ Vàng Trong Nhà
+            const pBase = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 0.5, 32), pedestalGoldMat);
+            pBase.position.y = 0.25;
+            pBase.castShadow = true;
+            pBase.receiveShadow = true;
+            pGroup.add(pBase);
+
+            // Vòng Đèn Neon Chiếu Sáng Chân Bệ
+            const pRing = new THREE.Mesh(new THREE.TorusGeometry(1.42, 0.05, 12, 32), ped.neonMat);
+            pRing.rotation.x = Math.PI / 2;
+            pRing.position.y = 0.51;
+            pGroup.add(pRing);
+
+            // Đèn Spotlight Trong Nhà Rọi Trực Tiếp Từ Trần Nhà
+            const spotLight = new THREE.SpotLight(0xffffff, 2.5);
+            spotLight.position.set(0, height - 1.2, 0);
+            spotLight.target = pBase;
+            spotLight.angle = Math.PI / 5;
+            spotLight.penumbra = 0.3;
+            pGroup.add(spotLight);
+
+            // NẠP MÔ HÌNH 3D GOKU GLB THẬT TỪ PUBLIC/MODELS/
+            const modelPath = modelPaths[idx] || '/models/baby_goku.glb';
+            gltfLoader.load(
+                modelPath,
+                (gltf) => {
+                    const figureMesh = gltf.scene;
+
+                    // Scale & Fit model 3D vừa vặn bệ đòn trong nhà
+                    const box = new THREE.Box3().setFromObject(figureMesh);
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 2.2 / (maxDim || 1);
+                    figureMesh.scale.set(scale, scale, scale);
+
+                    // Căn chỉnh vị trí Y chân mô hình đứng vững trên bệ đòn
+                    figureMesh.position.set(0, 0.52, 0);
+
+                    figureMesh.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+
+                    pGroup.add(figureMesh);
+                    this.gokuExhibitionModels.push(figureMesh);
+                },
+                undefined,
+                (err) => {
+                    console.warn(`Could not load ${modelPath}, fallback to baby_goku.glb:`, err);
+                    gltfLoader.load('/models/baby_goku.glb', (fallbackGltf) => {
+                        const figureMesh = fallbackGltf.scene;
+                        figureMesh.scale.set(1.5, 1.5, 1.5);
+                        figureMesh.position.set(0, 0.52, 0);
+                        pGroup.add(figureMesh);
+                        this.gokuExhibitionModels.push(figureMesh);
+                    });
+                }
+            );
+
+            houseGroup.add(pGroup);
+        });
+
+        this.scene.add(houseGroup);
     }
 
     _createHouseBuilding(width, height, depth, wallColorHex, roofColorHex, labelText, isMainShowroom = false) {
@@ -2703,6 +3030,16 @@ export class Shop3DScene {
         );
     }
 
+    createPlayerMesh(skinId) {
+        const skin = skinId || this.selectedCharacterSkin || 'cyber_heroine';
+        if (skin === 'baby_goku') {
+            return this._createBabyGokuMesh();
+        } else if (skin === 'cyber_ninja') {
+            return this._createShadowNinjaMesh();
+        }
+        return this._createCyberHeroineMesh();
+    }
+
     _switchPlayerSkin(skinId) {
         if (!['cyber_heroine', 'baby_goku', 'cyber_ninja'].includes(skinId)) return;
 
@@ -2713,14 +3050,7 @@ export class Shop3DScene {
             this.scene.remove(this.playerMesh);
         }
 
-        let newMesh = null;
-        if (skinId === 'baby_goku') {
-            newMesh = this._createBabyGokuMesh();
-        } else if (skinId === 'cyber_ninja') {
-            newMesh = this._createShadowNinjaMesh();
-        } else {
-            newMesh = this._createCyberHeroineMesh();
-        }
+        const newMesh = this.createPlayerMesh(skinId);
 
         this.selectedCharacterSkin = skinId;
         this.playerMesh = newMesh;
@@ -3246,6 +3576,17 @@ export class Shop3DScene {
                 const distCounter = this.playerPos.distanceTo(counterPos);
                 const distNimbus = this.nimbusCloud ? this.playerPos.distanceTo(this.nimbusCloud.position) : 999;
 
+                const exhibitionDoorPos = new THREE.Vector3(37.0, this._calculateGroundY(37.0, 0), 0.0);
+                const distExhibitionDoor = this.playerPos.distanceTo(exhibitionDoorPos);
+
+                // 🏆 [F] hoặc [R]: Mở / Đóng cửa nhà Triển Lãm Goku 3D
+                if ((code === 'KeyF' || code === 'KeyR' || code === 'KeyE') && distExhibitionDoor < 4.5 && !this.isDrivingVehicle && !this.isRidingNimbus) {
+                    this.isExhibitionDoorOpen = !this.isExhibitionDoorOpen;
+                    const statusText = this.isExhibitionDoorOpen ? '🚪 Đã mở cửa Nhà Triển Lãm Goku!' : '🚪 Đã đóng cửa Nhà Triển Lãm Goku!';
+                    this._showToastNotification(statusText);
+                    return;
+                }
+
                 // 🚪 [R]: Mở / Đóng cửa nhà chính
                 if (code === 'KeyR' && distDoor < 3.2 && !this.isDrivingVehicle && !this.isRidingNimbus) {
                     this.isHouseDoorOpen = !this.isHouseDoorOpen;
@@ -3563,17 +3904,65 @@ export class Shop3DScene {
 
         if (this.isActive && !this.isDrivingVehicle) {
             const doorPos = new THREE.Vector3(0, this._calculateGroundY(0, -14.1), -14.1);
+            const exhibitionDoorPos = new THREE.Vector3(37.0, this._calculateGroundY(37.0, 0), 0.0);
+
             const distToDoor = this.playerPos.distanceTo(doorPos);
+            const distToExhibition = this.playerPos.distanceTo(exhibitionDoorPos);
 
             if (distToDoor < 3.2) {
                 const actionText = this.isHouseDoorOpen ? 'Đóng Cửa' : 'Mở Cửa';
                 doorPrompt.innerHTML = `👗 Bấm <span style="background: #00f5ff; color: #000; padding: 2px 8px; border-radius: 6px; margin: 0 4px;">[E]</span> Đổi Nhân Vật &nbsp;|&nbsp; 🚪 Bấm <span style="background: #ffd700; color: #000; padding: 2px 8px; border-radius: 6px; margin: 0 4px;">[R]</span> để ${actionText}`;
+                doorPrompt.style.display = 'block';
+            } else if (distToExhibition < 4.5) {
+                const actionText = this.isExhibitionDoorOpen ? 'Đóng Cửa' : 'Mở Cửa';
+                doorPrompt.innerHTML = `🏆 Bấm <span style="background: #00f5ff; color: #000; padding: 2px 8px; border-radius: 6px; margin: 0 4px;">[F]</span> để ${actionText} Triển Lãm Goku 3D`;
                 doorPrompt.style.display = 'block';
             } else {
                 doorPrompt.style.display = 'none';
             }
         } else {
             doorPrompt.style.display = 'none';
+        }
+    }
+
+    /* 📍 HUD HIỂN THỊ TỌA ĐỘ REALTIME X, Y, Z Ở GÓC PHẢI MÀN HÌNH */
+    _updatePositionHUD() {
+        let hud = document.getElementById('position-hud-panel');
+        if (!hud) {
+            hud = document.createElement('div');
+            hud.id = 'position-hud-panel';
+            hud.style.cssText = `
+                position: fixed;
+                top: 18px;
+                right: 20px;
+                background: rgba(15, 23, 42, 0.88);
+                backdrop-filter: blur(10px);
+                border: 1.5px solid rgba(0, 245, 255, 0.7);
+                border-radius: 12px;
+                padding: 6px 14px;
+                color: #00f5ff;
+                font-family: 'Outfit', 'Inter', monospace;
+                font-size: 13px;
+                font-weight: 700;
+                z-index: 1000;
+                pointer-events: auto !important;
+                box-shadow: 0 4px 16px rgba(0, 245, 255, 0.25);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                user-select: none;
+            `;
+            document.body.appendChild(hud);
+        }
+
+        if (this.isActive) {
+            hud.style.display = 'flex';
+            const px = (this.playerPos ? this.playerPos.x : 0).toFixed(1);
+            const py = (this.playerPos ? this.playerPos.y : 0).toFixed(1);
+            const pz = (this.playerPos ? this.playerPos.z : 0).toFixed(1);
+            hud.innerHTML = `📍 <span style="color: #ffd700;">POS:</span> X: ${px} | Y: ${py} | Z: ${pz}`;
+        } else {
+            hud.style.display = 'none';
         }
     }
 
@@ -4280,6 +4669,27 @@ export class Shop3DScene {
         this.targetLookAt.set(this.playerPos.x, this.playerPos.y + 1.2, this.playerPos.z);
         this.currentLookAt.lerp(this.targetLookAt, deltaTime * 9.0);
         this.camera.lookAt(this.currentLookAt);
+
+        // 🏆 XOAY 4 MÔ HÌNH TRƯNG BÀY 3D GOKU BÊN TRONG CĂN NHÀ VÀNG (INSIDE HOUSE EXHIBITION)
+        if (this.gokuExhibitionModels && this.gokuExhibitionModels.length > 0) {
+            this.gokuExhibitionModels.forEach((model, i) => {
+                if (model) {
+                    model.rotation.y += deltaTime * (0.45 + i * 0.12);
+                }
+            });
+        }
+
+        // 🚪 XỬ LÝ MỞ / ĐÓNG CỬA BẢN LỀ CĂN NHÀ VÀNG KHI NGƯỜI CHƠI BẤM [F] (GIỐNG 100% NHÀ CHARACTER WARDROBE)
+        if (this.exhibitionDoorHingeL && this.exhibitionDoorHingeR) {
+            const targetRotL = this.isExhibitionDoorOpen ? -Math.PI / 2.2 : 0;
+            const targetRotR = this.isExhibitionDoorOpen ? Math.PI / 2.2 : 0;
+
+            this.exhibitionDoorHingeL.rotation.y = THREE.MathUtils.lerp(this.exhibitionDoorHingeL.rotation.y, targetRotL, deltaTime * 6.0);
+            this.exhibitionDoorHingeR.rotation.y = THREE.MathUtils.lerp(this.exhibitionDoorHingeR.rotation.y, targetRotR, deltaTime * 6.0);
+        }
+
+        // 📍 CẬP NHẬT REALTIME TỌA ĐỘ X, Y, Z TRÊN HUD GÓC PHẢI MÀN HÌNH
+        this._updatePositionHUD();
     }
 
     render() {

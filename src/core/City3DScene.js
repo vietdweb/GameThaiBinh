@@ -24,17 +24,18 @@ export class City3DScene {
 
         // Orbit Camera Settings
         this.cameraYaw = 0;
-        this.cameraPitch = 0.42;
-        this.cameraDistance = 12.0;
+        this.cameraPitch = 0.22;
+        this.cameraDistance = 8.0;
         this.isPointerDown = false;
         this.previousPointerPos = { x: 0, y: 0 };
         this.targetLookAt = new THREE.Vector3();
         this.currentLookAt = new THREE.Vector3();
 
         // Physics & Controls
-        this.groundY = 0.0;
-        this.spawnPoint = new THREE.Vector3(6.2, 0.05, -23.8);
+        this.groundY = -18.6;
+        this.spawnPoint = new THREE.Vector3(-13.7, -18.6, -9.1);
         this.playerPos = this.spawnPoint.clone();
+        this.raycaster = new THREE.Raycaster();
         this.playerMesh = null;
         this.leftLegGroup = null;
         this.rightLegGroup = null;
@@ -222,14 +223,15 @@ export class City3DScene {
         this.scene.add(cityGroup);
     }
 
-    /* 👑 KHIỂN TẠO VÀ CHỌN SKINS NHÂN VẬT 3D */
+    /* 👑 ĐỒNG BỘ NẠP SKINS NHÂN VẬT 3D TỪ SHOP3DSCENE */
     _initPlayer() {
-        this.selectedCharacterSkin = this.game?.shop3DScene?.selectedCharacterSkin || 'baby_goku';
-        this._switchPlayerSkin(this.selectedCharacterSkin);
+        const activeSkin = this.game?.shop3DScene?.selectedCharacterSkin || 'cyber_heroine';
+        this._switchPlayerSkin(activeSkin);
     }
 
     _switchPlayerSkin(skinId) {
-        if (!['cyber_heroine', 'baby_goku', 'cyber_ninja'].includes(skinId)) return;
+        const shopScene = this.game?.shop3DScene;
+        const skin = skinId || shopScene?.selectedCharacterSkin || 'cyber_heroine';
 
         const currentPos = this.playerMesh ? this.playerMesh.position.clone() : this.playerPos.clone();
         const currentRotY = this.playerMesh ? this.playerMesh.rotation.y : 0;
@@ -239,15 +241,17 @@ export class City3DScene {
         }
 
         let newMesh = null;
-        if (skinId === 'baby_goku') {
-            newMesh = this._createBabyGokuMesh();
-        } else if (skinId === 'cyber_ninja') {
-            newMesh = this._createShadowNinjaMesh();
-        } else {
-            newMesh = this._createCyberHeroineMesh();
+        if (shopScene && typeof shopScene.createPlayerMesh === 'function') {
+            newMesh = shopScene.createPlayerMesh(skin);
+        } else if (shopScene && typeof shopScene._createCyberHeroineMesh === 'function') {
+            if (skin === 'baby_goku') newMesh = shopScene._createBabyGokuMesh();
+            else if (skin === 'cyber_ninja') newMesh = shopScene._createShadowNinjaMesh();
+            else newMesh = shopScene._createCyberHeroineMesh();
         }
 
-        this.selectedCharacterSkin = skinId;
+        if (!newMesh) return;
+
+        this.selectedCharacterSkin = skin;
         this.playerMesh = newMesh;
         this.playerMesh.position.copy(currentPos);
         this.playerMesh.rotation.y = currentRotY;
@@ -262,278 +266,6 @@ export class City3DScene {
         this.currentActionName = newMesh.userData.currentActionName || 'idle';
 
         this.scene.add(this.playerMesh);
-    }
-
-    /* 👑 SKIN 1: CYBER HEROINE */
-    _createCyberHeroineMesh() {
-        const playerGroup = new THREE.Group();
-        const shoesMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 });
-        const legsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
-        const cyanNeonMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff });
-        const whiteCloakMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.7, metalness: 0.1 });
-
-        const leftLegGroup = new THREE.Group();
-        const shoeL = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.14, 0.34), shoesMat);
-        shoeL.position.set(-0.16, 0.07, 0.02);
-        leftLegGroup.add(shoeL);
-        const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.44, 10), legsMat);
-        legL.position.set(-0.16, 0.28, 0);
-        leftLegGroup.add(legL);
-        playerGroup.add(leftLegGroup);
-
-        const rightLegGroup = new THREE.Group();
-        const shoeR = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.14, 0.34), shoesMat);
-        shoeR.position.set(0.16, 0.07, 0.02);
-        rightLegGroup.add(shoeR);
-        const legR = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.44, 10), legsMat);
-        legR.position.set(0.16, 0.28, 0);
-        rightLegGroup.add(legR);
-        playerGroup.add(rightLegGroup);
-
-        const leftArmGroup = new THREE.Group();
-        leftArmGroup.position.set(-0.36, 0.92, 0);
-        const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.48, 8, 12), whiteCloakMat);
-        armL.position.set(0, -0.24, 0);
-        leftArmGroup.add(armL);
-        playerGroup.add(leftArmGroup);
-
-        const rightArmGroup = new THREE.Group();
-        rightArmGroup.position.set(0.36, 0.92, 0);
-        const armR = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.48, 8, 12), whiteCloakMat);
-        armR.position.set(0, -0.24, 0);
-        rightArmGroup.add(armR);
-        playerGroup.add(rightArmGroup);
-
-        const robeBody = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.46, 0.75, 12), whiteCloakMat);
-        robeBody.position.y = 0.85;
-        playerGroup.add(robeBody);
-
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), new THREE.MeshBasicMaterial({ color: 0x090d16 }));
-        head.position.y = 1.45;
-        playerGroup.add(head);
-
-        const shadowCircle = new THREE.Mesh(
-            new THREE.CircleGeometry(0.42, 32),
-            new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
-        );
-        shadowCircle.rotation.x = -Math.PI / 2;
-        shadowCircle.position.y = 0.01;
-        playerGroup.add(shadowCircle);
-
-        playerGroup.userData = { leftLegGroup, rightLegGroup, leftArmGroup, rightArmGroup, cloakTailMesh: null };
-        return playerGroup;
-    }
-
-    /* 👑 SKIN 2: BABY GOKU 3D MODEL */
-    _createBabyGokuMesh() {
-        if (this.babyGokuGltf) {
-            const containerGroup = new THREE.Group();
-            const model = this.babyGokuGltf.scene.clone(true);
-
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            const targetHeight = 1.5;
-            const scaleFactor = targetHeight / (size.y || 1);
-            model.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-            const scaledBox = new THREE.Box3().setFromObject(model);
-            model.position.y = -scaledBox.min.y;
-
-            model.traverse(child => {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                }
-            });
-
-            containerGroup.add(model);
-
-            let mixer = null;
-            let actions = {};
-            if (this.babyGokuGltf.animations && this.babyGokuGltf.animations.length > 0) {
-                mixer = new THREE.AnimationMixer(model);
-                this.babyGokuGltf.animations.forEach(clip => {
-                    const action = mixer.clipAction(clip);
-                    const name = clip.name.toLowerCase();
-                    if (name.includes('walk')) actions['walk'] = action;
-                    else if (name.includes('run')) actions['run'] = action;
-                    else if (name.includes('jump')) actions['jump'] = action;
-                    else if (name.includes('idle')) actions['idle'] = action;
-                    else actions[clip.name] = action;
-                });
-
-                const clips = this.babyGokuGltf.animations;
-                if (!actions['idle'] && clips[0]) actions['idle'] = mixer.clipAction(clips[0]);
-                if (!actions['walk'] && clips[1]) actions['walk'] = mixer.clipAction(clips[1]);
-                else if (!actions['walk']) actions['walk'] = actions['idle'];
-                if (!actions['run']) actions['run'] = actions['walk'];
-                if (!actions['jump']) actions['jump'] = actions['walk'];
-
-                if (actions['idle']) actions['idle'].play();
-            }
-
-            let leftLegGroup = null, rightLegGroup = null, leftArmGroup = null, rightArmGroup = null;
-            model.traverse(c => {
-                const n = c.name.toLowerCase();
-                if (n.includes('leg') && (n.includes('l') || n.includes('left'))) leftLegGroup = c;
-                else if (n.includes('leg') && (n.includes('r') || n.includes('right'))) rightLegGroup = c;
-                else if (n.includes('arm') && (n.includes('l') || n.includes('left'))) leftArmGroup = c;
-                else if (n.includes('arm') && (n.includes('r') || n.includes('right'))) rightArmGroup = c;
-            });
-
-            const shadowCircle = new THREE.Mesh(
-                new THREE.CircleGeometry(0.42, 32),
-                new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
-            );
-            shadowCircle.rotation.x = -Math.PI / 2;
-            shadowCircle.position.y = 0.01;
-            containerGroup.add(shadowCircle);
-
-            containerGroup.userData = {
-                mixer,
-                actions,
-                currentActionName: 'idle',
-                leftLegGroup,
-                rightLegGroup,
-                leftArmGroup,
-                rightArmGroup,
-                cloakTailMesh: null
-            };
-            return containerGroup;
-        }
-
-        // Procedural Fallback 3D Goku
-        const gohan = new THREE.Group();
-        const orangeGiMat = new THREE.MeshToonMaterial({ color: 0xea580c });
-        const blueInnerMat = new THREE.MeshToonMaterial({ color: 0x1d4ed8 });
-        const skinMat = new THREE.MeshToonMaterial({ color: 0xfde047 });
-        const hairBlackMat = new THREE.MeshToonMaterial({ color: 0x0f172a });
-        const bootsMat = new THREE.MeshToonMaterial({ color: 0x1e293b });
-
-        const leftLegGroup = new THREE.Group();
-        leftLegGroup.position.set(-0.16, 0.66, 0);
-        const legL = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.50, 8, 12), orangeGiMat);
-        legL.position.set(0, -0.22, 0);
-        leftLegGroup.add(legL);
-        const bootL = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.32, 12), bootsMat);
-        bootL.position.set(0, -0.45, 0.04);
-        leftLegGroup.add(bootL);
-        gohan.add(leftLegGroup);
-
-        const rightLegGroup = new THREE.Group();
-        rightLegGroup.position.set(0.16, 0.66, 0);
-        const legR = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.50, 8, 12), orangeGiMat);
-        legR.position.set(0, -0.22, 0);
-        rightLegGroup.add(legR);
-        const bootR = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.32, 12), bootsMat);
-        bootR.position.set(0, -0.45, 0.04);
-        rightLegGroup.add(bootR);
-        gohan.add(rightLegGroup);
-
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.25, 0.72, 12), orangeGiMat);
-        torso.position.y = 1.10;
-        gohan.add(torso);
-
-        const leftArmGroup = new THREE.Group();
-        leftArmGroup.position.set(-0.34, 1.36, 0);
-        const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), skinMat);
-        armL.position.set(0, -0.20, 0);
-        leftArmGroup.add(armL);
-        gohan.add(leftArmGroup);
-
-        const rightArmGroup = new THREE.Group();
-        rightArmGroup.position.set(0.34, 1.36, 0);
-        const armR = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), skinMat);
-        armR.position.set(0, -0.20, 0);
-        rightArmGroup.add(armR);
-        gohan.add(rightArmGroup);
-
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), skinMat);
-        head.position.y = 1.60;
-        gohan.add(head);
-
-        const hairGroup = new THREE.Group();
-        hairGroup.position.set(0, 1.62, 0);
-        [
-            { pos: [0, 0.42, -0.02], rot: [0.1, 0, 0], scale: [0.16, 0.75] },
-            { pos: [-0.18, 0.32, 0.02], rot: [0.1, 0, 0.45], scale: [0.14, 0.65] },
-            { pos: [0.18, 0.32, 0.02], rot: [0.1, 0, -0.45], scale: [0.14, 0.65] }
-        ].forEach(sd => {
-            const spike = new THREE.Mesh(new THREE.ConeGeometry(sd.scale[0], sd.scale[1], 6), hairBlackMat);
-            spike.position.set(sd.pos[0], sd.pos[1], sd.pos[2]);
-            spike.rotation.set(sd.rot[0], sd.rot[1], sd.rot[2]);
-            hairGroup.add(spike);
-        });
-        gohan.add(hairGroup);
-
-        const shadowCircle = new THREE.Mesh(
-            new THREE.CircleGeometry(0.42, 32),
-            new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
-        );
-        shadowCircle.rotation.x = -Math.PI / 2;
-        shadowCircle.position.y = 0.01;
-        gohan.add(shadowCircle);
-
-        gohan.userData = { leftLegGroup, rightLegGroup, leftArmGroup, rightArmGroup, cloakTailMesh: null };
-        return gohan;
-    }
-
-    /* 👑 SKIN 3: SHADOW NINJA CYBER */
-    _createShadowNinjaMesh() {
-        const ninja = new THREE.Group();
-        const darkArmorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.8 });
-        const redNeonMat = new THREE.MeshBasicMaterial({ color: 0xff0055 });
-
-        const leftLegGroup = new THREE.Group();
-        leftLegGroup.position.set(-0.16, 0.66, 0);
-        const legL = new THREE.Mesh(new THREE.CapsuleGeometry(0.10, 0.46, 8, 12), darkArmorMat);
-        legL.position.set(0, -0.22, 0);
-        leftLegGroup.add(legL);
-        ninja.add(leftLegGroup);
-
-        const rightLegGroup = new THREE.Group();
-        rightLegGroup.position.set(0.16, 0.66, 0);
-        const legR = new THREE.Mesh(new THREE.CapsuleGeometry(0.10, 0.46, 8, 12), darkArmorMat);
-        legR.position.set(0, -0.22, 0);
-        rightLegGroup.add(legR);
-        ninja.add(rightLegGroup);
-
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.22, 0.72, 12), darkArmorMat);
-        torso.position.y = 1.10;
-        ninja.add(torso);
-
-        const leftArmGroup = new THREE.Group();
-        leftArmGroup.position.set(-0.34, 1.36, 0);
-        const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), darkArmorMat);
-        armL.position.set(0, -0.20, 0);
-        leftArmGroup.add(armL);
-        ninja.add(leftArmGroup);
-
-        const rightArmGroup = new THREE.Group();
-        rightArmGroup.position.set(0.34, 1.36, 0);
-        const armR = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), darkArmorMat);
-        armR.position.set(0, -0.20, 0);
-        rightArmGroup.add(armR);
-        ninja.add(rightArmGroup);
-
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), darkArmorMat);
-        head.position.y = 1.60;
-        ninja.add(head);
-
-        const redVisor = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.12), redNeonMat);
-        redVisor.position.set(0, 1.64, 0.20);
-        ninja.add(redVisor);
-
-        const shadowCircle = new THREE.Mesh(
-            new THREE.CircleGeometry(0.42, 32),
-            new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
-        );
-        shadowCircle.rotation.x = -Math.PI / 2;
-        shadowCircle.position.y = 0.01;
-        ninja.add(shadowCircle);
-
-        ninja.userData = { leftLegGroup, rightLegGroup, leftArmGroup, rightArmGroup, cloakTailMesh: null };
-        return ninja;
     }
 
     /* 🎮 ĐIỀU KHIỂN BÀN PHÍM ACTIVE KEYS */
@@ -587,16 +319,28 @@ export class City3DScene {
 
     openCity() {
         this.isActive = true;
-        const spawn = this.spawnPoint || new THREE.Vector3(6.2, 0.05, -23.8);
+
+        // Tự động kiểm tra & đồng bộ skin nhân vật mới nhất từ Shop3DScene
+        const activeSkin = this.game?.shop3DScene?.selectedCharacterSkin || 'cyber_heroine';
+        if (activeSkin !== this.selectedCharacterSkin || !this.playerMesh) {
+            this._switchPlayerSkin(activeSkin);
+        }
+
+        const spawn = this.spawnPoint || new THREE.Vector3(-13.7, -18.6, -9.1);
         this.playerPos.copy(spawn);
+        this.groundY = spawn.y;
+
         if (this.playerMesh) {
             this.playerMesh.position.copy(this.playerPos);
+            this.playerMesh.rotation.y = 0; // Quản lý hướng quay nhìn thẳng về tòa nhà chính điện
         }
         this.velocityY = 0;
         this.isGrounded = true;
+        this.isFlying = false;
+
         this.cameraYaw = 0;
-        this.cameraPitch = 0.42;
-        this.cameraDistance = 12.0;
+        this.cameraPitch = 0.22;
+        this.cameraDistance = 8.0;
         this.activeKeys.clear();
 
         if (this.mobileControls) {
@@ -608,12 +352,62 @@ export class City3DScene {
         this.isActive = false;
         this.activeKeys.clear();
 
-        const debugElem = document.getElementById('city-debug-hud');
-        if (debugElem) debugElem.remove();
+        const hudElem = document.getElementById('city-pos-hud');
+        if (hudElem) hudElem.style.display = 'none';
 
         if (this.mobileControls) {
             this.mobileControls.hide();
         }
+    }
+
+    _updatePositionHUD() {
+        let hudElem = document.getElementById('city-pos-hud');
+        if (!hudElem) {
+            hudElem = document.createElement('div');
+            hudElem.id = 'city-pos-hud';
+            hudElem.style.cssText = `
+                position: fixed;
+                top: 75px;
+                left: 24px;
+                background: rgba(15, 23, 42, 0.88);
+                border: 1.5px solid #00f5ff;
+                color: #00f5ff;
+                padding: 8px 14px;
+                border-radius: 8px;
+                font-family: monospace;
+                font-size: 14px;
+                font-weight: bold;
+                z-index: 3000;
+                pointer-events: none;
+                box-shadow: 0 0 15px rgba(0, 245, 255, 0.35);
+            `;
+            document.body.appendChild(hudElem);
+        }
+        hudElem.style.display = this.isActive ? 'block' : 'none';
+        hudElem.innerHTML = `📍 X: ${this.playerPos.x.toFixed(1)} | Y: ${this.playerPos.y.toFixed(1)} | Z: ${this.playerPos.z.toFixed(1)}`;
+    }
+
+    /* 🎯 DÒ ĐỘ CAO MẶT ĐƯỜNG 3D BẰNG RAYCASTING */
+    _calculateGroundY(x, z) {
+        if (!this.cityModel) return -18.6;
+        if (!this.raycaster) this.raycaster = new THREE.Raycaster();
+
+        this.raycaster.set(
+            new THREE.Vector3(x, this.playerPos.y + 12.0, z),
+            new THREE.Vector3(0, -1, 0)
+        );
+
+        const intersects = this.raycaster.intersectObject(this.cityModel, true);
+        if (intersects.length > 0) {
+            for (let i = 0; i < intersects.length; i++) {
+                const hitY = intersects[i].point.y;
+                if (hitY <= this.playerPos.y + 1.8) {
+                    return hitY;
+                }
+            }
+            return intersects[0].point.y;
+        }
+        return -18.6;
     }
 
     /* 🕹️ VÒNG LẶP UPDATE THÀNH PHỐ 3D */
@@ -623,6 +417,9 @@ export class City3DScene {
         if (this.cityMixer) {
             this.cityMixer.update(deltaTime);
         }
+
+        const targetGroundY = this._calculateGroundY(this.playerPos.x, this.playerPos.z);
+        this.groundY = THREE.MathUtils.lerp(this.groundY, targetGroundY, Math.min(1.0, deltaTime * 16.0));
 
         const mobileVec = this.mobileControls ? this.mobileControls.getMoveVector() : { dirX: 0, dirZ: 0, intensity: 0 };
         const isW = this.activeKeys.has('KeyW') || this.activeKeys.has('ArrowUp');
@@ -655,16 +452,16 @@ export class City3DScene {
         const currentMoveSpeed = isBoost ? 28.0 : 8.5;
         const flySpeed = isBoost ? 32.0 : 18.0;
 
-        // 🚀 BAY LÊN [E] VÀ BAY XUỐNG [C] (SIÊU TỐC KHI GIỮ SHIFT)
+        // 🚀 BAY LÊN [E] VÀ BAY XUỐNG [C] (HẠ CÁNH SÁT MẶT ĐƯỜNG TARGET_GROUND_Y)
         if (isFlyUp) {
             this.playerPos.y += flySpeed * deltaTime;
             this.isFlying = true;
             this.isGrounded = false;
         }
         if (isFlyDown) {
-            this.playerPos.y = Math.max(0, this.playerPos.y - flySpeed * deltaTime);
-            if (this.playerPos.y <= 0) {
-                this.playerPos.y = 0;
+            this.playerPos.y = Math.max(targetGroundY, this.playerPos.y - flySpeed * deltaTime);
+            if (this.playerPos.y <= targetGroundY + 0.08) {
+                this.playerPos.y = targetGroundY;
                 this.isFlying = false;
                 this.isGrounded = true;
             }
@@ -740,12 +537,12 @@ export class City3DScene {
         if (this.isFlying) {
             this.velocityY = 0;
         } else if (this.isGrounded) {
-            this.playerPos.y = 0;
+            this.playerPos.y = targetGroundY;
         } else {
             this.velocityY += this.gravity * deltaTime;
             this.playerPos.y += this.velocityY * deltaTime;
-            if (this.playerPos.y <= 0) {
-                this.playerPos.y = 0;
+            if (this.playerPos.y <= targetGroundY) {
+                this.playerPos.y = targetGroundY;
                 this.velocityY = 0;
                 this.isGrounded = true;
             }
@@ -765,6 +562,8 @@ export class City3DScene {
         this.targetLookAt.set(this.playerPos.x, this.playerPos.y + 1.2, this.playerPos.z);
         this.currentLookAt.lerp(this.targetLookAt, deltaTime * 9.0);
         this.camera.lookAt(this.currentLookAt);
+
+        this._updatePositionHUD();
     }
 
     render() {
