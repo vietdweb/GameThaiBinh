@@ -73,3 +73,26 @@ Sau khi hoàn thành:
 📌 RULE 4: NGUYÊN TẮC BẢO BẰNG VÀ KIỂM TRA MÃ NGUỒN (REGRESSION TESTING & IMPACT AUDIT)
 - Mỗi khi nâng cấp hoặc sửa đổi một tính năng mới (ví dụ: Audio, Asset, UI), PHẢI rà soát toàn bộ file liên quan (như `Game.js`, `UIManager.js`, `AudioManager.js`) để đảm bảo KHÔNG làm gãy các luồng khởi tạo (init) cũ.
 - Giữ mã nguồn mô-đun hóa sạch sẻ, tách biệt giữa logic tính toán render 3D và logic tương tác DOM UI.
+# 🎨 STYLIZED LOW-POLY ART DIRECTION RULES (COASTAL WORLD STYLE)
+
+## 1. BẮT BUỘC VỀ VẬT LIỆU & MÀU SẮC (MATERIALS & PALETTE)
+- **CẤM HOÀN TOÀN:** Không tự tạo khối hình học thô (BoxGeometry, CylinderGeometry) để dựng cảnh quan/xe. Bắt buộc nạp file 3D (.GLB/.GLTF) từ thư mục asset!
+- **Màu sắc Pastel Tươi Sáng (Coastal Palette):**
+  - Cỏ/Thảm cỏ: Vibrant Green (`#4EBA6F` hoặc `#55C172`)
+  - Bầu trời: Soft Cyan/Blue (`#8AD2F1` hoặc `#62C1EE`)
+  - Cây lá: Warm Yellow (`#F3CA40`), Pastel Pink/Orange (`#F07167`), Pine Green (`#2EC4B6`)
+  - Cát/Đường đi: Creamy Yellow (`#FDF0D5`), Soft Gray (`#A8B5C0`)
+- **Vật liệu (Material Standard):**
+  - Tất cả Mesh sử dụng `MeshStandardMaterial` với `roughness: 0.85`, `metalness: 0.05` để bề mặt đồi núi/cỏ cây có độ mịn màng như đất sét (Clay/Claymation effect).
+
+## 2. ÁNH SÁNG & BÓNG DỔ (LIGHTING & SHADOWS)
+- **Sunlight (DirectionalLight):** Màu vàng kem ấm (`#FFF8E7`), intensity `1.5`, góc chiếu `(30, 45, 20)`. Bật `castShadow = true`.
+- **Soft Shadows:** `shadow.bias = -0.0005`, dùng `THREE.PCFSoftShadowMap` để bóng đổ trên thảm cỏ có mép nhòe mềm mại, không sắc cạnh gồ ghề.
+- **Ambient / Hemisphere Light:** `HemisphereLight(skyColor: 0x8AD2F1, groundColor: 0x4EBA6F, intensity: 0.8)` để các vùng khuất bóng luôn tươi sáng, không bị tối đen.
+
+## 3. BẦU TRỜI & NỀN PHONG CẢNH (SKY & FOG)
+- Dùng `THREE.FogExp2(0x8AD2F1, 0.008)` tạo lớp sương mù chuyển màu từ xanh dương sang trắng đằng xa, tạo độ sâu không gian biển/đảo.
+- Render đường chân trời mềm mại, bầu trời gradient cyan trong trẻo.
+
+## 4. TẠO KHU VỰC SHOPSHOP / COASTAL PLAZA
+- Khu vực trưng bày xe (Shop Area) phải được đặt trên một đồi cỏ nghiêng nhẹ hoặc khu cắm trại ven biển, bao quanh bởi đá tảng Low-Poly, cây thông chóp nón vàng/cam, và bến tàu gỗ.

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -9,7 +10,13 @@ import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUti
 export class ModelPipelineManager {
   constructor() {
     this.loadingManager = new THREE.LoadingManager();
+
+    this.dracoLoader = new DRACOLoader(this.loadingManager);
+    this.dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    this.dracoLoader.setDecoderConfig({ type: 'js' });
+
     this.gltfLoader = new GLTFLoader(this.loadingManager);
+    this.gltfLoader.setDRACOLoader(this.dracoLoader);
 
     this.loadedGLTFs = {};
     this.loadedModels = {};

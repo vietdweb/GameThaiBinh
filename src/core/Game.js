@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { ShopManager } from '../managers/ShopManager.js';
+import { Shop3DScene } from './Shop3DScene.js';
 import { SceneManager } from './SceneManager.js';
 import { StateMachine } from '../managers/StateMachine.js';
 import { CollisionManager } from '../managers/CollisionManager.js';
@@ -31,42 +33,45 @@ import { ObstacleManager } from '../managers/ObstacleManager.js';
 
 export class Game {
   constructor() {
-    // Đọc trạng thái debug từ query string (e.g. ?debug=true)
+    // 1. Đọc trạng thái debug từ query string
     const urlParams = new URLSearchParams(window.location.search);
     const debugMode = urlParams.get('debug') === 'true';
 
-    // Khởi tạo SceneManager
+    // 2. BẮT BUỘC khởi tạo SceneManager & các Manager hệ thống TRƯỚC!
     this.sceneManager = new SceneManager('game-canvas', debugMode);
+    this.matchHistoryManager = new MatchHistoryManager();
+    this.currencyManager = new CurrencyManager();
 
-    // Hệ thống State Machine
+    // 3. Sau khi đã có sceneManager & currencyManager -> Mới khởi tạo Cửa Hàng 3D
+    this.shopManager = new ShopManager(this.currencyManager);
+    this.shop3DScene = new Shop3DScene(this.sceneManager.renderer, this);
+
+    // 4. Hệ thống State Machine, Va chạm & Âm thanh
     this.stateMachine = new StateMachine();
-
-    // Hệ thống va chạm
     this.collisionManager = new CollisionManager();
-
-    // Hệ thống âm thanh
     this.audioManager = new AudioManager();
 
-    // Trạng thái chọn nhân vật (Mặc định chọn Nữ Sinh Áo Dài)
+    // 5. Trạng thái chọn nhân vật
     this.skinKeys = Object.keys(CHARACTERS);
     const savedSkin = localStorage.getItem('saigon_selected_skin');
     this.selectedSkinIndex = savedSkin ? Math.max(0, this.skinKeys.indexOf(savedSkin.toUpperCase())) : 1;
     if (this.selectedSkinIndex === -1) this.selectedSkinIndex = 1;
 
-    // Trạng thái chơi game
+    // 6. Trạng thái chơi game
     this.score = 0;
     this.coffees = 0;
     this.feverEnergy = 0;
     this.isFeverActive = false;
     this.feverTimer = 0;
+    this.gameTimer = 0;
     this.currentSpeed = GAME_CONFIG.BASE_SPEED;
 
-    // Quản lý Timers của Power-ups
+    // 7. Quản lý Timers của Power-ups
     this.doubleScoreTimer = 0;
     this.boostTimer = 0;
     this.highJumpTimer = 0;
 
-    // Quản lý các thực thể game
+    // 8. Quản lý các thực thể game
     this.player = null;
     this.environment = null;
     this.obstacleManager = null;
@@ -74,10 +79,10 @@ export class Game {
     this.obstacleSpawnTimer = 0;
     this.collectibleSpawnTimer = 0;
 
-    // Override model cho viewer (null = dùng character đang chọn)
+    // Override model cho viewer
     this.pendingViewerOverride = null;
 
-    // Hiệu ứng hạt Fever (particles)
+    // Hiệu ứng hạt Fever
     this.feverParticles = null;
     this.feverParticleTime = 0;
 
@@ -171,19 +176,24 @@ export class Game {
     // 1. Thiết lập State Machine callbacks
     this._setupStateMachine();
 
-    // 2. Gắn sự kiện các nút bấm UI
-    this._setupUIEvents();
+    // 2. Khởi tạo ShopManager & Shop3DScene TRƯỚC khi gắn sự kiện UI
+    this.shopManager = new ShopManager(this.currencyManager);
+    this.shop3DScene = new Shop3DScene(this.sceneManager.renderer, this);
 
-    // 3. Gắn Carousel chọn nhân vật
+    // 3. Gắn sự kiện các nút bấm UI & Cửa hàng
+    this._setupUIEvents();
+    this._setupShopEvents();
+
+    // 4. Gắn Carousel chọn nhân vật
     this._setupCharacterCarousel();
 
-    // 4. Gắn điều khiển bàn phím
+    // 5. Gắn điều khiển bàn phím
     this._setupKeyboardControls();
 
-    // 5. Gắn điều khiển vuốt cảm ứng (Swipe)
+    // 6. Gắn điều khiển vuốt cảm ứng (Swipe)
     this._setupSwipeControls();
 
-    // 6. Khởi tạo Audio Control Panel (mới)
+    // 7. Khởi tạo Audio Control Panel
     this._setupAudioControlPanel();
 
     // Resize listener cho phòng xem 360°
@@ -193,10 +203,10 @@ export class Game {
       }
     });
 
-    // 7. Chạy quá trình tải (Loading)
+    // 8. Chạy quá trình tải (Loading)
     this._runSimulatedLoading();
 
-    // 8. Bắt đầu vòng lặp render
+    // 9. Bắt đầu vòng lặp render
     this._animate();
   }
 
@@ -369,6 +379,45 @@ export class Game {
 
     this.domElements.btnHome.addEventListener('click', () => {
       this.stateMachine.transition(GAME_STATES.MENU);
+    });
+  }
+
+  /* 🛒 QUẢN LÝ CHUYỂN CẢNH MAP SHOWROOM 3D */
+  _setupShopEvents() {
+    const mainMenuPanel = document.querySelector('.main-menu-panel') || document.getElementById('main-menu');
+    const btnExit3D = document.getElementById('btn-exit-shop-3d');
+
+    document.addEventListener('click', (e) => {
+      // 1. Click nút "CỬA HÀNG" ở Menu chính -> Sang Map 3D
+      const btnOpen = e.target.closest('#btn-open-shop');
+      if (btnOpen) {
+        e.stopPropagation();
+        this.audioManager?._ensureContext?.();
+
+        if (mainMenuPanel) mainMenuPanel.style.display = 'none';
+        if (btnExit3D) btnExit3D.classList.remove('hidden');
+
+        // Ẩn Top Currency Bar & Audio Panel khi vào Showroom 3D theo đúng UI HUD Rules
+        this._setAudioPanelVisible(false);
+
+        if (this.shop3DScene) {
+          this.shop3DScene.openShowroom();
+        }
+      }
+
+      // 2. Click nút "THOÁT CỬA HÀNG" -> Quay lại Menu chính
+      const btnExit = e.target.closest('#btn-exit-shop-3d');
+      if (btnExit) {
+        if (this.shop3DScene) {
+          this.shop3DScene.closeShowroom();
+        }
+
+        if (btnExit3D) btnExit3D.classList.add('hidden');
+        if (mainMenuPanel) mainMenuPanel.style.display = 'flex';
+
+        // Hiển thị lại Top Currency Bar & Audio Panel ở Menu chính
+        this._setAudioPanelVisible(true);
+      }
     });
   }
 
@@ -1578,7 +1627,16 @@ export class Game {
   _animate() {
     requestAnimationFrame(this._animate.bind(this));
     try {
-      const deltaTime = Math.min(this.clock.getDelta(), 0.05); // Cap delta ở 50ms
+      const deltaTime = Math.min(this.clock.getDelta(), 0.05);
+
+      // 🏎️ NẾU SHOP 3D ĐANG BẬT: CHỈ RENDER SCENE CỦA SHOP (Xóa sạch map cũ đằng sau)
+      if (this.shop3DScene && this.shop3DScene.isActive) {
+        this.shop3DScene.update(deltaTime);
+        this.shop3DScene.render();
+        return; // BẮT BUỘC RETURN ĐỂ KHÔNG RENDER MAP PHỐ THÁI BÌNH CŨ
+      }
+
+      // Nếu không bật Shop thì render game chính như bình thường
       this._update(deltaTime);
       this._render();
     } catch (err) {
