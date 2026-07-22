@@ -1,20 +1,24 @@
 /**
  * Shop3DScene.js - Integrated Coastal Town, Japanese Torii Sanctuary, Sougen Garden & White Marble Palace Open World 3D
- * Procedural 3D Anime Character Modeler & Realistic Walking Arm/Leg Swing Animation:
- * 1. XÓA HOÀN TOÀN 3 MÔ HÌNH TĨNH Ở CUNG ĐIỆN
- * 2. ĐƯA DÀN ANIME SAIYAN (GOKU, VEGETA, VEGITO, TRUNKS, GOHAN) THÀNH DÀN ANIME NPC DI CHUYỂN TRÊN PHỐ
- * 3. TẠO HOẠT ẢNH VUNG TAY VUNG CHÂN (ARM & LEG SWING ANIMATION) GIỐNG HỆT PLAYER KHI BƯỚC ĐỊ
- * 4. DYNAMIC GROUND HEIGHT PER X, Z: Tự động bước lên cầu gỗ, sàn terrace và bệ đá cẩm thạch
- * 5. 100% Procedural Three.js Code (0ms Load Time, 60 FPS)
+ * Procedural 3D Anime Character Modeler & Driveable Supercars System:
+ * 1. TÍNH NĂNG LÁI SIÊU XE (DRIVEABLE SUPERCARS): Player có thể đến gần 4 chiếc siêu xe (< 3.5m) và nhấn phím [F] hoặc [ENTER] để trèo lên xe lái tự do khắp bản đồ!
+ * 2. VẬT LÝ LÁI XE & BÁNH XE XOAY: Hỗ trợ phím [W/S] tăng tốc / lùi, [A/D] bẻ lái mượt mà, bánh xe xoay theo tốc độ, tích hợp Dynamic Ground Y Height.
+ * 3. BẢNG HƯỚNG DẪN UI & HỆ THỐNG PROMPT FLUID: Hiển thị Prompt phím [F] lên xe và HUD lái xe hiện đại.
+ * 4. 100% Procedural Three.js Code (0ms Load Time, 60 FPS)
  */
 import * as THREE from 'three';
 import { CAR_MODELS } from '../managers/ShopManager.js';
+import { MobileControls } from '../utils/mobile.js'; // 📱 MOBILE CONTROLS: Import bộ điều khiển di động
 
 export class Shop3DScene {
     constructor(renderer, game) {
         this.renderer = renderer;
         this.game = game;
         this.isActive = false;
+
+        // 📱 MOBILE CONTROLS: Khởi tạo Trình quản lý Điều khiển Cảm ứng di động (Virtual Joystick & Action Buttons)
+        this.mobileControls = new MobileControls(this);
+
 
         if (this.renderer) {
             this.renderer.shadowMap.enabled = true;
@@ -42,6 +46,11 @@ export class Shop3DScene {
         this.rightArmGroup = null;
         this.cloakTailMesh = null;
         this.playerWalkTimer = 0;
+
+        // 4. Driveable Vehicle System
+        this.isDrivingVehicle = false;
+        this.currentVehicle = null;
+        this.driveableVehicles = [];
 
         this.activeKeys = new Set();
         this.moveSpeed = 9.5;
@@ -80,7 +89,7 @@ export class Shop3DScene {
         this._initGiantBoulders();
         this._initAmbientVehicles();
         this._initNPCs(); // 🧍 ANIME SAIYAN NPCS BƯỚC ĐỊ DI CHUYỂN VUNG TAY VUNG CHÂN GIỐNG PLAYER
-        this._initCarShowcases();
+        this._initCarShowcases(); // 🏎️ KHỞI TẠO 4 SIÊU XE CÓ THỂ LÁI TỰ DO KHẮP MAP
         this._initPlayer();
         this._setupControls();
         this._setupMouseCameraControls();
@@ -1137,7 +1146,7 @@ export class Shop3DScene {
         return group;
     }
 
-    /* 🚗 13. XE CỘ ĐẬU RẢI RÁC */
+    /* 🚗 13. XE CỘ ĐẬU RẢI RÁC TRONG BẢN ĐỒ */
     _initAmbientVehicles() {
         const parkings = [
             { x: 38, z: -8, color: 0xe76f51, rot: Math.PI / 2 },
@@ -1213,7 +1222,6 @@ export class Shop3DScene {
 
             const u = npc.group.userData;
             if (u && u.leftLegGroup && u.rightLegGroup) {
-                // HOẠT ẢNH VUNG TAY VUNG CHÂN BƯỚC ĐỊ GIỐNG HỆT PLAYER
                 u.leftLegGroup.rotation.x = Math.sin(npc.walkTime) * 0.45;
                 u.rightLegGroup.rotation.x = -Math.sin(npc.walkTime) * 0.45;
             }
@@ -1222,7 +1230,6 @@ export class Shop3DScene {
                 u.rightArmGroup.rotation.x = Math.sin(npc.walkTime) * 0.40;
             }
 
-            // AURA ROTATION & EMISSIVE PULSE
             if (u && u.aura) {
                 u.aura.rotation.z += deltaTime * 2.5;
                 u.aura.material.opacity = 0.45 + Math.sin(npc.walkTime * 1.5) * 0.18;
@@ -1252,18 +1259,16 @@ export class Shop3DScene {
                 }
             }
 
-            // ĐẢM BẢO THÂN NGƯỜI ĐỨNG THẲNG TỰ NHIÊN, KHÔNG LẮC RUNG LÊN RUNG XUỐNG
             npc.group.rotation.z = 0;
             const currentGroundY = this._calculateGroundY(npc.group.position.x, npc.group.position.z);
             npc.group.position.y = currentGroundY;
         });
     }
 
-    /* 🟠 14A. PROCEDURAL GOKU MODEL (Có Khớp Tay & Khớp Chân Vung Bước Đi) */
+    /* 🟠 14A. PROCEDURAL GOKU MODEL */
     _createProceduralGoku() {
         const goku = new THREE.Group();
 
-        // Materials Toon Style
         const skinMat = new THREE.MeshToonMaterial({ color: 0xffdbac });
         const orangeGiMat = new THREE.MeshToonMaterial({ color: 0xff6b00 });
         const blueShirtMat = new THREE.MeshToonMaterial({ color: 0x0038a8 });
@@ -1271,7 +1276,6 @@ export class Shop3DScene {
         const bootBlueMat = new THREE.MeshToonMaterial({ color: 0x002b7f });
         const bootRedMat = new THREE.MeshToonMaterial({ color: 0xd90429 });
 
-        // 1. Chân Trái (Pivot Hip Y = 0.70m)
         const leftLegGroup = new THREE.Group();
         leftLegGroup.position.set(-0.18, 0.70, 0);
 
@@ -1291,7 +1295,6 @@ export class Shop3DScene {
         leftLegGroup.add(bootRimL);
         goku.add(leftLegGroup);
 
-        // Chân Phải (Pivot Hip Y = 0.70m)
         const rightLegGroup = new THREE.Group();
         rightLegGroup.position.set(0.18, 0.70, 0);
 
@@ -1311,7 +1314,6 @@ export class Shop3DScene {
         rightLegGroup.add(bootRimR);
         goku.add(rightLegGroup);
 
-        // 2. Thân Áo Gi Cam & V-Neck Xanh Dương
         const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.26, 0.75, 12), orangeGiMat);
         torso.position.y = 1.12;
         torso.castShadow = true;
@@ -1327,7 +1329,6 @@ export class Shop3DScene {
         waistSash.position.y = 0.85;
         goku.add(waistSash);
 
-        // 3. Tay Trái & Tay Phải (Pivot Shoulder Y = 1.40m)
         const leftArmGroup = new THREE.Group();
         leftArmGroup.position.set(-0.38, 1.40, 0);
 
@@ -1354,7 +1355,6 @@ export class Shop3DScene {
         rightArmGroup.add(wristbandR);
         goku.add(rightArmGroup);
 
-        // 4. Đầu & Hair
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), skinMat);
         head.position.y = 1.62;
         head.castShadow = true;
@@ -1395,7 +1395,6 @@ export class Shop3DScene {
         });
         goku.add(hairGroup);
 
-        // Aura Ring
         const auraMesh = new THREE.Mesh(
             new THREE.TorusGeometry(0.85, 0.08, 12, 32),
             new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.65 })
@@ -1408,11 +1407,10 @@ export class Shop3DScene {
         return goku;
     }
 
-    /* 🔵 14B. PROCEDURAL VEGETA MODEL (Có Khớp Tay & Khớp Chân Vung Bước Đi) */
+    /* 🔵 14B. PROCEDURAL VEGETA MODEL */
     _createProceduralVegeta() {
         const vegeta = new THREE.Group();
 
-        // Materials
         const skinMat = new THREE.MeshToonMaterial({ color: 0xffdbac });
         const darkBlueMat = new THREE.MeshToonMaterial({ color: 0x1d3557 });
         const armorWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f9, roughness: 0.25 });
@@ -1420,7 +1418,6 @@ export class Shop3DScene {
         const hairGoldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.25 });
         const bootWhiteMat = new THREE.MeshToonMaterial({ color: 0xffffff });
 
-        // 1. Chân Trái & Phải (Pivot Hip Y = 0.66m)
         const leftLegGroup = new THREE.Group();
         leftLegGroup.position.set(-0.16, 0.66, 0);
 
@@ -1457,7 +1454,6 @@ export class Shop3DScene {
         rightLegGroup.add(bootTipR);
         vegeta.add(rightLegGroup);
 
-        // 2. Thân Giáp Ngực Saiyan
         const torsoBody = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.25, 0.70, 12), darkBlueMat);
         torsoBody.position.y = 1.05;
         vegeta.add(torsoBody);
@@ -1477,7 +1473,6 @@ export class Shop3DScene {
             vegeta.add(shoulderPad);
         });
 
-        // 3. Tay Trái & Tay Phải (Pivot Shoulder Y = 1.35m)
         const leftArmGroup = new THREE.Group();
         leftArmGroup.position.set(-0.36, 1.35, 0);
 
@@ -1504,7 +1499,6 @@ export class Shop3DScene {
         rightArmGroup.add(gloveR);
         vegeta.add(rightArmGroup);
 
-        // 4. Đầu & Tóc Flame
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.23, 16, 16), skinMat);
         head.position.y = 1.55;
         head.castShadow = true;
@@ -1551,11 +1545,10 @@ export class Shop3DScene {
         return vegeta;
     }
 
-    /* 🟣 14C. PROCEDURAL VEGITO MODEL (Có Khớp Tay & Khớp Chân Vung Bước Đi) */
+    /* 🟣 14C. PROCEDURAL VEGITO MODEL */
     _createProceduralVegito() {
         const vegito = new THREE.Group();
 
-        // Materials
         const skinMat = new THREE.MeshToonMaterial({ color: 0xffdbac });
         const darkGiMat = new THREE.MeshToonMaterial({ color: 0x03045e });
         const orangeShirtMat = new THREE.MeshToonMaterial({ color: 0xff5400 });
@@ -1563,7 +1556,6 @@ export class Shop3DScene {
         const whiteMat = new THREE.MeshToonMaterial({ color: 0xffffff });
         const potaraGoldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.2, metalness: 0.8 });
 
-        // 1. Chân Trái & Phải (Pivot Hip Y = 0.72m)
         const leftLegGroup = new THREE.Group();
         leftLegGroup.position.set(-0.18, 0.72, 0);
 
@@ -1592,7 +1584,6 @@ export class Shop3DScene {
         rightLegGroup.add(bootR);
         vegito.add(rightLegGroup);
 
-        // 2. Thân Áo Gi
         const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.27, 0.78, 12), darkGiMat);
         torso.position.y = 1.15;
         torso.castShadow = true;
@@ -1608,7 +1599,6 @@ export class Shop3DScene {
         waistSash.position.y = 0.86;
         vegito.add(waistSash);
 
-        // 3. Tay Trái & Tay Phải (Pivot Shoulder Y = 1.44m)
         const leftArmGroup = new THREE.Group();
         leftArmGroup.position.set(-0.38, 1.44, 0);
 
@@ -1635,7 +1625,6 @@ export class Shop3DScene {
         rightArmGroup.add(gloveR);
         vegito.add(rightArmGroup);
 
-        // 4. Đầu, Potara & Hair
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), skinMat);
         head.position.y = 1.66;
         head.castShadow = true;
@@ -1693,7 +1682,7 @@ export class Shop3DScene {
         return vegito;
     }
 
-    /* 🟣 14D. PROCEDURAL TRUNKS MODEL (Có Khớp Tay & Khớp Chân Vung Bước Đi) */
+    /* 🟣 14D. PROCEDURAL TRUNKS MODEL */
     _createProceduralTrunks() {
         const trunks = new THREE.Group();
 
@@ -1703,7 +1692,6 @@ export class Shop3DScene {
         const hairLavenderMat = new THREE.MeshStandardMaterial({ color: 0xa5b4fc, roughness: 0.3 });
         const swordMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8 });
 
-        // Chân Trái & Phải (Pivot Hip Y = 0.68m)
         const leftLegGroup = new THREE.Group();
         leftLegGroup.position.set(-0.16, 0.68, 0);
 
@@ -1728,7 +1716,6 @@ export class Shop3DScene {
         rightLegGroup.add(bootR);
         trunks.add(rightLegGroup);
 
-        // Thân & Kiếm
         const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.25, 0.72, 12), denimMat);
         torso.position.y = 1.10;
         trunks.add(torso);
@@ -1743,7 +1730,6 @@ export class Shop3DScene {
         hilt.position.set(0.35, 1.50, -0.22);
         trunks.add(hilt);
 
-        // Tay Trái & Tay Phải (Pivot Y = 1.38m)
         const leftArmGroup = new THREE.Group();
         leftArmGroup.position.set(-0.34, 1.38, 0);
 
@@ -1760,7 +1746,6 @@ export class Shop3DScene {
         rightArmGroup.add(armR);
         trunks.add(rightArmGroup);
 
-        // Đầu & Tóc Tím
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), skinMat);
         head.position.y = 1.60;
         trunks.add(head);
@@ -1785,7 +1770,7 @@ export class Shop3DScene {
         return trunks;
     }
 
-    /* 🔴 14E. PROCEDURAL GOHAN MODEL (Có Khớp Tay & Khớp Chân Vung Bước Đi) */
+    /* 🔴 14E. PROCEDURAL GOHAN MODEL */
     _createProceduralGohan() {
         const gohan = new THREE.Group();
 
@@ -1794,7 +1779,6 @@ export class Shop3DScene {
         const redSashMat = new THREE.MeshToonMaterial({ color: 0xdc2626 });
         const hairGoldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
 
-        // Chân Trái & Phải (Pivot Hip Y = 0.66m)
         const leftLegGroup = new THREE.Group();
         leftLegGroup.position.set(-0.16, 0.66, 0);
 
@@ -1819,7 +1803,6 @@ export class Shop3DScene {
         rightLegGroup.add(bootR);
         gohan.add(rightLegGroup);
 
-        // Thân & Đai
         const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.25, 0.72, 12), purpleGiMat);
         torso.position.y = 1.10;
         gohan.add(torso);
@@ -1829,7 +1812,6 @@ export class Shop3DScene {
         waistSash.position.y = 0.82;
         gohan.add(waistSash);
 
-        // Tay Trái & Tay Phải (Pivot Shoulder Y = 1.36m)
         const leftArmGroup = new THREE.Group();
         leftArmGroup.position.set(-0.34, 1.36, 0);
 
@@ -1854,7 +1836,6 @@ export class Shop3DScene {
         rightArmGroup.add(wristbandR);
         gohan.add(rightArmGroup);
 
-        // Đầu & Tóc SSJ2 Gohan
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), skinMat);
         head.position.y = 1.60;
         gohan.add(head);
@@ -1878,176 +1859,7 @@ export class Shop3DScene {
         return gohan;
     }
 
-    /* 🌸 11. CÂY SAKURA & CÂY PHONG/THÔNG NÉ XA HOÀN TOÀN KHU VỰC CUNG ĐIỆN */
-    _initSakuraAndCoastalTrees() {
-        const sakuraSpawns = [
-            { x: -35, z: 18, scale: 2.2 },  // Phía sau Cổng Torii
-            { x: -44, z: 25, scale: 2.3 },  // Đỉnh đồi
-            { x: -34, z: -2, scale: 2.0 },  // Bờ đồi phía Nam
-            { x: -30, z: 42, scale: 2.1 },  // Bờ Đồi Tây Bắc xa hẳn Cung điện
-            { x: -48, z: 12, scale: 2.1 }   // Đồi phía Tây
-        ];
-
-        sakuraSpawns.forEach(s => {
-            const sakura = this._createSakuraTree();
-            sakura.position.set(s.x, 0, s.z);
-            sakura.scale.setScalar(s.scale);
-            this.scene.add(sakura);
-        });
-
-        // TOÀN BỘ CÂY ĐỒN RẢI THOÁNG ĐÃNG - TRÁNH VÙNG CUNG ĐIỆN (x = -22 -> 22, z = 16 -> 44)
-        const regularTrees = [
-            { type: 'pine', x: -16, z: 12, scale: 1.8 },
-            { type: 'maple', x: 30, z: -10, scale: 1.6, color: 0xF3CA40 },
-            { type: 'pine', x: 30, z: 12, scale: 1.9 },
-            { type: 'maple', x: 28, z: -25, scale: 1.7, color: 0xF07167 },
-            { type: 'pine', x: -52, z: -25, scale: 2.1 },
-            { type: 'maple', x: 48, z: -25, scale: 2.2 }
-        ];
-
-        regularTrees.forEach(t => {
-            const tree = this._createProceduralTree(t.type, t.color);
-            tree.position.set(t.x, 0, t.z);
-            tree.scale.setScalar(t.scale);
-            this.scene.add(tree);
-        });
-    }
-
-    _createSakuraTree() {
-        const group = new THREE.Group();
-
-        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3b32, roughness: 0.85 });
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.48, 2.8, 8), trunkMat);
-        trunk.position.y = 1.4;
-        trunk.rotation.z = -0.12;
-        trunk.castShadow = true;
-        group.add(trunk);
-
-        const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.26, 1.9, 8), trunkMat);
-        branch.position.set(0.45, 2.3, 0);
-        branch.rotation.z = -0.42;
-        group.add(branch);
-
-        const sakuraPinkMat = new THREE.MeshStandardMaterial({
-            color: 0xff9ebb,
-            emissive: 0xff75a0,
-            emissiveIntensity: 0.15,
-            roughness: 0.7,
-            flatShading: true
-        });
-
-        const sakuraLightPinkMat = new THREE.MeshStandardMaterial({
-            color: 0xffc2d1,
-            emissive: 0xffb7c5,
-            emissiveIntensity: 0.15,
-            roughness: 0.7,
-            flatShading: true
-        });
-
-        const mainLeaves = new THREE.Mesh(new THREE.DodecahedronGeometry(1.95, 1), sakuraPinkMat);
-        mainLeaves.position.set(0.2, 4.0, 0);
-        mainLeaves.castShadow = true;
-        group.add(mainLeaves);
-
-        const subLeaves1 = new THREE.Mesh(new THREE.DodecahedronGeometry(1.4, 1), sakuraLightPinkMat);
-        subLeaves1.position.set(1.45, 3.6, 0.6);
-        subLeaves1.castShadow = true;
-        group.add(subLeaves1);
-
-        const subLeaves2 = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5, 1), sakuraPinkMat);
-        subLeaves2.position.set(-1.1, 3.7, -0.5);
-        subLeaves2.castShadow = true;
-        group.add(subLeaves2);
-
-        return group;
-    }
-
-    /* 🪨 12. KHỐI ĐÁ NÚI XÁM MỊN KHỔNG LỒ (TÂY BẮC XA x = -50, z = 38) */
-    _initGiantBoulders() {
-        const boulderMat = new THREE.MeshStandardMaterial({
-            color: 0x94a3b8,
-            roughness: 0.8,
-            metalness: 0.05,
-            flatShading: true
-        });
-
-        const bigBoulder = new THREE.Mesh(new THREE.DodecahedronGeometry(5.5, 1), boulderMat);
-        bigBoulder.scale.set(1.2, 1.5, 1.1);
-        bigBoulder.position.set(-50, 4.2, 38);
-        bigBoulder.rotation.set(0.2, 0.5, -0.1);
-        bigBoulder.castShadow = true;
-        bigBoulder.receiveShadow = true;
-        this.scene.add(bigBoulder);
-
-        const subBoulder = new THREE.Mesh(new THREE.DodecahedronGeometry(3.5, 1), boulderMat);
-        subBoulder.scale.set(1.3, 1.1, 1.0);
-        subBoulder.position.set(-42, 2.4, 42);
-        subBoulder.castShadow = true;
-        this.scene.add(subBoulder);
-    }
-
-    _createProceduralTree(type = 'pine', leafColorHex = 0x2EC4B6) {
-        const group = new THREE.Group();
-
-        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x7c5836, roughness: 0.85 });
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.4, 2.4, 8), trunkMat);
-        trunk.position.y = 1.2;
-        trunk.castShadow = true;
-        group.add(trunk);
-
-        const leafMat = new THREE.MeshStandardMaterial({
-            color: leafColorHex || (type === 'pine' ? 0x2EC4B6 : 0xF3CA40),
-            roughness: 0.85,
-            flatShading: true
-        });
-
-        if (type === 'pine') {
-            const leaves = new THREE.Mesh(new THREE.ConeGeometry(1.7, 4.2, 8), leafMat);
-            leaves.position.y = 4.0;
-            leaves.castShadow = true;
-            group.add(leaves);
-        } else {
-            const leaves = new THREE.Mesh(new THREE.DodecahedronGeometry(1.8, 1), leafMat);
-            leaves.position.y = 3.9;
-            leaves.castShadow = true;
-            group.add(leaves);
-        }
-
-        return group;
-    }
-
-    /* 🚗 13. XE CỘ ĐẬU RẢI RÁC */
-    _initAmbientVehicles() {
-        const parkings = [
-            { x: 38, z: -8, color: 0xe76f51, rot: Math.PI / 2 },
-            { x: 38, z: 12, color: 0x2a9d8f, rot: Math.PI / 2 },
-            { x: -10, z: -18, color: 0xf4a261, rot: 0 }
-        ];
-
-        parkings.forEach(p => {
-            const car = this._createSimpleParkedCar(p.color);
-            car.position.set(p.x, 0, p.z);
-            car.rotation.y = p.rot;
-            this.scene.add(car);
-        });
-    }
-
-    _createSimpleParkedCar(colorHex) {
-        const group = new THREE.Group();
-        const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4, metalness: 0.6 });
-        const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 3.2), bodyMat);
-        body.position.y = 0.45;
-        body.castShadow = true;
-        group.add(body);
-
-        const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 1.5), new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.2 }));
-        cabin.position.set(0, 0.8, -0.1);
-        group.add(cabin);
-
-        return group;
-    }
-
-    /* 🏎️ 15. BỤC SIÊU XE 3D */
+    /* 🏎️ 15. BỤC SIÊU XE 3D VÀ HỆ THỐNG XE CÓ THỂ LÁI TỰ DO (DRIVEABLE SUPERCARS) */
     _createProceduralSupercar(carId, accentColorHex) {
         const carGroup = new THREE.Group();
 
@@ -2208,6 +2020,7 @@ export class Shop3DScene {
             [-0.88, wheelRadius, -1.05], [0.88, wheelRadius, -1.05]
         ];
 
+        const wheelsList = [];
         wheelPositions.forEach(pos => {
             const wheel = new THREE.Mesh(wheelGeo, darkMat);
             wheel.position.set(pos[0], pos[1], pos[2]);
@@ -2218,11 +2031,16 @@ export class Shop3DScene {
             hub.rotateZ(Math.PI / 2);
             hub.position.set(pos[0], pos[1], pos[2]);
             parentGroup.add(hub);
+
+            wheelsList.push(wheel, hub);
         });
+
+        parentGroup.userData.wheels = wheelsList;
     }
 
     _initCarShowcases() {
         this.carPlatforms = [];
+        this.driveableVehicles = [];
         const carList = Object.values(CAR_MODELS);
         const podiumColors = [0x3A86FF, 0xFF006E, 0xFFBE0B, 0x8338EC];
         const defaultPositionsX = [-9, -3, 3, 9];
@@ -2253,15 +2071,31 @@ export class Shop3DScene {
             ring.position.y = 0.31;
             platformGroup.add(ring);
 
-            const carContainer = new THREE.Group();
-            carContainer.position.y = 0.30;
-
-            const proceduralCar = this._createProceduralSupercar(car.id, podiumColors[index % podiumColors.length]);
-            carContainer.add(proceduralCar);
-
-            platformGroup.add(carContainer);
             this.scene.add(platformGroup);
-            this.carPlatforms.push(carContainer);
+
+            // Mesh Siêu Xe Độc Lập Đặt Trên Bục (Có Thể Di Chuyển Lái Đi Khắp Map)
+            const carMeshGroup = this._createProceduralSupercar(car.id, podiumColors[index % podiumColors.length]);
+            carMeshGroup.position.set(posX, 0.30, posZ);
+            this.scene.add(carMeshGroup);
+
+            this.carPlatforms.push({
+                podiumGroup: platformGroup,
+                carMesh: carMeshGroup,
+                basePos: new THREE.Vector3(posX, 0.30, posZ)
+            });
+
+            this.driveableVehicles.push({
+                id: car.id,
+                name: car.name,
+                mesh: carMeshGroup,
+                wheels: carMeshGroup.userData.wheels || [],
+                speed: 0,
+                maxSpeed: 22.0,
+                acceleration: 18.0,
+                steeringSpeed: 2.2,
+                isBeingDriven: false,
+                basePos: new THREE.Vector3(posX, 0.30, posZ)
+            });
         });
     }
 
@@ -2403,7 +2237,7 @@ export class Shop3DScene {
         this.scene.add(this.playerMesh);
     }
 
-    /* 🎮 17. ĐIỀU KHIỂN BÀN PHÍM BẰNG SET() */
+    /* 🎮 17. ĐIỀU KHIỂN BÀN PHÍM & BẮT SỰ KIỆN LÁI XE [F] / [ENTER] */
     _setupControls() {
         window.addEventListener('keydown', (e) => {
             if (!this.isActive) return;
@@ -2411,6 +2245,11 @@ export class Shop3DScene {
             if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(code)) {
                 e.preventDefault();
             }
+
+            if (code === 'KeyF' || code === 'Enter') {
+                this._toggleVehicleMount();
+            }
+
             this.activeKeys.add(code);
         });
 
@@ -2423,6 +2262,166 @@ export class Shop3DScene {
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) this._resetKeys();
         });
+    }
+
+    /* 🚗 HÀM LÊN / XUỐNG XE SIÊU XE (VEHICLE MOUNTING / DISMOUNTING) */
+    _toggleVehicleMount() {
+        if (!this.isDrivingVehicle) {
+            // Kiểm tra xem player có đang đứng gần chiếc xe nào không (< 3.5m)
+            let nearestVehicle = null;
+            let minDist = 3.5;
+
+            this.driveableVehicles.forEach(veh => {
+                const dist = this.playerPos.distanceTo(veh.mesh.position);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearestVehicle = veh;
+                }
+            });
+
+            if (nearestVehicle) {
+                this.isDrivingVehicle = true;
+                this.currentVehicle = nearestVehicle;
+                nearestVehicle.isBeingDriven = true;
+                this.playerMesh.visible = false;
+
+                // THIẾT LẬP CAMERA XOAY NGAY PHÍA SAU ĐUÔI XE KHI LÊN XE (GTA CAMERA)
+                this.cameraYaw = nearestVehicle.mesh.rotation.y + Math.PI;
+                this.cameraPitch = 0.35;
+                this.cameraDistance = 10.5;
+
+                this._showDriveHUD(true, nearestVehicle.name);
+            }
+        } else {
+            // Xuống xe
+            if (this.currentVehicle) {
+                this.currentVehicle.isBeingDriven = false;
+                this.currentVehicle.speed = 0;
+
+                // Đặt vị trí player đứng bên cạnh cửa xe
+                const exitOffset = new THREE.Vector3(-1.8, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.currentVehicle.mesh.rotation.y);
+                this.playerPos.copy(this.currentVehicle.mesh.position).add(exitOffset);
+                this.playerPos.y = this._calculateGroundY(this.playerPos.x, this.playerPos.z);
+                this.playerMesh.position.copy(this.playerPos);
+                this.playerMesh.visible = true;
+
+                this.isDrivingVehicle = false;
+                this.currentVehicle = null;
+                this._showDriveHUD(false);
+            }
+        }
+    }
+
+    /* 🖥️ HIỂN THỊ CỤM PROMPT LÁI XE & HUD THÔNG BÁO VỚI POINTER-EVENTS: AUTO */
+    _showDriveHUD(show, carName = '') {
+        let hud = document.getElementById('driving-hud-prompt');
+        if (!hud) {
+            hud = document.createElement('div');
+            hud.id = 'driving-hud-prompt';
+            hud.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(15, 23, 42, 0.90);
+                backdrop-filter: blur(12px);
+                border: 1.5px solid rgba(0, 245, 255, 0.6);
+                border-radius: 16px;
+                padding: 12px 24px;
+                color: #ffffff;
+                font-family: 'Outfit', 'Segoe UI', sans-serif;
+                font-size: 15px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                box-shadow: 0 10px 30px rgba(0, 245, 255, 0.3);
+                z-index: 1000;
+                pointer-events: auto !important;
+                transition: all 0.3s ease;
+            `;
+            document.body.appendChild(hud);
+        }
+
+        if (show) {
+            hud.innerHTML = `
+                <span style="font-size: 24px;">🏎️</span>
+                <div>
+                    <div style="color: #00f5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Đang Lái: ${carName}</div>
+                    <div style="font-size: 14px; color: #e2e8f0;">[W/S] Tăng Tốc / Lùi &nbsp;|&nbsp; [A/D] Bẻ Lái &nbsp;|&nbsp; <b style="color: #ff3366;">[F]</b> Xuống Xe</div>
+                </div>
+            `;
+            hud.style.display = 'flex';
+        } else {
+            hud.style.display = 'none';
+        }
+    }
+
+    _updateVehiclePrompts() {
+        let enterPrompt = document.getElementById('enter-car-prompt');
+        if (!enterPrompt) {
+            enterPrompt = document.createElement('div');
+            enterPrompt.id = 'enter-car-prompt';
+            enterPrompt.style.cssText = `
+                position: fixed;
+                top: 75%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(15, 23, 42, 0.88);
+                backdrop-filter: blur(8px);
+                border: 1.5px solid rgba(255, 215, 0, 0.7);
+                border-radius: 20px;
+                padding: 10px 22px;
+                color: #ffd700;
+                font-family: 'Outfit', sans-serif;
+                font-size: 15px;
+                font-weight: 700;
+                z-index: 1000;
+                pointer-events: auto !important;
+                display: none;
+                box-shadow: 0 4px 20px rgba(255, 215, 0, 0.35);
+            `;
+            document.body.appendChild(enterPrompt);
+        }
+
+        if (this.isActive && !this.isDrivingVehicle) {
+            let nearCar = null;
+            let minDist = 3.5;
+            this.driveableVehicles.forEach(veh => {
+                const dist = this.playerPos.distanceTo(veh.mesh.position);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearCar = veh;
+                }
+            });
+
+            if (nearCar) {
+                enterPrompt.innerHTML = `🚘 Bấm <span style="background: #ffd700; color: #000; padding: 2px 8px; border-radius: 6px; margin: 0 4px;">[F]</span> để Lái ${nearCar.name}`;
+                enterPrompt.style.display = 'block';
+                // 📱 MOBILE CONTROLS: Cập nhật hiển thị nút Lái Xe Mobile khi đứng gần siêu xe
+                if (this.mobileControls) {
+                    this.mobileControls.updateVehicleButtonState(true, false, nearCar.name);
+                }
+            } else {
+                enterPrompt.style.display = 'none';
+                // 📱 MOBILE CONTROLS: Ẩn nút Lái Xe Mobile khi đứng xa siêu xe
+                if (this.mobileControls) {
+                    this.mobileControls.updateVehicleButtonState(false, false);
+                }
+            }
+        } else if (this.isActive && this.isDrivingVehicle && this.currentVehicle) {
+            enterPrompt.style.display = 'none';
+            // 📱 MOBILE CONTROLS: Đang lái xe -> Chuyển nút bấm Mobile thành "XUỐNG XE"
+            if (this.mobileControls) {
+                this.mobileControls.updateVehicleButtonState(true, true, this.currentVehicle.name);
+            }
+        } else {
+            enterPrompt.style.display = 'none';
+            // 📱 MOBILE CONTROLS: Trả về trạng thái mặc định cho nút Mobile
+            if (this.mobileControls) {
+                this.mobileControls.updateVehicleButtonState(false, false);
+            }
+        }
     }
 
     /* 🖱️ 18. ĐIỀU KHIỂN CHUỘT GTA ORBIT CAMERA CONTROLS */
@@ -2474,6 +2473,9 @@ export class Shop3DScene {
         this.velocityY = 0;
         this.isGrounded = true;
 
+        this.isDrivingVehicle = false;
+        this.currentVehicle = null;
+
         this.cameraYaw = 0;
         this.cameraPitch = 0.42;
         this.cameraDistance = 9.5;
@@ -2482,13 +2484,32 @@ export class Shop3DScene {
 
         this._resetKeys();
 
+        // 📱 MOBILE CONTROLS: Hiển thị giao diện Virtual Joystick & Action Buttons khi người chơi vào Shop 3D
+        if (this.mobileControls) {
+            this.mobileControls.show();
+        }
+
         if (document.activeElement && document.activeElement instanceof HTMLElement) {
             document.activeElement.blur();
         }
     }
 
     closeShowroom() {
+        if (this.isDrivingVehicle && this.currentVehicle) {
+            this._toggleVehicleMount();
+        }
+
         this.isActive = false;
+        this._showDriveHUD(false);
+
+        const enterPrompt = document.getElementById('enter-car-prompt');
+        if (enterPrompt) enterPrompt.style.display = 'none';
+
+        // 📱 MOBILE CONTROLS: Ẩn 100% giao diện Virtual Joystick & Action Buttons khi người chơi thoát Shop 3D
+        if (this.mobileControls) {
+            this.mobileControls.hide();
+        }
+
         this._resetKeys();
     }
 
@@ -2503,9 +2524,8 @@ export class Shop3DScene {
 
         if (distPalace <= 14.6) {
             if (distPalace <= 13.4) {
-                currentTargetGroundY = 0.70; // Bệ trên bề mặt cung điện Y = 0.70m
+                currentTargetGroundY = 0.70;
             } else {
-                // Bậc thang bước chuyển tiếp êm ái từ 0.21m -> 0.70m
                 const t = (14.6 - distPalace) / 1.2;
                 currentTargetGroundY = THREE.MathUtils.lerp(0.21, 0.70, t);
             }
@@ -2524,12 +2544,15 @@ export class Shop3DScene {
         return currentTargetGroundY;
     }
 
-    /* 🕹️ 20. VÒNG LẶP UPDATE GAME LOOP (CẬP NHẬT TRỌNG LỰC DYNAMIC GROUND HEIGHT & SAIYAN WALKING ANIMATION) */
+    /* 🕹️ 20. VÒNG LẶP UPDATE GAME LOOP (XỬ LÝ ĐI BỘ & LÁI SIÊU XE TỰ DO) */
     update(deltaTime) {
         if (!this.isActive) return;
 
-        // Cập nhật Anime Saiyan NPCs Đi Lại Trên Phố (Vung Tay Vung Chân Giống Player)
+        // Cập nhật NPC Đi Lại Trên Phố
         this._updateNPCs(deltaTime);
+
+        // Cập nhật Prompt [F] lên xe khi đi bộ
+        this._updateVehiclePrompts();
 
         const timeNow = performance.now() * 0.003;
         this.animatedLanterns.forEach((lantern, idx) => {
@@ -2550,99 +2573,178 @@ export class Shop3DScene {
             }
         });
 
-        // Bắt phím di chuyển
-        const isW = this.activeKeys.has('KeyW') || this.activeKeys.has('ArrowUp');
-        const isS = this.activeKeys.has('KeyS') || this.activeKeys.has('ArrowDown');
-        const isA = this.activeKeys.has('KeyA') || this.activeKeys.has('ArrowLeft');
-        const isD = this.activeKeys.has('KeyD') || this.activeKeys.has('ArrowRight');
+        // 🚗 XỬ LÝ VẬT LÝ VÀ ĐIỀU KHIỂN SIÊU XE KHI ĐANG LÁI XE
+        if (this.isDrivingVehicle && this.currentVehicle) {
+            const veh = this.currentVehicle;
 
-        // GTA STYLE MOVEMENT
-        const forwardX = -Math.sin(this.cameraYaw);
-        const forwardZ = -Math.cos(this.cameraYaw);
+            // 📱 MOBILE CONTROLS: Đọc dữ liệu vector điều khiển từ Virtual Joystick cho Siêu xe Mobile
+            const mobileVec = this.mobileControls ? this.mobileControls.getMoveVector() : { dirX: 0, dirZ: 0, intensity: 0 };
 
-        const rightX = Math.cos(this.cameraYaw);
-        const rightZ = -Math.sin(this.cameraYaw);
+            // 📱 MOBILE CONTROLS: Kết hợp phím bàn phím (WASD) và Joystick gạt Lên/Xuống/Trái/Phải
+            const isW = this.activeKeys.has('KeyW') || this.activeKeys.has('ArrowUp') || (mobileVec.intensity > 0.1 && mobileVec.dirZ < -0.2);
+            const isS = this.activeKeys.has('KeyS') || this.activeKeys.has('ArrowDown') || (mobileVec.intensity > 0.1 && mobileVec.dirZ > 0.2);
+            const isA = this.activeKeys.has('KeyA') || this.activeKeys.has('ArrowLeft') || (mobileVec.intensity > 0.1 && mobileVec.dirX < -0.2);
+            const isD = this.activeKeys.has('KeyD') || this.activeKeys.has('ArrowRight') || (mobileVec.intensity > 0.1 && mobileVec.dirX > 0.2);
 
-        const moveVector = new THREE.Vector3();
-
-        if (isW) { moveVector.x += forwardX; moveVector.z += forwardZ; }
-        if (isS) { moveVector.x -= forwardX; moveVector.z -= forwardZ; }
-        if (isA) { moveVector.x -= rightX; moveVector.z -= rightZ; }
-        if (isD) { moveVector.x += rightX; moveVector.z += rightZ; }
-
-        if (moveVector.lengthSq() > 0) {
-            moveVector.normalize().multiplyScalar(this.moveSpeed * deltaTime);
-            this.playerPos.x += moveVector.x;
-            this.playerPos.z += moveVector.z;
-
-            this.playerPos.x = THREE.MathUtils.clamp(this.playerPos.x, this.bounds.minX, this.bounds.maxX);
-            this.playerPos.z = THREE.MathUtils.clamp(this.playerPos.z, this.bounds.minZ, this.bounds.maxZ);
-
-            const targetAngle = Math.atan2(moveVector.x, moveVector.z);
-            let angleDiff = targetAngle - this.playerMesh.rotation.y;
-
-            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-
-            this.playerMesh.rotation.y += angleDiff * Math.min(1.0, deltaTime * 14.0);
-
-            // Hoạt ảnh bước đi: Đung đưa Chân, Tay & Áo Choàng tự nhiên
-            this.playerWalkTimer += deltaTime * 12.0;
-            if (this.leftLegGroup && this.rightLegGroup) {
-                this.leftLegGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.45;
-                this.rightLegGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.45;
+            // Tăng tốc / Lùi
+            if (isW) {
+                veh.speed = Math.min(veh.maxSpeed, veh.speed + veh.acceleration * deltaTime);
+            } else if (isS) {
+                veh.speed = Math.max(-veh.maxSpeed * 0.55, veh.speed - veh.acceleration * deltaTime);
+            } else {
+                veh.speed *= Math.pow(0.04, deltaTime); // Ma sát tự nhiên khi thả ga
             }
-            if (this.leftArmGroup && this.rightArmGroup) {
-                this.leftArmGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.40;
-                this.rightArmGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.40;
+
+            // Bẻ lái theo hướng xe (phím A/D hoặc Joystick gạt ngang)
+            if (Math.abs(veh.speed) > 0.15) {
+                const dirSign = veh.speed > 0 ? 1 : -1;
+                if (isA) {
+                    const steerRate = mobileVec.intensity > 0.1 && Math.abs(mobileVec.dirX) > 0.2 ? Math.abs(mobileVec.dirX) : 1.0;
+                    veh.mesh.rotation.y += veh.steeringSpeed * steerRate * dirSign * deltaTime;
+                }
+                if (isD) {
+                    const steerRate = mobileVec.intensity > 0.1 && Math.abs(mobileVec.dirX) > 0.2 ? Math.abs(mobileVec.dirX) : 1.0;
+                    veh.mesh.rotation.y -= veh.steeringSpeed * steerRate * dirSign * deltaTime;
+                }
             }
-            if (this.cloakTailMesh) {
-                this.cloakTailMesh.rotation.x = 0.15 + Math.sin(this.playerWalkTimer * 2.0) * 0.1;
+
+            // Di chuyển xe theo hướng xoay rotation.y
+            const moveDist = veh.speed * deltaTime;
+            const forwardX = Math.sin(veh.mesh.rotation.y);
+            const forwardZ = Math.cos(veh.mesh.rotation.y);
+
+            veh.mesh.position.x += forwardX * moveDist;
+            veh.mesh.position.z += forwardZ * moveDist;
+
+            // Giới hạn vùng biên bản đồ
+            veh.mesh.position.x = THREE.MathUtils.clamp(veh.mesh.position.x, this.bounds.minX, this.bounds.maxX);
+            veh.mesh.position.z = THREE.MathUtils.clamp(veh.mesh.position.z, this.bounds.minZ, this.bounds.maxZ);
+
+            // Độ cao địa hình cho xe
+            const targetGroundY = this._calculateGroundY(veh.mesh.position.x, veh.mesh.position.z);
+            veh.mesh.position.y = THREE.MathUtils.lerp(veh.mesh.position.y, targetGroundY + 0.02, Math.min(1.0, deltaTime * 14.0));
+
+            // Đồng bộ vị trí Player với Xe
+            this.playerPos.copy(veh.mesh.position);
+
+            // Xoay bánh xe theo tốc độ di chuyển
+            if (veh.wheels && veh.wheels.length > 0) {
+                veh.wheels.forEach(w => {
+                    w.rotation.x += veh.speed * deltaTime * 3.5;
+                });
+            }
+
+            // 🎥 GTA STYLE AUTO FOLLOW CAMERA: CAMERA TỰ ĐỘNG XOAY THEO HƯỚNG BẺ LÁI CỦA SIÊU XE
+            if (!this.isPointerDown) {
+                const targetYaw = veh.mesh.rotation.y + Math.PI;
+                let angleDiff = targetYaw - this.cameraYaw;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+
+                const followSpeed = Math.abs(veh.speed) > 0.2 ? 5.5 : 2.5;
+                this.cameraYaw += angleDiff * Math.min(1.0, deltaTime * followSpeed);
             }
         } else {
-            // Khi đứng yên -> trả tư thế tay chân về vị trí cân bằng
-            if (this.leftLegGroup && this.rightLegGroup) {
-                this.leftLegGroup.rotation.x = THREE.MathUtils.lerp(this.leftLegGroup.rotation.x, 0, deltaTime * 10.0);
-                this.rightLegGroup.rotation.x = THREE.MathUtils.lerp(this.rightLegGroup.rotation.x, 0, deltaTime * 10.0);
+            // 🚶 XỬ LÝ ĐI BỘ TRÊN CHÂN (ON FOOT MOVEMENT)
+            // 📱 MOBILE CONTROLS: Đọc dữ liệu vector điều khiển từ Virtual Joystick cho Player Đi bộ 360°
+            const mobileVec = this.mobileControls ? this.mobileControls.getMoveVector() : { dirX: 0, dirZ: 0, intensity: 0 };
+            const isW = this.activeKeys.has('KeyW') || this.activeKeys.has('ArrowUp');
+            const isS = this.activeKeys.has('KeyS') || this.activeKeys.has('ArrowDown');
+            const isA = this.activeKeys.has('KeyA') || this.activeKeys.has('ArrowLeft');
+            const isD = this.activeKeys.has('KeyD') || this.activeKeys.has('ArrowRight');
+
+            // GTA STYLE MOVEMENT
+            const forwardX = -Math.sin(this.cameraYaw);
+            const forwardZ = -Math.cos(this.cameraYaw);
+
+            const rightX = Math.cos(this.cameraYaw);
+            const rightZ = -Math.sin(this.cameraYaw);
+
+            const moveVector = new THREE.Vector3();
+
+            if (isW) { moveVector.x += forwardX; moveVector.z += forwardZ; }
+            if (isS) { moveVector.x -= forwardX; moveVector.z -= forwardZ; }
+            if (isA) { moveVector.x -= rightX; moveVector.z -= rightZ; }
+            if (isD) { moveVector.x += rightX; moveVector.z += rightZ; }
+
+            // 📱 MOBILE CONTROLS: Thêm Vector di chuyển 360° linh hoạt từ Virtual Joystick Mobile
+            if (mobileVec.intensity > 0.05) {
+                const joyForward = -mobileVec.dirZ; // >0 khi vuốt lên
+                const joyRight = mobileVec.dirX;
+
+                moveVector.x += (forwardX * joyForward + rightX * joyRight) * mobileVec.intensity;
+                moveVector.z += (forwardZ * joyForward + rightZ * joyRight) * mobileVec.intensity;
             }
-            if (this.leftArmGroup && this.rightArmGroup) {
-                this.leftArmGroup.rotation.x = THREE.MathUtils.lerp(this.leftArmGroup.rotation.x, 0, deltaTime * 10.0);
-                this.rightArmGroup.rotation.x = THREE.MathUtils.lerp(this.rightArmGroup.rotation.x, 0, deltaTime * 10.0);
+
+            if (moveVector.lengthSq() > 0) {
+                moveVector.normalize().multiplyScalar(this.moveSpeed * deltaTime);
+                this.playerPos.x += moveVector.x;
+                this.playerPos.z += moveVector.z;
+
+                this.playerPos.x = THREE.MathUtils.clamp(this.playerPos.x, this.bounds.minX, this.bounds.maxX);
+                this.playerPos.z = THREE.MathUtils.clamp(this.playerPos.z, this.bounds.minZ, this.bounds.maxZ);
+
+                const targetAngle = Math.atan2(moveVector.x, moveVector.z);
+                let angleDiff = targetAngle - this.playerMesh.rotation.y;
+
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+
+                this.playerMesh.rotation.y += angleDiff * Math.min(1.0, deltaTime * 14.0);
+
+                // Hoạt ảnh bước đi: Đung đưa Chân, Tay & Áo Choàng tự nhiên
+                this.playerWalkTimer += deltaTime * 12.0;
+                if (this.leftLegGroup && this.rightLegGroup) {
+                    this.leftLegGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.45;
+                    this.rightLegGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.45;
+                }
+                if (this.leftArmGroup && this.rightArmGroup) {
+                    this.leftArmGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.40;
+                    this.rightArmGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.40;
+                }
+                if (this.cloakTailMesh) {
+                    this.cloakTailMesh.rotation.x = 0.15 + Math.sin(this.playerWalkTimer * 2.0) * 0.1;
+                }
+            } else {
+                // Khi đứng yên -> trả tư thế tay chân về vị trí cân bằng
+                if (this.leftLegGroup && this.rightLegGroup) {
+                    this.leftLegGroup.rotation.x = THREE.MathUtils.lerp(this.leftLegGroup.rotation.x, 0, deltaTime * 10.0);
+                    this.rightLegGroup.rotation.x = THREE.MathUtils.lerp(this.rightLegGroup.rotation.x, 0, deltaTime * 10.0);
+                }
+                if (this.leftArmGroup && this.rightArmGroup) {
+                    this.leftArmGroup.rotation.x = THREE.MathUtils.lerp(this.leftArmGroup.rotation.x, 0, deltaTime * 10.0);
+                    this.rightArmGroup.rotation.x = THREE.MathUtils.lerp(this.rightArmGroup.rotation.x, 0, deltaTime * 10.0);
+                }
+                if (this.cloakTailMesh) {
+                    this.cloakTailMesh.rotation.x = THREE.MathUtils.lerp(this.cloakTailMesh.rotation.x, 0.15, deltaTime * 5.0);
+                }
             }
-            if (this.cloakTailMesh) {
-                this.cloakTailMesh.rotation.x = THREE.MathUtils.lerp(this.cloakTailMesh.rotation.x, 0.15, deltaTime * 5.0);
+
+            // Space Jump
+            if (this.activeKeys.has('Space') && this.isGrounded) {
+                this.velocityY = this.jumpForce;
+                this.isGrounded = false;
             }
-        }
 
-        // Space Jump
-        if (this.activeKeys.has('Space') && this.isGrounded) {
-            this.velocityY = this.jumpForce;
-            this.isGrounded = false;
-        }
+            // Dynamic Ground Calculation based on player X, Z
+            const targetGroundY = this._calculateGroundY(this.playerPos.x, this.playerPos.z);
+            this.groundY = THREE.MathUtils.lerp(this.groundY, targetGroundY, Math.min(1.0, deltaTime * 14.0));
 
-        // Dynamic Ground Calculation based on player X, Z
-        const targetGroundY = this._calculateGroundY(this.playerPos.x, this.playerPos.z);
-        this.groundY = THREE.MathUtils.lerp(this.groundY, targetGroundY, Math.min(1.0, deltaTime * 14.0));
-
-        if (this.isGrounded) {
-            this.playerPos.y = this.groundY;
-        } else {
-            this.velocityY += this.gravity * deltaTime;
-            this.playerPos.y += this.velocityY * deltaTime;
-
-            if (this.playerPos.y <= this.groundY) {
+            if (this.isGrounded) {
                 this.playerPos.y = this.groundY;
-                this.velocityY = 0;
-                this.isGrounded = true;
+            } else {
+                this.velocityY += this.gravity * deltaTime;
+                this.playerPos.y += this.velocityY * deltaTime;
+
+                if (this.playerPos.y <= this.groundY) {
+                    this.playerPos.y = this.groundY;
+                    this.velocityY = 0;
+                    this.isGrounded = true;
+                }
             }
+
+            this.playerMesh.position.copy(this.playerPos);
         }
-
-        this.playerMesh.position.copy(this.playerPos);
-
-        // Xoay bục xe
-        this.carPlatforms.forEach(carContainer => {
-            carContainer.rotation.y += deltaTime * 0.45;
-        });
 
         // GTA & ROBLOX STYLE CAMERA ORBIT LERP
         const targetCamX = this.playerPos.x + Math.sin(this.cameraYaw) * Math.cos(this.cameraPitch) * this.cameraDistance;

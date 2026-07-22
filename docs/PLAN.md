@@ -332,3 +332,23 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
   - [x] GAMEOVER enter: `duckVolume(0.12)` thay vì `stopBGM()`.
   - [x] PLAYING enter: `restoreVolume()` từ ducking.
   - [x] `startGame()`: nhạc tiếp tục phát mượt mà từ Menu → Gameplay.
+
+---
+
+## Phase 22: Hệ Thống Điều Khiển Di Động Độc Lập Cho Cửa Hàng 3D (`mobile.js`)
+**Mục tiêu:** Phát triển riêng module `src/utils/mobile.js` hỗ trợ giao diện cảm ứng di động (Virtual Joystick 360° & Nút Hành Động) cho phép di chuyển nhân vật, trèo lên/xuống xe siêu xe, bật nhảy và quay camera 360° trong map Cửa Hàng 3D (`Shop3DScene`).
+
+### Checklist công việc chi tiết
+- [x] **Task 22.1: Module Quản Lý Điều Khiển Mobile (`src/utils/mobile.js`)**
+  - [x] Viết lớp `MobileControls` tự động phát hiện thiết bị di động & màn hình cảm ứng.
+  - [x] Thiết lập Cần gạt Analog Virtual Joystick 360° góc trái dưới với tính toán vector hướng di chuyển normalized `(dirX, dirZ)` và độ nhạy `intensity`.
+  - [x] Xử lý Multi-touch linh hoạt: chạm vuốt nửa màn hình bên phải để xoay góc nhìn camera GTA 360°.
+  - [x] Cụm nút hành động góc phải dưới: Nút Nhảy 🦘 (`Space`) và Nút Lái Xe 🏎️ (`[F]`).
+- [x] **Task 22.2: Tích Hợp Vào Cửa Hàng 3D (`src/core/Shop3DScene.js`)**
+  - [x] Khởi tạo `this.mobileControls = new MobileControls(this)`.
+  - [x] Tự động bật `mobileControls.show()` khi vào Shop và `mobileControls.hide()` khi thoát Shop.
+  - [x] Tích hợp vector di chuyển Joystick vào luồng vật lý đi bộ và bẻ lái siêu xe trong hàm `update(deltaTime)`.
+  - [x] Đồng bộ trạng thái hiển thị nút Lái Xe khi đứng gần xe hoặc đang lái xe.
+- [x] **Task 22.3: Định Dạng CSS Glassmorphism Neon (`src/style.css`)**
+  - [x] Định dạng UI Joystick & Action Buttons glassmorphic cyan neon glow, `touch-action: none !important`, responsive trên điện thoại.
+
