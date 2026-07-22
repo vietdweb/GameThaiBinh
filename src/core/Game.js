@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { ShopManager } from '../managers/ShopManager.js';
 import { Shop3DScene } from './Shop3DScene.js';
+import { City3DScene } from './City3DScene.js';
+import { CityManager } from '../managers/CityManager.js';
 import { SceneManager } from './SceneManager.js';
 import { StateMachine } from '../managers/StateMachine.js';
 import { CollisionManager } from '../managers/CollisionManager.js';
@@ -179,6 +181,8 @@ export class Game {
     // 2. Khởi tạo ShopManager & Shop3DScene TRƯỚC khi gắn sự kiện UI
     this.shopManager = new ShopManager(this.currencyManager);
     this.shop3DScene = new Shop3DScene(this.sceneManager.renderer, this);
+    this.city3DScene = new City3DScene(this.sceneManager.renderer, this);
+    this.cityManager = new CityManager(this, this.city3DScene);
 
     // 3. Gắn sự kiện các nút bấm UI & Cửa hàng
     this._setupUIEvents();
@@ -1645,6 +1649,11 @@ export class Game {
   }
 
   _update(deltaTime) {
+    if (this.city3DScene && this.city3DScene.isActive) {
+      this.city3DScene.update(deltaTime);
+      return;
+    }
+
     if (this.stateMachine.is(GAME_STATES.VIEWER)) {
       if (this.characterViewerManager) {
         this.characterViewerManager.update();
@@ -1850,6 +1859,11 @@ export class Game {
   }
 
   _render() {
+    if (this.city3DScene && this.city3DScene.isActive) {
+      this.city3DScene.render();
+      return;
+    }
+
     if (this.stateMachine.is(GAME_STATES.VIEWER)) {
       if (this.characterViewerManager) {
         this.characterViewerManager.render();
