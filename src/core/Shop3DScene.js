@@ -7,6 +7,7 @@
  * 4. 100% Procedural Three.js Code (0ms Load Time, 60 FPS)
  */
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { CAR_MODELS } from '../managers/ShopManager.js';
 import { MobileControls } from '../utils/mobile.js'; // 📱 MOBILE CONTROLS: Import bộ điều khiển di động
 
@@ -46,6 +47,8 @@ export class Shop3DScene {
         this.rightArmGroup = null;
         this.cloakTailMesh = null;
         this.playerWalkTimer = 0;
+        this.babyGokuGltf = null;
+        this._loadBabyGokuModel();
 
         // 4. Driveable Vehicle System
         this.isDrivingVehicle = false;
@@ -74,6 +77,17 @@ export class Shop3DScene {
         this.cloudList = [];
         this.cyanPortalSphere = null;
 
+        // 🚪 Trạng Thái & Bản Lề Cửa Nhà Chính
+        this.isHouseDoorOpen = false;
+        this.mainShowroomDoorHinge = null;
+
+        // ☁️ HỆ THỐNG CÂN ĐẨU VÂN (FLYING NIMBUS MOUNT)
+        this.nimbusCloud = null;
+        this.isRidingNimbus = false;
+        this.isNimbusLanding = false;
+        this.nimbusFlightHeight = 0.8;
+        this.nimbusMaxHeight = 35.0;
+
         // Khởi tạo toàn bộ thế giới mở kết hợp Cung Điện La Mã, Cổ Đền Nhật Bản & Vườn Sougen
         this._initSanctuaryEnvironment();
         this._initSanctuaryLighting();
@@ -90,6 +104,7 @@ export class Shop3DScene {
         this._initAmbientVehicles();
         this._initNPCs(); // 🧍 ANIME SAIYAN NPCS BƯỚC ĐỊ DI CHUYỂN VUNG TAY VUNG CHÂN GIỐNG PLAYER
         this._initCarShowcases(); // 🏎️ KHỞI TẠO 4 SIÊU XE CÓ THỂ LÁI TỰ DO KHẮP MAP
+        this._initNimbusCloud(); // ☁️ NẠP CÂN ĐẨU VÂN VÀO GIỮA THẢM CỎ XANH BẢN ĐỒ
         this._initPlayer();
         this._setupControls();
         this._setupMouseCameraControls();
@@ -935,8 +950,8 @@ export class Shop3DScene {
     _initTownHousesAndShops() {
         const townGroup = new THREE.Group();
 
-        const mainShowroom = this._createHouseBuilding(28, 10, 10, 0x1e293b, 0x3a86ff, 'CYBER MOTORS');
-        mainShowroom.position.set(0, 0, -20);
+        const mainShowroom = this._createHouseBuilding(28, 10, 10, 0x1e293b, 0x3a86ff, 'CYBER MOTORS', true);
+        mainShowroom.position.set(0, 0, -19.1);
         townGroup.add(mainShowroom);
 
         // Đẩy toàn bộ các ngôi nhà phụ sang bờ Đông x >= 44 né xa khu vực Cung điện (x = -22 -> 22, z = 16 -> 44)
@@ -981,29 +996,369 @@ export class Shop3DScene {
 
         townGroup.add(gasStation);
         this.scene.add(townGroup);
+
+        // 🛒 KHỞI TẠO QUẦY BÁN HÀNG 3D NGOÀI TRỜI ĐẶT TRƯỚC NHÀ (z = -7.0)
+        this._initArmoryShopCounter();
     }
 
-    _createHouseBuilding(width, height, depth, wallColorHex, roofColorHex, labelText) {
+    /* 🛒 10A. QUẦY BÁN HÀNG 3D NGOÀI TRỜI (ARMORY SHOP COUNTER WITH 3D ITEMS ON TOP) */
+    _initArmoryShopCounter() {
+        const counterGroup = new THREE.Group();
+        counterGroup.position.set(0, 0, -7.0);
+
+        const counterWoodMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.6 });
+        const marbleTopMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2 });
+        const cyanNeonMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff });
+        const magentaNeonMat = new THREE.MeshBasicMaterial({ color: 0xff007f });
+        const goldNeonMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+
+        // 1. Thân Bàn Quầy Hàng (Counter Table Base)
+        const tableBase = new THREE.Mesh(new THREE.BoxGeometry(8.5, 1.1, 1.8), counterWoodMat);
+        tableBase.position.y = 0.55;
+        tableBase.castShadow = true;
+        tableBase.receiveShadow = true;
+        counterGroup.add(tableBase);
+
+        // Mặt Bàn Cẩm Thạch Trắng (Marble Table Top)
+        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(8.9, 0.12, 2.0), marbleTopMat);
+        tableTop.position.y = 1.16;
+        tableTop.castShadow = true;
+        counterGroup.add(tableTop);
+
+        // Viền LED Cyan Neon Đèn Chân Bàn
+        const ledTrim = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.08, 1.84), cyanNeonMat);
+        ledTrim.position.y = 1.10;
+        counterGroup.add(ledTrim);
+
+        // 2. Mái Hiên Che Quầy Bán Hàng (Counter Awning Canopy)
+        const pillarMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 });
+        const awningMat = new THREE.MeshStandardMaterial({ color: 0x00f5ff, roughness: 0.4 });
+
+        [-3.8, 3.8].forEach(px => {
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.4, 8), pillarMat);
+            pole.position.set(px, 2.3, 0);
+            pole.castShadow = true;
+            counterGroup.add(pole);
+        });
+
+        const awning = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.25, 2.4), awningMat);
+        awning.position.set(0, 3.4, 0);
+        awning.castShadow = true;
+        counterGroup.add(awning);
+
+        // Biển chữ "🛒 ITEM & SKIN SHOP" 1024x256 nét căng, chữ P hiển thị 100% rõ ràng
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.clearRect(0, 0, 1024, 256);
+            ctx.font = 'bold 74px "Outfit", "Inter", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Viền chữ viền đen sắc nét
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 12;
+            ctx.strokeText('🛒 ITEM & SKIN SHOP', 512, 128);
+
+            // Chữ màu trắng nổi bật trên nền mái Cyan
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText('🛒 ITEM & SKIN SHOP', 512, 128);
+        }
+        const signTexture = new THREE.CanvasTexture(canvas);
+        signTexture.minFilter = THREE.LinearFilter;
+        const signMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(8.2, 2.0),
+            new THREE.MeshBasicMaterial({ map: signTexture, transparent: true, side: THREE.DoubleSide })
+        );
+        signMesh.position.set(0, 3.4, 1.26);
+        counterGroup.add(signMesh);
+
+        // 3. 4 ITEM 3D ĐẶT TRÊN MẶT QUẦY BÁN HÀNG (Shield, Bread, Nitro, Magnet)
+        this.armoryItemIcons = [];
+
+        // Item 1: Khiên Bảo Vệ 🛡️
+        const shieldIcon = new THREE.Mesh(new THREE.IcosahedronGeometry(0.35, 1), cyanNeonMat);
+        shieldIcon.position.set(-2.7, 1.65, 0);
+        counterGroup.add(shieldIcon);
+        this.armoryItemIcons.push(shieldIcon);
+
+        // Item 2: Bánh Mì Hồi Huyết 🍞
+        const breadMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.7 });
+        const breadIcon = new THREE.Mesh(new THREE.CapsuleGeometry(0.18, 0.32, 8, 12), breadMat);
+        breadIcon.rotation.z = Math.PI / 2;
+        breadIcon.position.set(-0.9, 1.65, 0);
+        counterGroup.add(breadIcon);
+        this.armoryItemIcons.push(breadIcon);
+
+        // Item 3: Bình Nitro Tăng Tốc ⚡
+        const nitroIcon = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.45, 12), magentaNeonMat);
+        nitroIcon.position.set(0.9, 1.65, 0);
+        counterGroup.add(nitroIcon);
+        this.armoryItemIcons.push(nitroIcon);
+
+        // Item 4: Nam Châm Hút Coin 🧲
+        const magnetIcon = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.08, 8, 16, Math.PI), goldNeonMat);
+        magnetIcon.position.set(2.7, 1.65, 0);
+        counterGroup.add(magnetIcon);
+        this.armoryItemIcons.push(magnetIcon);
+
+        this.scene.add(counterGroup);
+    }
+
+    _createHouseBuilding(width, height, depth, wallColorHex, roofColorHex, labelText, isMainShowroom = false) {
         const group = new THREE.Group();
 
         const wallMat = new THREE.MeshStandardMaterial({ color: wallColorHex, roughness: 0.85, metalness: 0.05 });
-        const walls = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), wallMat);
-        walls.position.y = height / 2;
-        walls.castShadow = true;
-        walls.receiveShadow = true;
-        group.add(walls);
 
+        if (isMainShowroom) {
+            // 🏠 XÂY DỰNG NHÀ CHÍNH KHÔNG GIAN NỘI THẤT RỘNG MỞ & CỬA RA VÀO (HOLLOW WALLS & INTERIOR SHOWROOM)
+            const wallThickness = 0.4;
+            const doorOpeningW = 1.9;
+
+            // 1. Tường Mặt Tiền Trái (Đồng màu đen 0x1e293b 100%)
+            const frontLeftW = (width - doorOpeningW) / 2;
+            const frontLeftWall = new THREE.Mesh(new THREE.BoxGeometry(frontLeftW, height, wallThickness), wallMat);
+            frontLeftWall.position.set(-(doorOpeningW / 2 + frontLeftW / 2), height / 2, depth / 2);
+            frontLeftWall.castShadow = true;
+            frontLeftWall.receiveShadow = true;
+            group.add(frontLeftWall);
+
+            // 2. Tường Mặt Tiền Phải (Đồng màu đen 0x1e293b 100%)
+            const frontRightWall = new THREE.Mesh(new THREE.BoxGeometry(frontLeftW, height, wallThickness), wallMat);
+            frontRightWall.position.set(doorOpeningW / 2 + frontLeftW / 2, height / 2, depth / 2);
+            frontRightWall.castShadow = true;
+            frontRightWall.receiveShadow = true;
+            group.add(frontRightWall);
+
+            // 3. Tường Lanh Tô Trên Cửa Chính (Triệt tiêu hoàn toàn thanh xám, phủ đen 0x1e293b đồng bộ)
+            const lintelHeight = height - 2.9; // Từ y = 2.9m tới 10.0m
+            const lintelWall = new THREE.Mesh(new THREE.BoxGeometry(doorOpeningW, lintelHeight, wallThickness), wallMat);
+            lintelWall.position.set(0, height - lintelHeight / 2, depth / 2);
+            lintelWall.castShadow = true;
+            lintelWall.receiveShadow = true;
+            group.add(lintelWall);
+
+            // 4. Tường Phía Sau & Tường 2 Bên
+            const backWall = new THREE.Mesh(new THREE.BoxGeometry(width, height, wallThickness), wallMat);
+            backWall.position.set(0, height / 2, -depth / 2);
+            backWall.castShadow = true;
+            backWall.receiveShadow = true;
+            group.add(backWall);
+
+            const sideWallL = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, height, depth), wallMat);
+            sideWallL.position.set(-width / 2, height / 2, 0);
+            sideWallL.castShadow = true;
+            group.add(sideWallL);
+
+            const sideWallR = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, height, depth), wallMat);
+            sideWallR.position.set(width / 2, height / 2, 0);
+            sideWallR.castShadow = true;
+            group.add(sideWallR);
+
+            // 🛋️ SÀN GỖ NỘI THẤT VÀ ÁNH SÁNG ẤM CỦNG TRONG NHÀ
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.45, metalness: 0.05 });
+            const interiorFloor = new THREE.Mesh(new THREE.BoxGeometry(width - 0.4, 0.12, depth - 0.4), floorMat);
+            interiorFloor.position.set(0, 0.06, 0);
+            interiorFloor.receiveShadow = true;
+            group.add(interiorFloor);
+
+            // Đèn Trần Ấm Củng Chiếu Sáng Nội Thất & Tỏa Sáng Ra Cửa
+            const indoorLight = new THREE.PointLight(0xffda9e, 2.8, 20.0);
+            indoorLight.position.set(0, 4.8, 0);
+            indoorLight.castShadow = true;
+            group.add(indoorLight);
+
+            // Đèn Chùm Trang Trí Trần Nhà (Chandelier)
+            const chandelier = new THREE.Mesh(
+                new THREE.SphereGeometry(0.38, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0xffd700 })
+            );
+            chandelier.position.set(0, 5.2, 0);
+            group.add(chandelier);
+
+            // 🛋️ BỘ BÀN GHẾ LEATHER SOFA LOUNGE TRONG NHÀ
+            const sofaMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.6 });
+            const sofaSeat = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.6, 1.6), sofaMat);
+            sofaSeat.position.set(-8.0, 0.45, 0);
+            sofaSeat.castShadow = true;
+            group.add(sofaSeat);
+
+            const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.2, 0.4), sofaMat);
+            sofaBack.position.set(-8.0, 1.05, -0.6);
+            sofaBack.castShadow = true;
+            group.add(sofaBack);
+
+            // Bàn Trà Gỗ & Thảm Lounge
+            const rug = new THREE.Mesh(new THREE.PlaneGeometry(5.5, 3.8), new THREE.MeshStandardMaterial({ color: 0x00f5ff, roughness: 0.7 }));
+            rug.rotation.x = -Math.PI / 2;
+            rug.position.set(-8.0, 0.13, 0.2);
+            group.add(rug);
+
+            const coffeeTable = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.45, 1.2), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 }));
+            coffeeTable.position.set(-8.0, 0.38, 0.8);
+            coffeeTable.castShadow = true;
+            group.add(coffeeTable);
+
+            // 🏆 TỦ KÍNH TRƯNG BÀY CÚP VÔ ĐỊCH SIÊU XE (TROPHY CABINET)
+            const cabinetMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 });
+            const cabinet = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.2, 0.8), cabinetMat);
+            cabinet.position.set(8.0, 1.7, -depth / 2 + 0.6);
+            cabinet.castShadow = true;
+            group.add(cabinet);
+
+            // 3 Cúp Vàng Lấp Lánh Trong Tủ
+            for (let t = -1; t <= 1; t++) {
+                const trophy = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.12, 0.22, 0.5, 12),
+                    new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.1 })
+                );
+                trophy.position.set(8.0 + t * 0.9, 2.3, -depth / 2 + 0.6);
+                trophy.castShadow = true;
+                group.add(trophy);
+            }
+        } else {
+            // Khối Tường Đặc Nguyên Bản Cho Các Nhà Khác
+            const walls = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), wallMat);
+            walls.position.y = height / 2;
+            walls.castShadow = true;
+            walls.receiveShadow = true;
+            group.add(walls);
+        }
+
+        // 2. MÁI NHÀ CHÓP NÓN NGUYÊN BẢN
         const roofMat = new THREE.MeshStandardMaterial({ color: roofColorHex, roughness: 0.85, metalness: 0.05 });
-        const roof = new THREE.Mesh(new THREE.ConeGeometry(width * 0.75, height * 0.5, 4), roofMat);
+        const roofRadius = width * 0.75;
+        const roofHeight = height * 0.5;
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(roofRadius, roofHeight, 4), roofMat);
         roof.rotation.y = Math.PI / 4;
         roof.position.y = height + (height * 0.25);
         roof.castShadow = true;
         group.add(roof);
 
-        const doorMat = new THREE.MeshStandardMaterial({ color: 0x6d4c41, roughness: 0.9 });
-        const door = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.8, 0.2), doorMat);
-        door.position.set(0, 1.4, depth / 2 + 0.1);
-        group.add(door);
+        // 3. CỬA CHÍNH ĐẸP NẾT + TAY NẮM CỬA KIM LOẠI VÀNG (CẢ KHUNG GỖ NÂU VÀ CÁNH CỬA NÂU XOAY CÙNG NHAU)
+        const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x3d271d, roughness: 0.8 });
+        const doorMat = new THREE.MeshStandardMaterial({ color: 0x5c3d2e, roughness: 0.7 });
+        const handleMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.2 });
+
+        if (isMainShowroom) {
+            // HỆ TRỤC PIVOT XOAY TOÀN BỘ CỤM CỬA NÂU (BẢN LỀ TRÁI x = -0.95)
+            const doorHingePivot = new THREE.Group();
+            doorHingePivot.position.set(-0.95, 1.45, depth / 2 + 0.08);
+
+            // Khung viền gỗ ngoài cửa (Màu nâu 0x3d271d)
+            const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.9, 3.0, 0.08), doorFrameMat);
+            doorFrame.position.set(0.95, 0, -0.04);
+            doorFrame.castShadow = true;
+            doorHingePivot.add(doorFrame);
+
+            // Cánh cửa chính (Màu nâu 0x5c3d2e)
+            const doorLeaf = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.8, 0.16), doorMat);
+            doorLeaf.position.set(0.95, -0.05, 0);
+            doorLeaf.castShadow = true;
+            doorHingePivot.add(doorLeaf);
+
+            // Pano soi chìm trên và dưới cửa
+            const doorPanelTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 0.20), doorFrameMat);
+            doorPanelTop.position.set(0.95, 0.50, 0);
+            doorHingePivot.add(doorPanelTop);
+
+            const doorPanelBot = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.9, 0.20), doorFrameMat);
+            doorPanelBot.position.set(0.95, -0.60, 0);
+            doorHingePivot.add(doorPanelBot);
+
+            // Tay nắm cửa tròn bằng Vàng Kim Loại (Giữ nguyên tay nắm cũ tại vị trí x = 1.50 so với bản lề)
+            const doorKnobBase = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.08, 12), handleMat);
+            doorKnobBase.rotation.x = Math.PI / 2;
+            doorKnobBase.position.set(1.50, -0.05, 0.12);
+            doorHingePivot.add(doorKnobBase);
+
+            const doorKnob = new THREE.Mesh(new THREE.SphereGeometry(0.065, 12, 12), handleMat);
+            doorKnob.position.set(1.50, -0.05, 0.16);
+            doorKnob.castShadow = true;
+            doorHingePivot.add(doorKnob);
+
+            group.add(doorHingePivot);
+            this.mainShowroomDoorHinge = doorHingePivot;
+
+            // 🏷️ BIỂN HIỆU 3D "👗 CHARACTER WARDROBE" PHÍA TRÊN CỬA CHÍNH QUAY VỀ HƯỚNG BẢN ĐỒ
+            const signCanvas = document.createElement('canvas');
+            signCanvas.width = 1024;
+            signCanvas.height = 256;
+            const sCtx = signCanvas.getContext('2d');
+            if (sCtx) {
+                sCtx.clearRect(0, 0, 1024, 256);
+                sCtx.font = 'bold 68px "Outfit", "Inter", sans-serif';
+                sCtx.textAlign = 'center';
+                sCtx.textBaseline = 'middle';
+                sCtx.strokeStyle = '#0f172a';
+                sCtx.lineWidth = 14;
+                sCtx.strokeText('👗 CHARACTER WARDROBE', 512, 128);
+                sCtx.fillStyle = '#00f5ff';
+                sCtx.fillText('👗 CHARACTER WARDROBE', 512, 128);
+            }
+            const signTex = new THREE.CanvasTexture(signCanvas);
+            signTex.minFilter = THREE.LinearFilter;
+            const houseSignMesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(8.5, 2.1),
+                new THREE.MeshBasicMaterial({ map: signTex, transparent: true, side: THREE.DoubleSide })
+            );
+            houseSignMesh.position.set(0, height * 0.65, depth / 2 + 0.22);
+            group.add(houseSignMesh);
+        } else {
+            // Cửa tĩnh cho các nhà khác
+            const doorGroup = new THREE.Group();
+            doorGroup.position.set(0, 1.4, depth / 2 + 0.1);
+
+            const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.9, 3.0, 0.08), doorFrameMat);
+            doorFrame.position.set(0, 0.05, -0.04);
+            doorGroup.add(doorFrame);
+
+            const doorLeaf = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.8, 0.16), doorMat);
+            doorLeaf.castShadow = true;
+            doorGroup.add(doorLeaf);
+
+            const doorKnob = new THREE.Mesh(new THREE.SphereGeometry(0.065, 12, 12), handleMat);
+            doorKnob.position.set(0.55, 0.05, 0.16);
+            doorKnob.castShadow = true;
+            doorGroup.add(doorKnob);
+
+            group.add(doorGroup);
+        }
+
+        // 4. 2 KHUNG CỬA SỔ KÍNH 2 BÊN MẶT TIỀN (2 WINDOW FRAMES WITH CROSS GRILL)
+        const winW = Math.max(1.8, width * 0.09);
+        const winH = Math.max(1.5, height * 0.22);
+        const winOffsetX = Math.max(3.2, width * 0.23);
+
+        const windowFrameMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+        const windowGlassMat = new THREE.MeshStandardMaterial({
+            color: 0x8ad2f1,
+            roughness: 0.1,
+            metalness: 0.9,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        [-winOffsetX, winOffsetX].forEach(wx => {
+            const winGroup = new THREE.Group();
+            winGroup.position.set(wx, height * 0.52, depth / 2 + 0.08);
+
+            const winOuterFrame = new THREE.Mesh(new THREE.BoxGeometry(winW + 0.3, winH + 0.3, 0.08), windowFrameMat);
+            winGroup.add(winOuterFrame);
+
+            const winGlass = new THREE.Mesh(new THREE.BoxGeometry(winW, winH, 0.12), windowGlassMat);
+            winGroup.add(winGlass);
+
+            const grillVert = new THREE.Mesh(new THREE.BoxGeometry(0.08, winH, 0.14), windowFrameMat);
+            winGroup.add(grillVert);
+
+            const grillHoriz = new THREE.Mesh(new THREE.BoxGeometry(winW, 0.08, 0.14), windowFrameMat);
+            winGroup.add(grillHoriz);
+
+            group.add(winGroup);
+        });
 
         return group;
     }
@@ -1999,14 +2354,6 @@ export class Shop3DScene {
         tailLight.position.set(0, 0.5, -1.65);
         carGroup.add(tailLight);
 
-        const underglow = new THREE.Mesh(
-            new THREE.PlaneGeometry(1.9, 3.6),
-            new THREE.MeshBasicMaterial({ color: accentColorHex, transparent: true, opacity: 0.35 })
-        );
-        underglow.rotation.x = -Math.PI / 2;
-        underglow.position.y = 0.02;
-        carGroup.add(underglow);
-
         return carGroup;
     }
 
@@ -2099,103 +2446,365 @@ export class Shop3DScene {
         });
     }
 
-    /* 👑 16. THIẾT KẾ NHÂN VẬT ANIME CYBER-HEROINE CÓ ĐẦY ĐỦ CÁNH TAY & BÀN TAY */
+    /* ☁️ 15B. KHỞI TẠO CÂN ĐẨU VÂN 3D DRAGON BALL (KINTO-UN GOLDEN NIMBUS) CHUẨN 100% ẢNH MẪU */
+    _initNimbusCloud() {
+        const nimbusGroup = new THREE.Group();
+        nimbusGroup.position.set(18.0, 0.8, 0.0); // Vị trí chính giữa thảm cỏ xanh trong ảnh người dùng chụp
+
+        // 🎨 Màu Vàng Chanh Pastel Ấm Củng Chuẩn 100% Ảnh Mẫu Dragon Ball (Claymation Effect)
+        const nimbusPastelMat = new THREE.MeshStandardMaterial({
+            color: 0xFCE855,
+            emissive: 0xE5C820,
+            emissiveIntensity: 0.18,
+            roughness: 0.85,
+            metalness: 0.05
+        });
+
+        const nimbusDeepMat = new THREE.MeshStandardMaterial({
+            color: 0xF5DC3B,
+            emissive: 0xD9BA15,
+            emissiveIntensity: 0.15,
+            roughness: 0.88,
+            metalness: 0.05
+        });
+
+        // 1. THÂN ĐỆM MÂY CHÍNH HƯỚNG DỌC ĐẦU MÂY +Z, ĐUÔI MÂY -Z (Main Cloud Cushion Base aligned with Z-axis)
+        const coreGeo = new THREE.SphereGeometry(1.05, 16, 16);
+        coreGeo.scale(1.1, 0.75, 1.8); // Dọc theo trục Z: Chiều dài 3.8m, chiều ngang 2.3m, cao 1.6m
+
+        const mainCore = new THREE.Mesh(coreGeo, nimbusPastelMat);
+        mainCore.position.y = 0.45;
+        mainCore.castShadow = true;
+        nimbusGroup.add(mainCore);
+
+        // 2. 15 BÚP MÂY BỒNG BỀNH THÂN MÂY (Dense Fluffy Cloud Swell Bulges)
+        const puffSpecs = [
+            // Đầu Mây Tròn Phía Trước (+Z)
+            { x: -0.45, y: 0.48, z: 1.45, s: 0.58 },
+            { x: 0.45, y: 0.48, z: 1.45, s: 0.58 },
+            { x: 0.0, y: 0.52, z: 1.60, s: 0.65 },
+            // Hông Phải (+X)
+            { x: 0.88, y: 0.45, z: 0.9, s: 0.62 },
+            { x: 0.95, y: 0.45, z: 0.0, s: 0.68 },
+            { x: 0.88, y: 0.45, z: -0.9, s: 0.62 },
+            // Hông Trái (-X)
+            { x: -0.88, y: 0.45, z: 0.9, s: 0.62 },
+            { x: -0.95, y: 0.45, z: 0.0, s: 0.68 },
+            { x: -0.88, y: 0.45, z: -0.9, s: 0.62 },
+            // Đỉnh Trên (+Y - Nơi Gohan / Goku đứng đệm mây phẳng êm ái)
+            { x: -0.3, y: 0.50, z: 0.4, s: 0.45 },
+            { x: 0.3, y: 0.50, z: 0.4, s: 0.45 },
+            { x: -0.3, y: 0.50, z: -0.4, s: 0.45 },
+            { x: 0.3, y: 0.50, z: -0.4, s: 0.45 },
+            // Đáy Dưới (-Y)
+            { x: 0.0, y: 0.22, z: 0.7, s: 0.55 },
+            { x: 0.0, y: 0.22, z: -0.7, s: 0.55 }
+        ];
+
+        puffSpecs.forEach((p, idx) => {
+            const mat = idx % 2 === 0 ? nimbusPastelMat : nimbusDeepMat;
+            const puff = new THREE.Mesh(new THREE.SphereGeometry(p.s, 16, 16), mat);
+            puff.position.set(p.x, p.y, p.z);
+            puff.castShadow = true;
+            nimbusGroup.add(puff);
+        });
+
+        // 3. 🌀 ĐUÔI CÂN ĐẨU VÂN XOẮN CONG VÚT ĐẶC TRƯNG Ở PHÍA SAU (-Z)
+        const tailGroup = new THREE.Group();
+        tailGroup.position.set(0.0, 0.42, -1.6); // Đặt chính xác đằng sau (-Z)
+
+        const tailSegments = [
+            { x: 0.0, y: 0.05, z: 0.0, r: 0.52 },
+            { x: 0.05, y: 0.12, z: -0.35, r: 0.42 },
+            { x: 0.10, y: 0.24, z: -0.68, r: 0.32 },
+            { x: 0.12, y: 0.42, z: -0.96, r: 0.22 },
+            { x: 0.14, y: 0.64, z: -1.18, r: 0.14 }
+        ];
+
+        tailSegments.forEach(ts => {
+            const seg = new THREE.Mesh(new THREE.SphereGeometry(ts.r, 14, 14), nimbusPastelMat);
+            seg.position.set(ts.x, ts.y, ts.z);
+            seg.castShadow = true;
+            tailGroup.add(seg);
+        });
+
+        // Chóp đuôi nón nhọn cong vút lên cao (Curved Tail Tip Cone)
+        const tailTip = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.65, 12), nimbusPastelMat);
+        tailTip.position.set(0.15, 0.88, -1.32);
+        tailTip.rotation.x = -Math.PI * 0.38; // Nghiêng uốn cong vút mềm mại về phía sau -Z
+        tailTip.castShadow = true;
+        tailGroup.add(tailTip);
+
+        nimbusGroup.add(tailGroup);
+
+        // 4. 💫 HOA VĂN XOẮN NỔI 3D TRÊN 2 HÔNG THÂN MÂY (3D Cloud Swirl Reliefs on Left & Right Flanks)
+        const swirlMat = new THREE.MeshStandardMaterial({ color: 0xF7DC33, roughness: 0.8 });
+        [-0.95, 0.95].forEach(sx => {
+            const swirl = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.08, 10, 24, Math.PI * 1.5), swirlMat);
+            swirl.position.set(sx, 0.55, 0.2);
+            swirl.rotation.y = sx < 0 ? -Math.PI / 2 : Math.PI / 2;
+            nimbusGroup.add(swirl);
+        });
+
+        // 5. ĐÈN TỎA SÁNG ẤM VÀNG KIM DƯỚI THÂN MÂY
+        const nimbusLight = new THREE.PointLight(0xfce855, 2.2, 8.0);
+        nimbusLight.position.y = 0.2;
+        nimbusGroup.add(nimbusLight);
+
+        this.nimbusCloud = nimbusGroup;
+        this.scene.add(nimbusGroup);
+    }
+
+    _updateNimbusPrompts() {
+        let nimbusPrompt = document.getElementById('enter-nimbus-prompt');
+        if (!nimbusPrompt) {
+            nimbusPrompt = document.createElement('div');
+            nimbusPrompt.id = 'enter-nimbus-prompt';
+            nimbusPrompt.style.cssText = `
+                position: fixed;
+                top: 75%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(15, 23, 42, 0.92);
+                backdrop-filter: blur(8px);
+                border: 1.5px solid rgba(255, 215, 0, 0.9);
+                border-radius: 20px;
+                padding: 10px 22px;
+                color: #ffd700;
+                font-family: 'Outfit', sans-serif;
+                font-size: 15px;
+                font-weight: 700;
+                z-index: 1000;
+                pointer-events: auto !important;
+                display: none;
+                box-shadow: 0 4px 20px rgba(255, 215, 0, 0.45);
+            `;
+            document.body.appendChild(nimbusPrompt);
+        }
+
+        if (this.isActive && !this.isDrivingVehicle && !this.isRidingNimbus && this.nimbusCloud) {
+            const distToNimbus = this.playerPos.distanceTo(this.nimbusCloud.position);
+            if (distToNimbus < 3.8) {
+                nimbusPrompt.innerHTML = `☁️ Bấm <span style="background: #ffd700; color: #000; padding: 2px 8px; border-radius: 6px; margin: 0 4px;">[F]</span> để Cưỡi Cân Đẩu Vân Bay Lượn`;
+                nimbusPrompt.style.display = 'block';
+            } else {
+                nimbusPrompt.style.display = 'none';
+            }
+        } else {
+            nimbusPrompt.style.display = 'none';
+        }
+    }
+
+    _toggleNimbusMount() {
+        if (!this.nimbusCloud) return;
+
+        if (!this.isRidingNimbus) {
+            const distToNimbus = this.playerPos.distanceTo(this.nimbusCloud.position);
+            if (distToNimbus < 3.8) {
+                this.isRidingNimbus = true;
+                this.isNimbusLanding = false;
+                this.isGrounded = false;
+
+                // Player đứng trên lưng Cân Đẩu Vân (Hiển thị 100% Đôi Chân, Đôi Giày, Vòng Cyan Cổ Chân & Vòng Cyan Hào Quang Vòng Eo)
+                this.playerMesh.visible = true;
+                this.nimbusFlightHeight = Math.max(0.8, this.nimbusCloud.position.y);
+                this.playerPos.set(this.nimbusCloud.position.x, this.nimbusCloud.position.y + 1.18, this.nimbusCloud.position.z);
+                this.playerMesh.position.copy(this.playerPos);
+                this.playerMesh.rotation.y = this.nimbusCloud.rotation.y;
+
+                // Xoay Camera nằm chính diện đằng sau đuôi nhìn về đầu Cân Đẩu Vân
+                this.cameraYaw = this.nimbusCloud.rotation.y + Math.PI;
+                this._showNimbusHUD(true);
+                this._showToastNotification(`Nhấn[E] bay lên ⬆️, Nhấn [C] bay xuống ⬇️.`);
+            }
+        } else {
+            // Nếu bấm F khi đang bay trên cao -> Cân Đẩu Vân & Player rơi từ từ từ trên không trung xuống
+            const targetGroundY = this._calculateGroundY(this.nimbusCloud.position.x, this.nimbusCloud.position.z) + 0.8;
+            if (this.nimbusCloud.position.y > targetGroundY + 0.6) {
+                this.isNimbusLanding = true;
+                this._showToastNotification(`☁️ Cân Đẩu Vân & Nhân vật đang hạ cánh từ từ xuống mặt đất...`);
+            } else {
+                // Xuống mây Cân Đẩu Vân ngay khi đã tiếp đất
+                this.isRidingNimbus = false;
+                this.isNimbusLanding = false;
+                this.playerPos.set(this.nimbusCloud.position.x + 1.3, targetGroundY - 0.8, this.nimbusCloud.position.z);
+                this.playerMesh.position.copy(this.playerPos);
+                this.playerMesh.visible = true;
+                this._showNimbusHUD(false);
+                this._showToastNotification(`☁️ Đã xuống mây Cân Đẩu Vân an toàn.`);
+            }
+        }
+    }
+
+    _showNimbusHUD(show) {
+        let hud = document.getElementById('nimbus-hud-prompt');
+        if (!hud) {
+            hud = document.createElement('div');
+            hud.id = 'nimbus-hud-prompt';
+            hud.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(15, 23, 42, 0.92);
+                backdrop-filter: blur(12px);
+                border: 1.5px solid rgba(255, 215, 0, 0.85);
+                border-radius: 16px;
+                padding: 12px 24px;
+                color: #ffffff;
+                font-family: 'Outfit', sans-serif;
+                font-size: 15px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                box-shadow: 0 10px 30px rgba(255, 215, 0, 0.35);
+                z-index: 1000;
+                pointer-events: auto !important;
+                transition: all 0.3s ease;
+            `;
+            document.body.appendChild(hud);
+        }
+
+        if (show) {
+            hud.innerHTML = `
+                <span style="font-size: 24px;">☁️</span>
+                <div>
+                    <div style="color: #ffd700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Đang Cưỡi: Cân Đẩu Vân Hoàng Kim</div>
+                    <div style="font-size: 14px; color: #e2e8f0;">[WASD] Bay Lượn 360° &nbsp;|&nbsp; <b style="color: #ffd700;">[E]</b> Bay Lên ⬆️ &nbsp;|&nbsp; <b style="color: #00f5ff;">[C]</b> Bay Xuống ⬇️ &nbsp;|&nbsp; <b style="color: #ff3366;">[F]</b> Xuống Mây</div>
+                </div>
+            `;
+            hud.style.display = 'flex';
+        } else {
+            hud.style.display = 'none';
+        }
+    }
+
+    /* 👑 16. KHỞI TẠO BỘ SƯU TẬP 3 NHÂN VẬT ANIME PLAYER 3D (CYBER HEROINE, BABY GOKU, SHADOW NINJA) */
     _initPlayer() {
+        this.selectedCharacterSkin = this.selectedCharacterSkin || 'cyber_heroine';
+        this._switchPlayerSkin(this.selectedCharacterSkin);
+    }
+
+    _loadBabyGokuModel() {
+        const loader = new GLTFLoader();
+        loader.load(
+            '/models/baby_goku.glb',
+            (gltf) => {
+                this.babyGokuGltf = gltf;
+                if (this.selectedCharacterSkin === 'baby_goku') {
+                    this._switchPlayerSkin('baby_goku');
+                }
+            },
+            undefined,
+            (error) => {
+                console.warn('⚠️ Could not load baby_goku.glb, fallback to 3D Goku model:', error);
+            }
+        );
+    }
+
+    _switchPlayerSkin(skinId) {
+        if (!['cyber_heroine', 'baby_goku', 'cyber_ninja'].includes(skinId)) return;
+
+        const currentPos = this.playerMesh ? this.playerMesh.position.clone() : this.playerPos.clone();
+        const currentRotY = this.playerMesh ? this.playerMesh.rotation.y : 0;
+
+        if (this.playerMesh) {
+            this.scene.remove(this.playerMesh);
+        }
+
+        let newMesh = null;
+        if (skinId === 'baby_goku') {
+            newMesh = this._createBabyGokuMesh();
+        } else if (skinId === 'cyber_ninja') {
+            newMesh = this._createShadowNinjaMesh();
+        } else {
+            newMesh = this._createCyberHeroineMesh();
+        }
+
+        this.selectedCharacterSkin = skinId;
+        this.playerMesh = newMesh;
+        this.playerMesh.position.copy(currentPos);
+        this.playerMesh.rotation.y = currentRotY;
+
+        // Unpack animation groups & AnimationMixer controller
+        this.leftLegGroup = newMesh.userData.leftLegGroup || null;
+        this.rightLegGroup = newMesh.userData.rightLegGroup || null;
+        this.leftArmGroup = newMesh.userData.leftArmGroup || null;
+        this.rightArmGroup = newMesh.userData.rightArmGroup || null;
+        this.cloakTailMesh = newMesh.userData.cloakTailMesh || null;
+        this.playerMixer = newMesh.userData.mixer || null;
+        this.playerActions = newMesh.userData.actions || null;
+        this.currentActionName = newMesh.userData.currentActionName || 'idle';
+
+        this.scene.add(this.playerMesh);
+    }
+
+    /* 👑 SKIN 1: CYBER HEROINE (NÓN LÁ & ÁO CHOÀNG TRẮNG HÀO QUANG CYAN) */
+    _createCyberHeroineMesh() {
         const playerGroup = new THREE.Group();
 
         const shoesMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 });
         const legsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
         const cyanNeonMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff });
-        const whiteCloakMat = new THREE.MeshStandardMaterial({
-            color: 0xf8fafc,
-            roughness: 0.7,
-            metalness: 0.1
-        });
-        const handMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6 });
+        const whiteCloakMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.7, metalness: 0.1 });
 
-        // CHÂN TRÁI & PHẢI
-        this.leftLegGroup = new THREE.Group();
+        const leftLegGroup = new THREE.Group();
         const shoeL = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.14, 0.34), shoesMat);
         shoeL.position.set(-0.16, 0.07, 0.02);
         shoeL.castShadow = true;
-        this.leftLegGroup.add(shoeL);
-
+        leftLegGroup.add(shoeL);
         const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.44, 10), legsMat);
         legL.position.set(-0.16, 0.28, 0);
         legL.castShadow = true;
-        this.leftLegGroup.add(legL);
-
+        leftLegGroup.add(legL);
         const ankleRingL = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.02, 8, 16), cyanNeonMat);
         ankleRingL.rotation.x = Math.PI / 2;
         ankleRingL.position.set(-0.16, 0.14, 0);
-        this.leftLegGroup.add(ankleRingL);
-        playerGroup.add(this.leftLegGroup);
+        leftLegGroup.add(ankleRingL);
+        playerGroup.add(leftLegGroup);
 
-        this.rightLegGroup = new THREE.Group();
+        const rightLegGroup = new THREE.Group();
         const shoeR = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.14, 0.34), shoesMat);
         shoeR.position.set(0.16, 0.07, 0.02);
         shoeR.castShadow = true;
-        this.rightLegGroup.add(shoeR);
-
+        rightLegGroup.add(shoeR);
         const legR = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.44, 10), legsMat);
         legR.position.set(0.16, 0.28, 0);
         legR.castShadow = true;
-        this.rightLegGroup.add(legR);
-
+        rightLegGroup.add(legR);
         const ankleRingR = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.02, 8, 16), cyanNeonMat);
         ankleRingR.rotation.x = Math.PI / 2;
         ankleRingR.position.set(0.16, 0.14, 0);
-        this.rightLegGroup.add(ankleRingR);
-        playerGroup.add(this.rightLegGroup);
+        rightLegGroup.add(ankleRingR);
+        playerGroup.add(rightLegGroup);
 
-        // TAY TRÁI & PHẢI
-        this.leftArmGroup = new THREE.Group();
-        this.leftArmGroup.position.set(-0.38, 1.05, 0);
+        const leftArmGroup = new THREE.Group();
+        leftArmGroup.position.set(-0.36, 0.92, 0);
+        const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.48, 8, 12), whiteCloakMat);
+        armL.position.set(0, -0.24, 0);
+        armL.castShadow = true;
+        leftArmGroup.add(armL);
+        const wristbandL = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.16, 12), cyanNeonMat);
+        wristbandL.position.set(0, -0.46, 0);
+        leftArmGroup.add(wristbandL);
+        playerGroup.add(leftArmGroup);
 
-        const sleeveL = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.14, 0.48, 10), whiteCloakMat);
-        sleeveL.position.set(0, -0.22, 0);
-        sleeveL.rotation.z = 0.15;
-        sleeveL.castShadow = true;
-        this.leftArmGroup.add(sleeveL);
+        const rightArmGroup = new THREE.Group();
+        rightArmGroup.position.set(0.36, 0.92, 0);
+        const armR = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.48, 8, 12), whiteCloakMat);
+        armR.position.set(0, -0.24, 0);
+        rightArmGroup.add(armR);
+        const wristbandR = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.16, 12), cyanNeonMat);
+        wristbandR.position.set(0, -0.46, 0);
+        rightArmGroup.add(wristbandR);
+        playerGroup.add(rightArmGroup);
 
-        const handL = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 10), handMat);
-        handL.position.set(0, -0.48, 0);
-        handL.castShadow = true;
-        this.leftArmGroup.add(handL);
-
-        const wristRingL = new THREE.Mesh(new THREE.TorusGeometry(0.10, 0.018, 8, 16), cyanNeonMat);
-        wristRingL.rotation.x = Math.PI / 2;
-        wristRingL.position.set(0, -0.44, 0);
-        this.leftArmGroup.add(wristRingL);
-        playerGroup.add(this.leftArmGroup);
-
-        this.rightArmGroup = new THREE.Group();
-        this.rightArmGroup.position.set(0.38, 1.05, 0);
-
-        const sleeveR = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.14, 0.48, 10), whiteCloakMat);
-        sleeveR.position.set(0, -0.22, 0);
-        sleeveR.rotation.z = -0.15;
-        sleeveR.castShadow = true;
-        this.rightArmGroup.add(sleeveR);
-
-        const handR = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 10), handMat);
-        handR.position.set(0, -0.48, 0);
-        handR.castShadow = true;
-        this.rightArmGroup.add(handR);
-
-        const wristRingR = new THREE.Mesh(new THREE.TorusGeometry(0.10, 0.018, 8, 16), cyanNeonMat);
-        wristRingR.rotation.x = Math.PI / 2;
-        wristRingR.position.set(0, -0.44, 0);
-        this.rightArmGroup.add(wristRingR);
-        playerGroup.add(this.rightArmGroup);
-
-        // VÒNG HÀO QUANG CYAN HOOK
         const waistAuraRing = new THREE.Mesh(new THREE.TorusGeometry(0.65, 0.04, 12, 32), cyanNeonMat);
         waistAuraRing.rotation.x = Math.PI / 2.3;
         waistAuraRing.position.set(0, 0.75, 0);
         playerGroup.add(waistAuraRing);
 
-        // ÁO CHOÀNG & NÓN TRÙM ĐẦU
         const robeBody = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.46, 0.75, 12), whiteCloakMat);
         robeBody.position.y = 0.85;
         robeBody.castShadow = true;
@@ -2205,7 +2814,6 @@ export class Shop3DScene {
         cloakTail.position.set(0, 0.65, -0.22);
         cloakTail.rotation.x = 0.15;
         cloakTail.castShadow = true;
-        this.cloakTailMesh = cloakTail;
         playerGroup.add(cloakTail);
 
         const hoodMesh = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.55, 12), whiteCloakMat);
@@ -2223,7 +2831,6 @@ export class Shop3DScene {
         visorCyan.position.set(0, 1.38, 0.24);
         playerGroup.add(visorCyan);
 
-        // BÓNG ĐỔ DƯỚI CHÂN
         const shadowCircle = new THREE.Mesh(
             new THREE.CircleGeometry(0.42, 32),
             new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
@@ -2232,9 +2839,387 @@ export class Shop3DScene {
         shadowCircle.position.y = 0.01;
         playerGroup.add(shadowCircle);
 
-        this.playerMesh = playerGroup;
-        this.playerMesh.position.copy(this.playerPos);
-        this.scene.add(this.playerMesh);
+        playerGroup.userData = { leftLegGroup, rightLegGroup, leftArmGroup, rightArmGroup, cloakTailMesh: cloakTail };
+        return playerGroup;
+    }
+
+    /* 👑 SKIN 2: BABY GOKU 3D MODEL (MODEL BABY GOKU GLTF & PROCEDURAL ANIMATION CONTROLLER) */
+    _createBabyGokuMesh() {
+        if (this.babyGokuGltf) {
+            const containerGroup = new THREE.Group();
+            const model = this.babyGokuGltf.scene.clone(true);
+
+            // Tự động căn chỉnh Bounding Box & Scale về chiều cao 1.5m
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const targetHeight = 1.5;
+            const scaleFactor = targetHeight / (size.y || 1);
+            model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+            const scaledBox = new THREE.Box3().setFromObject(model);
+            model.position.y = -scaledBox.min.y;
+
+            model.traverse(child => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+
+            containerGroup.add(model);
+
+            // Quản lý THREE.AnimationMixer cho GLTF Animation Clips (Idle, Walk, Run, Jump)
+            let mixer = null;
+            let actions = {};
+            if (this.babyGokuGltf.animations && this.babyGokuGltf.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(model);
+                this.babyGokuGltf.animations.forEach(clip => {
+                    const action = mixer.clipAction(clip);
+                    const name = clip.name.toLowerCase();
+                    if (name.includes('walk')) actions['walk'] = action;
+                    else if (name.includes('run')) actions['run'] = action;
+                    else if (name.includes('jump')) actions['jump'] = action;
+                    else if (name.includes('idle')) actions['idle'] = action;
+                    else actions[clip.name] = action;
+                });
+
+                const clips = this.babyGokuGltf.animations;
+                if (!actions['idle'] && clips[0]) actions['idle'] = mixer.clipAction(clips[0]);
+                if (!actions['walk'] && clips[1]) actions['walk'] = mixer.clipAction(clips[1]);
+                else if (!actions['walk']) actions['walk'] = actions['idle'];
+                if (!actions['run']) actions['run'] = actions['walk'];
+                if (!actions['jump']) actions['jump'] = actions['walk'];
+
+                if (actions['idle']) actions['idle'].play();
+            }
+
+            let leftLegGroup = null, rightLegGroup = null, leftArmGroup = null, rightArmGroup = null;
+            model.traverse(c => {
+                const n = c.name.toLowerCase();
+                if (n.includes('leg') && (n.includes('l') || n.includes('left'))) leftLegGroup = c;
+                else if (n.includes('leg') && (n.includes('r') || n.includes('right'))) rightLegGroup = c;
+                else if (n.includes('arm') && (n.includes('l') || n.includes('left'))) leftArmGroup = c;
+                else if (n.includes('arm') && (n.includes('r') || n.includes('right'))) rightArmGroup = c;
+            });
+
+            const shadowCircle = new THREE.Mesh(
+                new THREE.CircleGeometry(0.42, 32),
+                new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
+            );
+            shadowCircle.rotation.x = -Math.PI / 2;
+            shadowCircle.position.y = 0.01;
+            containerGroup.add(shadowCircle);
+
+            containerGroup.userData = {
+                mixer,
+                actions,
+                currentActionName: 'idle',
+                leftLegGroup,
+                rightLegGroup,
+                leftArmGroup,
+                rightArmGroup,
+                cloakTailMesh: null
+            };
+            return containerGroup;
+        }
+
+        // Procedural Fallback 3D Goku Model (Khỉ con Goku Võ phục Cam/Xanh & Tóc nhọn Goku)
+        const gohan = new THREE.Group();
+        const orangeGiMat = new THREE.MeshToonMaterial({ color: 0xea580c });
+        const blueInnerMat = new THREE.MeshToonMaterial({ color: 0x1d4ed8 });
+        const skinMat = new THREE.MeshToonMaterial({ color: 0xfde047 });
+        const hairBlackMat = new THREE.MeshToonMaterial({ color: 0x0f172a });
+        const bootsMat = new THREE.MeshToonMaterial({ color: 0x1e293b });
+
+        const leftLegGroup = new THREE.Group();
+        leftLegGroup.position.set(-0.16, 0.66, 0);
+        const legL = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.50, 8, 12), orangeGiMat);
+        legL.position.set(0, -0.22, 0);
+        leftLegGroup.add(legL);
+        const bootL = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.32, 12), bootsMat);
+        bootL.position.set(0, -0.45, 0.04);
+        leftLegGroup.add(bootL);
+        gohan.add(leftLegGroup);
+
+        const rightLegGroup = new THREE.Group();
+        rightLegGroup.position.set(0.16, 0.66, 0);
+        const legR = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.50, 8, 12), orangeGiMat);
+        legR.position.set(0, -0.22, 0);
+        rightLegGroup.add(legR);
+        const bootR = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.32, 12), bootsMat);
+        bootR.position.set(0, -0.45, 0.04);
+        rightLegGroup.add(bootR);
+        gohan.add(rightLegGroup);
+
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.25, 0.72, 12), orangeGiMat);
+        torso.position.y = 1.10;
+        gohan.add(torso);
+
+        const chestInsignia = new THREE.Mesh(new THREE.CircleGeometry(0.12, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        chestInsignia.position.set(0.12, 1.18, 0.28);
+        gohan.add(chestInsignia);
+
+        const waistSash = new THREE.Mesh(new THREE.TorusGeometry(0.29, 0.06, 8, 24), blueInnerMat);
+        waistSash.rotation.x = Math.PI / 2;
+        waistSash.position.y = 0.82;
+        gohan.add(waistSash);
+
+        const leftArmGroup = new THREE.Group();
+        leftArmGroup.position.set(-0.34, 1.36, 0);
+        const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), skinMat);
+        armL.position.set(0, -0.20, 0);
+        leftArmGroup.add(armL);
+        const wristbandL = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 0.14, 12), blueInnerMat);
+        wristbandL.position.set(0, -0.42, 0);
+        leftArmGroup.add(wristbandL);
+        gohan.add(leftArmGroup);
+
+        const rightArmGroup = new THREE.Group();
+        rightArmGroup.position.set(0.34, 1.36, 0);
+        const armR = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), skinMat);
+        armR.position.set(0, -0.20, 0);
+        rightArmGroup.add(armR);
+        const wristbandR = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 0.14, 12), blueInnerMat);
+        wristbandR.position.set(0, -0.42, 0);
+        rightArmGroup.add(wristbandR);
+        gohan.add(rightArmGroup);
+
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), skinMat);
+        head.position.y = 1.60;
+        gohan.add(head);
+
+        const hairGroup = new THREE.Group();
+        hairGroup.position.set(0, 1.62, 0);
+        [
+            { pos: [0, 0.42, -0.02], rot: [0.1, 0, 0], scale: [0.16, 0.75] },
+            { pos: [-0.18, 0.32, 0.02], rot: [0.1, 0, 0.45], scale: [0.14, 0.65] },
+            { pos: [0.18, 0.32, 0.02], rot: [0.1, 0, -0.45], scale: [0.14, 0.65] },
+            { pos: [-0.28, 0.12, 0.08], rot: [0.3, 0, 0.75], scale: [0.12, 0.55] },
+            { pos: [0.28, 0.12, 0.08], rot: [0.3, 0, -0.75], scale: [0.12, 0.55] },
+            { pos: [0, 0.06, 0.26], rot: [0.9, 0, 0], scale: [0.08, 0.42] }
+        ].forEach(sd => {
+            const spike = new THREE.Mesh(new THREE.ConeGeometry(sd.scale[0], sd.scale[1], 6), hairBlackMat);
+            spike.position.set(sd.pos[0], sd.pos[1], sd.pos[2]);
+            spike.rotation.set(sd.rot[0], sd.rot[1], sd.rot[2]);
+            hairGroup.add(spike);
+        });
+        gohan.add(hairGroup);
+
+        const tailMesh = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.05, 8, 16, Math.PI * 0.85), new THREE.MeshToonMaterial({ color: 0x78350f }));
+        tailMesh.rotation.y = Math.PI / 2;
+        tailMesh.position.set(0, 0.75, -0.28);
+        gohan.add(tailMesh);
+
+        const shadowCircle = new THREE.Mesh(
+            new THREE.CircleGeometry(0.42, 32),
+            new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
+        );
+        shadowCircle.rotation.x = -Math.PI / 2;
+        shadowCircle.position.y = 0.01;
+        gohan.add(shadowCircle);
+
+        gohan.userData = { leftLegGroup, rightLegGroup, leftArmGroup, rightArmGroup, cloakTailMesh: tailMesh };
+        return gohan;
+    }
+
+    /* 👑 SKIN 3: SHADOW NINJA CYBER (GIÁP ĐEN OBSIDIAN, VISOR ĐỎ & SONG KIẾM) */
+    _createShadowNinjaMesh() {
+        const ninja = new THREE.Group();
+        const darkArmorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.8 });
+        const redNeonMat = new THREE.MeshBasicMaterial({ color: 0xff0055 });
+        const silverMetalMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.2, metalness: 0.9 });
+
+        const leftLegGroup = new THREE.Group();
+        leftLegGroup.position.set(-0.16, 0.66, 0);
+        const legL = new THREE.Mesh(new THREE.CapsuleGeometry(0.10, 0.46, 8, 12), darkArmorMat);
+        legL.position.set(0, -0.22, 0);
+        leftLegGroup.add(legL);
+        const bootL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.32), darkArmorMat);
+        bootL.position.set(0, -0.45, 0.03);
+        leftLegGroup.add(bootL);
+        const trimL = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.02, 8, 16), redNeonMat);
+        trimL.rotation.x = Math.PI / 2;
+        trimL.position.set(0, -0.38, 0);
+        leftLegGroup.add(trimL);
+        ninja.add(leftLegGroup);
+
+        const rightLegGroup = new THREE.Group();
+        rightLegGroup.position.set(0.16, 0.66, 0);
+        const legR = new THREE.Mesh(new THREE.CapsuleGeometry(0.10, 0.46, 8, 12), darkArmorMat);
+        legR.position.set(0, -0.22, 0);
+        rightLegGroup.add(legR);
+        const bootR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.32), darkArmorMat);
+        bootR.position.set(0, -0.45, 0.03);
+        rightLegGroup.add(bootR);
+        const trimR = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.02, 8, 16), redNeonMat);
+        trimR.rotation.x = Math.PI / 2;
+        trimR.position.set(0, -0.38, 0);
+        rightLegGroup.add(trimR);
+        ninja.add(rightLegGroup);
+
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.22, 0.72, 12), darkArmorMat);
+        torso.position.y = 1.10;
+        ninja.add(torso);
+
+        const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.38, 0.12), redNeonMat);
+        chestPlate.position.set(0, 1.18, 0.16);
+        ninja.add(chestPlate);
+
+        const leftArmGroup = new THREE.Group();
+        leftArmGroup.position.set(-0.34, 1.36, 0);
+        const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), darkArmorMat);
+        armL.position.set(0, -0.20, 0);
+        leftArmGroup.add(armL);
+        ninja.add(leftArmGroup);
+
+        const rightArmGroup = new THREE.Group();
+        rightArmGroup.position.set(0.34, 1.36, 0);
+        const armR = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), darkArmorMat);
+        armR.position.set(0, -0.20, 0);
+        rightArmGroup.add(armR);
+        ninja.add(rightArmGroup);
+
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), darkArmorMat);
+        head.position.y = 1.60;
+        ninja.add(head);
+
+        const redVisor = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.12), redNeonMat);
+        redVisor.position.set(0, 1.64, 0.20);
+        ninja.add(redVisor);
+
+        [-0.15, 0.15].forEach((kx, idx) => {
+            const katana = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.2, 8), silverMetalMat);
+            katana.position.set(kx, 1.25, -0.22);
+            katana.rotation.z = idx === 0 ? Math.PI / 4 : -Math.PI / 4;
+            ninja.add(katana);
+        });
+
+        const shadowCircle = new THREE.Mesh(
+            new THREE.CircleGeometry(0.42, 32),
+            new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
+        );
+        shadowCircle.rotation.x = -Math.PI / 2;
+        shadowCircle.position.y = 0.01;
+        ninja.add(shadowCircle);
+
+        ninja.userData = { leftLegGroup, rightLegGroup, leftArmGroup, rightArmGroup, cloakTailMesh: null };
+        return ninja;
+    }
+
+    /* 👗 MỞ GIAO DIỆN CHỌN VÀ THAY ĐỔI NHÂN VẬT 3D (CHARACTER WARDROBE MODAL) */
+    _openCharacterSelectModal() {
+        let modal = document.getElementById('character-select-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'character-select-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 92%;
+                max-width: 800px;
+                max-height: 88vh;
+                background: rgba(15, 23, 42, 0.96);
+                backdrop-filter: blur(18px);
+                border: 2px solid rgba(0, 245, 255, 0.7);
+                border-radius: 24px;
+                padding: 24px;
+                color: #ffffff;
+                font-family: 'Outfit', 'Segoe UI', sans-serif;
+                z-index: 2500;
+                box-shadow: 0 20px 60px rgba(0, 245, 255, 0.45);
+                pointer-events: auto !important;
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+            `;
+            document.body.appendChild(modal);
+        }
+
+        this._renderCharacterSelectModalContent(modal);
+        modal.style.display = 'flex';
+    }
+
+    _renderCharacterSelectModalContent(modal) {
+        const skins = [
+            {
+                id: 'cyber_heroine',
+                name: 'CYBER HEROINE',
+                badge: '⚡ LEGENDARY',
+                badgeBg: '#00f5ff',
+                desc: 'Nữ chiến binh Nón Lá Cyber, Áo choàng trắng & Vòng hào quang Neon',
+                avatar: '👑'
+            },
+            {
+                id: 'baby_goku',
+                name: 'BABY GOKU 3D',
+                badge: '🔥 DRAGON BALL',
+                badgeBg: '#ffd700',
+                desc: 'Khỉ con Baby Goku 3D dễ thương, Tóc chóp Goku & Động tác võ thuật',
+                avatar: '🐒'
+            },
+            {
+                id: 'cyber_ninja',
+                name: 'SHADOW NINJA CYBER',
+                badge: '🥷 SHADOW NINJA',
+                badgeBg: '#ff0055',
+                desc: 'Ninja bóng đêm Giáp đen Obsidian, Visor đỏ & Song kiếm Katana',
+                avatar: '🗡️'
+            }
+        ];
+
+        const currentSkin = this.selectedCharacterSkin || 'cyber_heroine';
+
+        let html = `
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid rgba(255, 255, 255, 0.15); padding-bottom: 14px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 28px;">👗</span>
+                    <div>
+                        <h2 style="margin: 0; font-size: 22px; color: #00f5ff; font-weight: 800; letter-spacing: 0.5px;">BỘ SƯU TẬP & TỦ ĐỒ NHÂN VẬT</h2>
+                        <div style="font-size: 13px; color: #94a3b8;">Chọn và thay đổi nhân vật 3D trực tiếp trong Showroom!</div>
+                    </div>
+                </div>
+                <button id="btn-close-char-select" style="background: rgba(255, 255, 255, 0.1); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 16px;">
+        `;
+
+        skins.forEach(s => {
+            const isEquipped = s.id === currentSkin;
+            html += `
+                <div style="background: ${isEquipped ? 'rgba(0, 245, 255, 0.12)' : 'rgba(30, 41, 59, 0.7)'}; border: ${isEquipped ? '2px solid #00f5ff' : '1px solid rgba(255, 255, 255, 0.1)'}; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s ease;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-size: 32px;">${s.avatar}</span>
+                            <span style="background: ${s.badgeBg}; color: #000; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">${s.badge}</span>
+                        </div>
+                        <h3 style="margin: 0 0 6px 0; font-size: 17px; color: #ffffff; font-weight: 700;">${s.name}</h3>
+                        <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.4;">${s.desc}</p>
+                    </div>
+
+                    <button class="btn-select-skin" data-id="${s.id}" data-name="${s.name}" style="margin-top: 16px; width: 100%; padding: 10px; border-radius: 12px; border: none; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s ease; ${isEquipped ? 'background: #00f5ff; color: #000;' : 'background: rgba(255, 255, 255, 0.15); color: #fff;'}">
+                        ${isEquipped ? '✓ ĐANG SỬ DỤNG' : 'CHỌN NHÂN VẬT'}
+                    </button>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        modal.innerHTML = html;
+
+        document.getElementById('btn-close-char-select').onclick = () => { modal.style.display = 'none'; };
+
+        modal.querySelectorAll('.btn-select-skin').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.getAttribute('data-id');
+                const name = btn.getAttribute('data-name');
+                this._switchPlayerSkin(id);
+                this._showToastNotification(`✨ Đã chuyển sang nhân vật: ${name}!`);
+                this._renderCharacterSelectModalContent(modal);
+            };
+        });
     }
 
     /* 🎮 17. ĐIỀU KHIỂN BÀN PHÍM & BẮT SỰ KIỆN LÁI XE [F] / [ENTER] */
@@ -2246,8 +3231,52 @@ export class Shop3DScene {
                 e.preventDefault();
             }
 
-            if (code === 'KeyF' || code === 'Enter') {
-                this._toggleVehicleMount();
+            if (this.isRidingNimbus) {
+                if (code === 'KeyF' || code === 'Enter') {
+                    this._toggleNimbusMount();
+                    return;
+                }
+            }
+
+            if (code === 'KeyE' || code === 'KeyF' || code === 'KeyR' || code === 'Enter') {
+                const doorPos = new THREE.Vector3(0, this._calculateGroundY(0, -14.1), -14.1);
+                const counterPos = new THREE.Vector3(0, this._calculateGroundY(0, -7.0), -7.0);
+
+                const distDoor = this.playerPos.distanceTo(doorPos);
+                const distCounter = this.playerPos.distanceTo(counterPos);
+                const distNimbus = this.nimbusCloud ? this.playerPos.distanceTo(this.nimbusCloud.position) : 999;
+
+                // 🚪 [R]: Mở / Đóng cửa nhà chính
+                if (code === 'KeyR' && distDoor < 3.2 && !this.isDrivingVehicle && !this.isRidingNimbus) {
+                    this.isHouseDoorOpen = !this.isHouseDoorOpen;
+                    const statusText = this.isHouseDoorOpen ? '🚪 Đã mở cửa vào nhà!' : '🚪 Đã đóng cửa nhà!';
+                    this._showToastNotification(statusText);
+                    return;
+                }
+
+                // 👗 [E]: Mở Tủ Đồ Đổi Nhân Vật khi đứng gần cửa nhà (< 3.2m)
+                if (code === 'KeyE' && distDoor < 3.2 && !this.isDrivingVehicle && !this.isRidingNimbus) {
+                    this.isHouseDoorOpen = true;
+                    this._openCharacterSelectModal();
+                    return;
+                }
+
+                // 🛒 Mở Cyber Armory Modal khi đứng gần quầy bán hàng (< 4.2m) - Bấm phím [E]
+                if (code === 'KeyE' && distCounter < 4.2 && !this.isDrivingVehicle && !this.isRidingNimbus) {
+                    this._openCyberArmoryModal();
+                    return;
+                }
+
+                // ☁️ Cưỡi Cân Đẩu Vân (BẮT BỘC CHỈ BẤM [F] HOẶC [ENTER], KHÔNG BAO GIỜ BẰNG [E])
+                if ((code === 'KeyF' || code === 'Enter') && distNimbus < 3.8 && !this.isDrivingVehicle && !this.isRidingNimbus) {
+                    this._toggleNimbusMount();
+                    return;
+                }
+
+                // 🏎️ Lên / Xuống xe khi đứng gần siêu xe (Bấm phím [F] hoặc [Enter])
+                if (code === 'KeyF' || code === 'Enter') {
+                    this._toggleVehicleMount();
+                }
             }
 
             this.activeKeys.add(code);
@@ -2262,6 +3291,290 @@ export class Shop3DScene {
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) this._resetKeys();
         });
+    }
+
+    /* 🛒 17A. MỞ GIAO DIỆN SHOP TRANG BỊ & SKIN XE CYBER ARMORY */
+    _openCyberArmoryModal() {
+        let modal = document.getElementById('cyber-armory-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'cyber-armory-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 92%;
+                max-width: 720px;
+                max-height: 88vh;
+                background: rgba(15, 23, 42, 0.96);
+                backdrop-filter: blur(18px);
+                border: 2px solid rgba(0, 245, 255, 0.65);
+                border-radius: 24px;
+                padding: 24px;
+                color: #ffffff;
+                font-family: 'Outfit', 'Segoe UI', sans-serif;
+                z-index: 2000;
+                box-shadow: 0 20px 60px rgba(0, 245, 255, 0.4);
+                pointer-events: auto !important;
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+            `;
+            document.body.appendChild(modal);
+        }
+
+        this.armoryCurrentTab = this.armoryCurrentTab || 'items';
+        this._renderArmoryModalContent(modal);
+        modal.style.display = 'flex';
+    }
+
+    _renderArmoryModalContent(modal) {
+        const curMgr = this.game?.currencyManager;
+        const curData = curMgr ? curMgr.getCurrencies() : { coins: 1500, gems: 250 };
+        const shopMgr = this.game?.shopManager;
+
+        const itemCatalog = [
+            { id: 'shield_boost', name: '🛡️ Khiên Giáp Bảo Vệ', desc: 'Kháng 1 va chạm chướng ngại vật đầu tiên', price: 300, currency: 'coins', type: 'item' },
+            { id: 'bread_heal', name: '🍞 Bánh Mì Hồi Huyết', desc: 'Hồi 100% Thể lực & Giảm 20% sát thương', price: 200, currency: 'coins', type: 'item' },
+            { id: 'nitro_booster', name: '⚡ Bình Động Cơ Nitro', desc: 'Tăng 50% Tốc độ di chuyển xe trong 15s', price: 500, currency: 'coins', type: 'item' },
+            { id: 'coin_magnet', name: '🧲 Nam Châm Hút Coin', desc: 'Tự động hút toàn bộ Vàng cách xa 8m', price: 400, currency: 'coins', type: 'item' }
+        ];
+
+        const carSkinCatalog = Object.values(CAR_MODELS).map(c => ({
+            id: c.id,
+            name: c.name,
+            desc: c.desc,
+            price: c.price,
+            currency: 'gems',
+            badge: c.badge,
+            type: 'skin'
+        }));
+
+        modal.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid rgba(0, 245, 255, 0.3); padding-bottom: 14px; margin-bottom: 18px;">
+                <div style="font-size: 22px; font-weight: 800; color: #00f5ff; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+                    🛒 CYBER ARMORY & SKIN SHOP
+                </div>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="display: flex; gap: 12px; font-size: 14px; font-weight: 700; background: rgba(0, 0, 0, 0.4); padding: 6px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                        <span style="color: #ffd700;">🪙 ${curMgr ? curMgr.formatNumber(curData.coins) : curData.coins}</span>
+                        <span style="color: #00f5ff;">💎 ${curMgr ? curMgr.formatNumber(curData.gems) : curData.gems}</span>
+                    </div>
+                    <button id="btn-close-armory" style="background: rgba(255, 0, 100, 0.2); border: 1px solid #ff0066; color: #ff3366; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+                </div>
+            </div>
+
+            <!-- TABS -->
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <button id="tab-armory-items" style="flex: 1; padding: 10px; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; ${this.armoryCurrentTab === 'items' ? 'background: #00f5ff; color: #0f172a; border: none; box-shadow: 0 0 15px rgba(0, 245, 255, 0.5);' : 'background: rgba(30, 41, 59, 0.8); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1);'}">
+                    🎒 TRANG BỊ VẬT PHẨM (🪙 VÀNG)
+                </button>
+                <button id="tab-armory-skins" style="flex: 1; padding: 10px; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; ${this.armoryCurrentTab === 'skins' ? 'background: #00f5ff; color: #0f172a; border: none; box-shadow: 0 0 15px rgba(0, 245, 255, 0.5);' : 'background: rgba(30, 41, 59, 0.8); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1);'}">
+                    🏎️ SKIN XE & KIM CƯƠNG (💎 GEMS)
+                </button>
+            </div>
+
+            <!-- CATALOG CONTENT -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                ${(this.armoryCurrentTab === 'items' ? itemCatalog : carSkinCatalog).map(item => {
+            const isOwned = shopMgr ? shopMgr.isOwned(item.id) : false;
+            return `
+                        <div style="background: rgba(30, 41, 59, 0.7); border: 1.5px solid ${item.currency === 'gems' ? 'rgba(0, 245, 255, 0.4)' : 'rgba(255, 215, 0, 0.4)'}; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-space-between; gap: 10px;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <div style="font-size: 16px; font-weight: 700; color: #ffffff;">${item.name}</div>
+                                    ${item.badge ? `<span style="font-size: 11px; background: rgba(0, 245, 255, 0.2); color: #00f5ff; padding: 2px 8px; border-radius: 8px; border: 1px solid #00f5ff;">${item.badge}</span>` : ''}
+                                </div>
+                                <div style="font-size: 13px; color: #94a3b8; line-height: 1.4;">${item.desc}</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                                <div style="font-size: 15px; font-weight: 800; color: ${item.currency === 'gems' ? '#00f5ff' : '#ffd700'};">
+                                    ${item.currency === 'gems' ? '💎' : '🪙'} ${item.price}
+                                </div>
+                                <button class="btn-buy-armory-item" data-id="${item.id}" data-price="${item.price}" data-currency="${item.currency}" data-name="${item.name}" style="background: ${isOwned ? 'rgba(16, 185, 129, 0.3)' : item.currency === 'gems' ? 'linear-gradient(135deg, #00f5ff, #0077b6)' : 'linear-gradient(135deg, #ffd700, #b45309)'}; color: ${isOwned ? '#10b981' : '#ffffff'}; border: ${isOwned ? '1px solid #10b981' : 'none'}; padding: 8px 18px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;">
+                                    ${isOwned ? '✓ ĐÃ SỞ HỮU' : 'MUA NGAY'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+        }).join('')}
+            </div>
+        `;
+
+        // EVENT LISTENERS INSIDE MODAL
+        document.getElementById('btn-close-armory').onclick = () => { modal.style.display = 'none'; };
+
+        document.getElementById('tab-armory-items').onclick = () => {
+            this.armoryCurrentTab = 'items';
+            this._renderArmoryModalContent(modal);
+        };
+
+        document.getElementById('tab-armory-skins').onclick = () => {
+            this.armoryCurrentTab = 'skins';
+            this._renderArmoryModalContent(modal);
+        };
+
+        modal.querySelectorAll('.btn-buy-armory-item').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.getAttribute('data-id');
+                const name = btn.getAttribute('data-name');
+                const price = parseInt(btn.getAttribute('data-price'));
+                const currency = btn.getAttribute('data-currency');
+                this._buyArmoryItem({ id, name, price, currency });
+            };
+        });
+    }
+
+    _buyArmoryItem(item) {
+        const curMgr = this.game?.currencyManager;
+        const shopMgr = this.game?.shopManager;
+
+        if (shopMgr && shopMgr.isOwned(item.id)) {
+            this._showToastNotification(`ℹ️ Bạn đã sở hữu ${item.name} rồi!`);
+            return;
+        }
+
+        if (item.currency === 'coins') {
+            if (curMgr && curMgr.hasEnoughCoins(item.price)) {
+                curMgr.deductCoins(item.price);
+                if (shopMgr) shopMgr.ownedItems.push(item.id);
+                this._showToastNotification(`✅ Mua ${item.name} thành công!`);
+                this._renderArmoryModalContent(document.getElementById('cyber-armory-modal'));
+            } else {
+                this._showToastNotification(`⚠️ Bạn không đủ Vàng (Cần ${item.price} 🪙)!`);
+            }
+        } else {
+            if (curMgr && curMgr.hasEnoughGems(item.price)) {
+                curMgr.deductGems(item.price);
+                if (shopMgr) shopMgr.ownedItems.push(item.id);
+                this._showToastNotification(`✅ Mua ${item.name} thành công!`);
+                this._renderArmoryModalContent(document.getElementById('cyber-armory-modal'));
+            } else {
+                this._showToastNotification(`⚠️ Bạn không đủ Kim Cương (Cần ${item.price} 💎)!`);
+            }
+        }
+    }
+
+    _showToastNotification(msg) {
+        let toast = document.getElementById('armory-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'armory-toast';
+            toast.style.cssText = `
+                position: fixed;
+                top: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(12px);
+                border: 1.5px solid #00f5ff;
+                border-radius: 14px;
+                padding: 12px 24px;
+                color: #ffffff;
+                font-family: 'Outfit', sans-serif;
+                font-size: 15px;
+                font-weight: 700;
+                z-index: 3000;
+                pointer-events: auto !important;
+                box-shadow: 0 8px 30px rgba(0, 245, 255, 0.4);
+                transition: opacity 0.3s ease;
+            `;
+            document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => { toast.style.display = 'none'; }, 300);
+        }, 2200);
+    }
+
+    _updateArmoryShopPrompts() {
+        let armoryPrompt = document.getElementById('enter-armory-prompt');
+        if (!armoryPrompt) {
+            armoryPrompt = document.createElement('div');
+            armoryPrompt.id = 'enter-armory-prompt';
+            armoryPrompt.style.cssText = `
+                position: fixed;
+                top: 75%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(15, 23, 42, 0.90);
+                backdrop-filter: blur(8px);
+                border: 1.5px solid rgba(0, 245, 255, 0.8);
+                border-radius: 20px;
+                padding: 10px 22px;
+                color: #00f5ff;
+                font-family: 'Outfit', sans-serif;
+                font-size: 15px;
+                font-weight: 700;
+                z-index: 1000;
+                pointer-events: auto !important;
+                display: none;
+                box-shadow: 0 4px 20px rgba(0, 245, 255, 0.4);
+            `;
+            document.body.appendChild(armoryPrompt);
+        }
+
+        if (this.isActive && !this.isDrivingVehicle) {
+            const counterPos = new THREE.Vector3(0, this._calculateGroundY(0, -7.0), -7.0);
+            const distToCounter = this.playerPos.distanceTo(counterPos);
+
+            if (distToCounter < 4.2) {
+                armoryPrompt.innerHTML = `🛒 Bấm <span style="background: #00f5ff; color: #000; padding: 2px 8px; border-radius: 6px; margin: 0 4px;">[E]</span> để Mua Vật Phẩm & Skin Xe tại Quầy`;
+                armoryPrompt.style.display = 'block';
+            } else {
+                armoryPrompt.style.display = 'none';
+            }
+        } else {
+            armoryPrompt.style.display = 'none';
+        }
+    }
+
+    /* 🚪 GỢI Ý PROMPT MỞ CỬA NHÀ CHÍNH SHOWROOM [E] / [F] */
+    _updateHouseDoorPrompts() {
+        let doorPrompt = document.getElementById('enter-door-prompt');
+        if (!doorPrompt) {
+            doorPrompt = document.createElement('div');
+            doorPrompt.id = 'enter-door-prompt';
+            doorPrompt.style.cssText = `
+                position: fixed;
+                top: 75%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(15, 23, 42, 0.92);
+                backdrop-filter: blur(8px);
+                border: 1.5px solid rgba(255, 215, 0, 0.85);
+                border-radius: 20px;
+                padding: 10px 22px;
+                color: #ffd700;
+                font-family: 'Outfit', sans-serif;
+                font-size: 15px;
+                font-weight: 700;
+                z-index: 1000;
+                pointer-events: auto !important;
+                display: none;
+                box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+            `;
+            document.body.appendChild(doorPrompt);
+        }
+
+        if (this.isActive && !this.isDrivingVehicle) {
+            const doorPos = new THREE.Vector3(0, this._calculateGroundY(0, -14.1), -14.1);
+            const distToDoor = this.playerPos.distanceTo(doorPos);
+
+            if (distToDoor < 3.2) {
+                const actionText = this.isHouseDoorOpen ? 'Đóng Cửa' : 'Mở Cửa';
+                doorPrompt.innerHTML = `👗 Bấm <span style="background: #00f5ff; color: #000; padding: 2px 8px; border-radius: 6px; margin: 0 4px;">[E]</span> Đổi Nhân Vật &nbsp;|&nbsp; 🚪 Bấm <span style="background: #ffd700; color: #000; padding: 2px 8px; border-radius: 6px; margin: 0 4px;">[R]</span> để ${actionText}`;
+                doorPrompt.style.display = 'block';
+            } else {
+                doorPrompt.style.display = 'none';
+            }
+        } else {
+            doorPrompt.style.display = 'none';
+        }
     }
 
     /* 🚗 HÀM LÊN / XUỐNG XE SIÊU XE (VEHICLE MOUNTING / DISMOUNTING) */
@@ -2424,6 +3737,47 @@ export class Shop3DScene {
         }
     }
 
+    /* ☁️ GỢI Ý PROMPT CƯỠI CÂN ĐẨU VÂN [F] */
+    _updateNimbusPrompts() {
+        let nimbusPrompt = document.getElementById('enter-nimbus-prompt');
+        if (!nimbusPrompt) {
+            nimbusPrompt = document.createElement('div');
+            nimbusPrompt.id = 'enter-nimbus-prompt';
+            nimbusPrompt.style.cssText = `
+                position: fixed;
+                top: 75%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(15, 23, 42, 0.88);
+                backdrop-filter: blur(8px);
+                border: 1.5px solid rgba(255, 215, 0, 0.85);
+                border-radius: 20px;
+                padding: 10px 22px;
+                color: #ffd700;
+                font-family: 'Outfit', sans-serif;
+                font-size: 15px;
+                font-weight: 700;
+                z-index: 1000;
+                pointer-events: auto !important;
+                display: none;
+                box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+            `;
+            document.body.appendChild(nimbusPrompt);
+        }
+
+        if (this.isActive && !this.isDrivingVehicle && !this.isRidingNimbus && this.nimbusCloud) {
+            const distNimbus = this.playerPos.distanceTo(this.nimbusCloud.position);
+            if (distNimbus < 3.8) {
+                nimbusPrompt.innerHTML = `☁️ Bấm <span style="background: #ffd700; color: #000; padding: 2px 8px; border-radius: 6px; margin: 0 4px;">[F]</span> để Cưỡi Cân Đẩu Vân`;
+                nimbusPrompt.style.display = 'block';
+            } else {
+                nimbusPrompt.style.display = 'none';
+            }
+        } else {
+            nimbusPrompt.style.display = 'none';
+        }
+    }
+
     /* 🖱️ 18. ĐIỀU KHIỂN CHUỘT GTA ORBIT CAMERA CONTROLS */
     _setupMouseCameraControls() {
         const onPointerDown = (e) => {
@@ -2499,11 +3853,31 @@ export class Shop3DScene {
             this._toggleVehicleMount();
         }
 
+        if (this.isRidingNimbus) {
+            this._toggleNimbusMount();
+        }
+
         this.isActive = false;
         this._showDriveHUD(false);
+        this._showNimbusHUD(false);
 
         const enterPrompt = document.getElementById('enter-car-prompt');
         if (enterPrompt) enterPrompt.style.display = 'none';
+
+        const armoryPrompt = document.getElementById('enter-armory-prompt');
+        if (armoryPrompt) armoryPrompt.style.display = 'none';
+
+        const doorPrompt = document.getElementById('enter-door-prompt');
+        if (doorPrompt) doorPrompt.style.display = 'none';
+
+        const nimbusPrompt = document.getElementById('enter-nimbus-prompt');
+        if (nimbusPrompt) nimbusPrompt.style.display = 'none';
+
+        const armoryModal = document.getElementById('cyber-armory-modal');
+        if (armoryModal) armoryModal.style.display = 'none';
+
+        const charModal = document.getElementById('character-select-modal');
+        if (charModal) charModal.style.display = 'none';
 
         // 📱 MOBILE CONTROLS: Ẩn 100% giao diện Virtual Joystick & Action Buttons khi người chơi thoát Shop 3D
         if (this.mobileControls) {
@@ -2551,8 +3925,21 @@ export class Shop3DScene {
         // Cập nhật NPC Đi Lại Trên Phố
         this._updateNPCs(deltaTime);
 
-        // Cập nhật Prompt [F] lên xe khi đi bộ
+        // Cập nhật Prompts Tương Tác Cửa Hàng Trang Bị, Cửa Nhà, Siêu Xe & Cân Đẩu Vân
         this._updateVehiclePrompts();
+        this._updateArmoryShopPrompts();
+        this._updateHouseDoorPrompts();
+        this._updateNimbusPrompts();
+
+        // 🚪 Xoay Bản Lề Mở/Đóng Cửa Nhà Smooth Animation
+        if (this.mainShowroomDoorHinge) {
+            const targetAngle = this.isHouseDoorOpen ? Math.PI * 0.58 : 0.0;
+            this.mainShowroomDoorHinge.rotation.y = THREE.MathUtils.lerp(
+                this.mainShowroomDoorHinge.rotation.y,
+                targetAngle,
+                Math.min(1.0, deltaTime * 6.0)
+            );
+        }
 
         const timeNow = performance.now() * 0.003;
         this.animatedLanterns.forEach((lantern, idx) => {
@@ -2572,6 +3959,108 @@ export class Shop3DScene {
                 cloud.group.position.x = -80;
             }
         });
+
+        // ☁️ XỬ LÝ VẬT LÝ VÀ BAY CÂN ĐẨU VÂN KHÔNG TRUNG ([WASD] Bay 360°, [E] Bay lên ⬆️, [C] Bay xuống ⬇️)
+        if (this.isRidingNimbus && this.nimbusCloud) {
+            const mobileVec = this.mobileControls ? this.mobileControls.getMoveVector() : { dirX: 0, dirZ: 0, intensity: 0 };
+            const isW = this.activeKeys.has('KeyW') || this.activeKeys.has('ArrowUp') || (mobileVec.intensity > 0.1 && mobileVec.dirZ < -0.2);
+            const isS = this.activeKeys.has('KeyS') || this.activeKeys.has('ArrowDown') || (mobileVec.intensity > 0.1 && mobileVec.dirZ > 0.2);
+            const isA = this.activeKeys.has('KeyA') || this.activeKeys.has('ArrowLeft') || (mobileVec.intensity > 0.1 && mobileVec.dirX < -0.2);
+            const isD = this.activeKeys.has('KeyD') || this.activeKeys.has('ArrowRight') || (mobileVec.intensity > 0.1 && mobileVec.dirX > 0.2);
+
+            const isFlyUp = this.activeKeys.has('KeyE');
+            const isFlyDown = this.activeKeys.has('KeyC');
+
+            // Xử lý bay lên [E] & bay xuống [C]
+            if (isFlyUp) {
+                this.nimbusFlightHeight = Math.min(this.nimbusMaxHeight, this.nimbusFlightHeight + 14.0 * deltaTime);
+            }
+            if (isFlyDown) {
+                const currentGround = this._calculateGroundY(this.nimbusCloud.position.x, this.nimbusCloud.position.z);
+                this.nimbusFlightHeight = Math.max(currentGround + 0.8, this.nimbusFlightHeight - 14.0 * deltaTime);
+            }
+
+            // Di chuyển ngang 360° theo camera
+            const forwardX = -Math.sin(this.cameraYaw);
+            const forwardZ = -Math.cos(this.cameraYaw);
+            const rightX = Math.cos(this.cameraYaw);
+            const rightZ = -Math.sin(this.cameraYaw);
+
+            const moveVector = new THREE.Vector3();
+            if (isW) { moveVector.x += forwardX; moveVector.z += forwardZ; }
+            if (isS) { moveVector.x -= forwardX; moveVector.z -= forwardZ; }
+            if (isA) { moveVector.x -= rightX; moveVector.z -= rightZ; }
+            if (isD) { moveVector.x += rightX; moveVector.z += rightZ; }
+
+            if (mobileVec.intensity > 0.05) {
+                const joyForward = -mobileVec.dirZ;
+                const joyRight = mobileVec.dirX;
+                moveVector.x += (forwardX * joyForward + rightX * joyRight) * mobileVec.intensity;
+                moveVector.z += (forwardZ * joyForward + rightZ * joyRight) * mobileVec.intensity;
+            }
+
+            if (moveVector.lengthSq() > 0) {
+                moveVector.normalize().multiplyScalar(16.0 * deltaTime);
+                this.nimbusCloud.position.x += moveVector.x;
+                this.nimbusCloud.position.z += moveVector.z;
+
+                this.nimbusCloud.position.x = THREE.MathUtils.clamp(this.nimbusCloud.position.x, this.bounds.minX, this.bounds.maxX);
+                this.nimbusCloud.position.z = THREE.MathUtils.clamp(this.nimbusCloud.position.z, this.bounds.minZ, this.bounds.maxZ);
+
+                const targetAngle = Math.atan2(moveVector.x, moveVector.z);
+                let angleDiff = targetAngle - this.nimbusCloud.rotation.y;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                // Bẻ lái mượt mà tốc độ 2.5 rad/s ngang bằng tốc độ bẻ lái của Siêu xe (steeringSpeed = 2.2)
+                this.nimbusCloud.rotation.y += angleDiff * Math.min(1.0, deltaTime * 2.5);
+            }
+
+            // Xử lý khi bấm F hạ cánh từ từ dịu nhẹ từ trên cao xuống
+            if (this.isNimbusLanding) {
+                const targetGroundY = this._calculateGroundY(this.nimbusCloud.position.x, this.nimbusCloud.position.z) + 0.8;
+                // Hạ độ cao bồng bềnh từ từ dịu nhẹ 5.0 m/s
+                this.nimbusFlightHeight = Math.max(targetGroundY, this.nimbusFlightHeight - 5.0 * deltaTime);
+
+                if (Math.abs(this.nimbusCloud.position.y - targetGroundY) < 0.12) {
+                    this.isNimbusLanding = false;
+                    this.isRidingNimbus = false;
+                    this.playerPos.set(this.nimbusCloud.position.x + 1.4, targetGroundY - 0.8, this.nimbusCloud.position.z);
+                    this.playerMesh.position.copy(this.playerPos);
+                    this.playerMesh.visible = true;
+                    this._showNimbusHUD(false);
+                    this._showToastNotification(`☁️ Cân Đẩu Vân đã hạ cánh an toàn xuống mặt đất!`);
+                }
+            }
+
+            // Lerp độ cao Y mượt mà
+            this.nimbusCloud.position.y = THREE.MathUtils.lerp(this.nimbusCloud.position.y, this.nimbusFlightHeight, Math.min(1.0, deltaTime * 6.0));
+
+            // Đồng bộ playerPos & playerMesh đứng vững 100% trên mặt mây phẳng (+0.72m chân & vòng cyan cổ chân hiển thị nguyên vẹn 100%)
+            this.playerPos.copy(this.nimbusCloud.position);
+            this.playerMesh.position.set(this.nimbusCloud.position.x, this.nimbusCloud.position.y + 1.18, this.nimbusCloud.position.z);
+            this.playerMesh.rotation.y = this.nimbusCloud.rotation.y;
+            this.playerMesh.visible = true;
+
+            // 🎥 GTA FLYING CAMERA: CAMERA DYNAMICALLY EXPANDS FOV/DISTANCE WHEN FLYING HIGH INTO THE SKY
+            if (!this.isPointerDown) {
+                const targetYaw = this.nimbusCloud.rotation.y + Math.PI;
+                let angleDiff = targetYaw - this.cameraYaw;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                this.cameraYaw += angleDiff * Math.min(1.0, deltaTime * 2.5);
+
+                // Nới rộng khoảng cách camera theo độ cao Y (từ 9.5m lên 13.0m khi bay cao 35m) cho tầm nhìn GTA rộng mở
+                const altitudeProgress = THREE.MathUtils.clamp((this.nimbusCloud.position.y - 0.8) / 30.0, 0, 1);
+                const targetCamDist = 9.5 + altitudeProgress * 3.5;
+                this.cameraDistance = THREE.MathUtils.lerp(this.cameraDistance, targetCamDist, deltaTime * 4.0);
+            }
+
+        } else if (this.nimbusCloud) {
+            // Khi Cân Đẩu Vân đang đỗ (Idle floating animation)
+            const currentGround = this._calculateGroundY(this.nimbusCloud.position.x, this.nimbusCloud.position.z);
+            this.nimbusCloud.position.y = currentGround + 0.8 + Math.sin(timeNow * 2.5) * 0.15;
+            this.nimbusCloud.rotation.y += deltaTime * 0.4;
+        }
 
         // 🚗 XỬ LÝ VẬT LÝ VÀ ĐIỀU KHIỂN SIÊU XE KHI ĐANG LÁI XE
         if (this.isDrivingVehicle && this.currentVehicle) {
@@ -2644,8 +4133,8 @@ export class Shop3DScene {
                 const followSpeed = Math.abs(veh.speed) > 0.2 ? 5.5 : 2.5;
                 this.cameraYaw += angleDiff * Math.min(1.0, deltaTime * followSpeed);
             }
-        } else {
-            // 🚶 XỬ LÝ ĐI BỘ TRÊN CHÂN (ON FOOT MOVEMENT)
+        } else if (!this.isRidingNimbus) {
+            // 🚶 XỬ LÝ ĐI BỘ TRÊN CHÂN (ON FOOT MOVEMENT - KHÔNG ÁP DỤNG KHI ĐANG CƯỠI CÂN ĐẨU VÂN)
             // 📱 MOBILE CONTROLS: Đọc dữ liệu vector điều khiển từ Virtual Joystick cho Player Đi bộ 360°
             const mobileVec = this.mobileControls ? this.mobileControls.getMoveVector() : { dirX: 0, dirZ: 0, intensity: 0 };
             const isW = this.activeKeys.has('KeyW') || this.activeKeys.has('ArrowUp');
@@ -2692,21 +4181,54 @@ export class Shop3DScene {
 
                 this.playerMesh.rotation.y += angleDiff * Math.min(1.0, deltaTime * 14.0);
 
-                // Hoạt ảnh bước đi: Đung đưa Chân, Tay & Áo Choàng tự nhiên
-                this.playerWalkTimer += deltaTime * 12.0;
+                // 🎬 ANIMATION MIXER & CROSSFADE CONTROLLER (IDLE, WALK, RUN, JUMP)
+                if (this.playerMixer) {
+                    this.playerMixer.update(deltaTime);
+
+                    let targetActionName = 'idle';
+                    if (!this.isGrounded) {
+                        targetActionName = 'jump';
+                    } else if (moveVector.lengthSq() > 0) {
+                        targetActionName = this.activeKeys.has('ShiftLeft') ? 'run' : 'walk';
+                    }
+
+                    if (this.playerActions && targetActionName !== this.currentActionName) {
+                        const prevAction = this.playerActions[this.currentActionName];
+                        const nextAction = this.playerActions[targetActionName] || this.playerActions['walk'] || this.playerActions['idle'];
+
+                        if (nextAction) {
+                            if (prevAction) prevAction.fadeOut(0.2);
+                            nextAction.reset().fadeIn(0.2).play();
+                            this.currentActionName = targetActionName;
+                        }
+                    }
+                }
+
+                // Hoạt ảnh bước đi Procedural Fallback: Đung đưa Chân, Tay & Áo Choàng tự nhiên
+                this.playerWalkTimer += deltaTime * 13.5;
                 if (this.leftLegGroup && this.rightLegGroup) {
-                    this.leftLegGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.45;
-                    this.rightLegGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.45;
+                    this.leftLegGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.55;
+                    this.rightLegGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.55;
                 }
                 if (this.leftArmGroup && this.rightArmGroup) {
-                    this.leftArmGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.40;
-                    this.rightArmGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.40;
+                    this.leftArmGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.78;
+                    this.rightArmGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.78;
                 }
                 if (this.cloakTailMesh) {
-                    this.cloakTailMesh.rotation.x = 0.15 + Math.sin(this.playerWalkTimer * 2.0) * 0.1;
+                    this.cloakTailMesh.rotation.x = 0.15 + Math.sin(this.playerWalkTimer * 2.0) * 0.14;
                 }
             } else {
-                // Khi đứng yên -> trả tư thế tay chân về vị trí cân bằng
+                // Khi đứng yên -> Chuyển AnimationMixer về Idle & trả tư thế tay chân về vị trí cân bằng
+                if (this.playerMixer && this.currentActionName !== 'idle') {
+                    const prevAction = this.playerActions ? this.playerActions[this.currentActionName] : null;
+                    const idleAction = this.playerActions ? this.playerActions['idle'] : null;
+                    if (idleAction) {
+                        if (prevAction) prevAction.fadeOut(0.2);
+                        idleAction.reset().fadeIn(0.2).play();
+                        this.currentActionName = 'idle';
+                    }
+                }
+
                 if (this.leftLegGroup && this.rightLegGroup) {
                     this.leftLegGroup.rotation.x = THREE.MathUtils.lerp(this.leftLegGroup.rotation.x, 0, deltaTime * 10.0);
                     this.rightLegGroup.rotation.x = THREE.MathUtils.lerp(this.rightLegGroup.rotation.x, 0, deltaTime * 10.0);
