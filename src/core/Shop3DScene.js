@@ -4327,133 +4327,796 @@ export class Shop3DScene {
         return currentTargetGroundY;
     }
 
-    /* 🏙️ CYBERPUNK RAMEN SHOP & STATIONS (JESSE ZHOU STYLE) */
+    /* 🎬 HÀM TẠO VIDEO TEXTURE & CANVAS LIVE STREAM 60FPS (JESSE ZHOU STYLE) */
+    _createCyberVideoTexture() {
+        if (this.cyberLiveCanvas) return this.cyberLiveTexture;
+
+        // 1. Tạo Canvas Live Stream 60FPS Cyberpunk
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 576;
+        this.cyberLiveCanvas = canvas;
+        this.cyberLiveCtx = canvas.getContext('2d');
+        this.cyberLiveAnimTime = 0;
+        this.cyberLiveTexture = new THREE.CanvasTexture(canvas);
+
+        // 2. Tạo HTML5 Video Element gắn ngầm với Video Sample mượt mà
+        try {
+            const video = document.createElement('video');
+            video.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+            video.crossOrigin = 'anonymous';
+            video.loop = true;
+            video.muted = true;
+            video.playsInline = true;
+            video.setAttribute('playsinline', '');
+            video.setAttribute('muted', '');
+            video.style.display = 'none';
+            document.body.appendChild(video);
+
+            const tryPlay = () => {
+                video.play().catch(err => console.log("Autoplay waiting user click:", err));
+            };
+            tryPlay();
+
+            window.addEventListener('pointerdown', tryPlay, { once: true });
+            window.addEventListener('click', tryPlay, { once: true });
+
+            this.videoElement = video;
+        } catch (e) {
+            console.warn("HTML5 Video fallback to procedural live cam stream:", e);
+        }
+
+        return this.cyberLiveTexture;
+    }
+
+    /* 🎥 CẬP NHẬT HOẠT HỌA REALTIME MÀN HÌNH LIVE STREAM 3D TRÊN MÁI RAMEN */
+    _updateCyberLiveStream(deltaTime) {
+        if (!this.cyberLiveCtx) return;
+        this.cyberLiveAnimTime += deltaTime;
+        const time = this.cyberLiveAnimTime;
+        const ctx = this.cyberLiveCtx;
+        const w = 1024;
+        const h = 576;
+
+        let videoDrawn = false;
+        if (this.videoElement && this.videoElement.readyState >= 2 && !this.videoElement.paused) {
+            try {
+                ctx.drawImage(this.videoElement, 0, 0, w, h);
+                videoDrawn = true;
+            } catch (e) {
+                videoDrawn = false;
+            }
+        }
+
+        if (!videoDrawn) {
+            // 🏙️ GIẢ LẬP VIDEO STREAM CYBERPUNK SYNTHWAVE NEON CITY 60FPS
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, w, h);
+
+            // Bầu Trời Synthwave Sunset Gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, 380);
+            skyGrad.addColorStop(0, '#090514');
+            skyGrad.addColorStop(0.5, '#2e1065');
+            skyGrad.addColorStop(1, '#831843');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, 380);
+
+            // Mặt Trời Neon Sun Tròn Chuyển Màu
+            const sunGrad = ctx.createLinearGradient(512, 100, 512, 300);
+            sunGrad.addColorStop(0, '#fde047');
+            sunGrad.addColorStop(1, '#ff007f');
+            ctx.fillStyle = sunGrad;
+            ctx.beginPath();
+            ctx.arc(512, 220, 110, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Vạch Kẻ Synthwave Sun Lines
+            ctx.fillStyle = '#050508';
+            for (let y = 180; y < 320; y += 16) {
+                const lineH = 3 + (y - 180) * 0.04;
+                ctx.fillRect(380, y, 264, lineH);
+            }
+
+            // Tòa Nhà Cyberpunk City Skyline
+            ctx.fillStyle = '#0f172a';
+            const bldgs = [
+                { x: 40, w: 90, h: 220 }, { x: 140, w: 70, h: 280 },
+                { x: 220, w: 110, h: 190 }, { x: 340, w: 85, h: 320 },
+                { x: 600, w: 95, h: 300 }, { x: 710, w: 100, h: 230 },
+                { x: 820, w: 80, h: 270 }, { x: 910, w: 80, h: 210 }
+            ];
+            bldgs.forEach(b => {
+                ctx.fillRect(b.x, 380 - b.h, b.w, b.h);
+                ctx.fillStyle = '#00f5d4';
+                for (let wx = b.x + 10; wx < b.x + b.w - 15; wx += 20) {
+                    for (let wy = 380 - b.h + 20; wy < 360; wy += 35) {
+                        if (Math.sin(wx * wy + time * 2) > 0) {
+                            ctx.fillRect(wx, wy, 8, 14);
+                        }
+                    }
+                }
+                ctx.fillStyle = '#0f172a';
+            });
+
+            // Lưới Đường Phố Grid Line 3D Moving Perspective Lines
+            ctx.fillStyle = '#0a0a10';
+            ctx.fillRect(0, 380, w, h - 380);
+
+            ctx.strokeStyle = '#00f5d4';
+            ctx.lineWidth = 2;
+            for (let y = 380; y < h; y += 18) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+            for (let x = -200; x < w + 200; x += 80) {
+                ctx.beginPath();
+                ctx.moveTo(512, 380);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+
+            // Xe Đèn Neon Đang Bay Qua Lại (Moving Hover Cars)
+            const carX = (time * 320) % (w + 200) - 100;
+            ctx.fillStyle = '#ff007f';
+            ctx.shadowColor = '#ff007f';
+            ctx.shadowBlur = 15;
+            ctx.fillRect(carX, 330, 45, 8);
+            ctx.shadowBlur = 0;
+        }
+
+        // 🔴 LỚP PHỦ LIVE STREAM HUD (REC ● LIVE STREAM 4K)
+        ctx.fillStyle = 'rgba(5, 5, 8, 0.55)';
+        ctx.fillRect(16, 16, 320, 52);
+        ctx.strokeStyle = '#00f5d4';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(16, 16, 320, 52);
+
+        // Chấm Đỏ Chớp Nháy REC
+        const blink = Math.floor(time * 2) % 2 === 0;
+        if (blink) {
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(36, 42, 10, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.font = '900 22px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.fillText('REC  ●  LIVE STREAM 4K', 56, 49);
+
+        // Live Time Code
+        const now = new Date();
+        const timeStr = now.toTimeString().split(' ')[0] + '.' + Math.floor((time * 10) % 10);
+        ctx.fillStyle = '#00f5d4';
+        ctx.font = 'bold 20px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(timeStr, w - 24, 46);
+
+        this.cyberLiveTexture.needsUpdate = true;
+    }
+
+    /* 🏙️ CYBERPUNK RAMEN SHOP & STATIONS (JESSE ZHOU STYLE 100% CHUẨN ẢNH MẪU) */
     _initCyberpunkRamenShop() {
         const shopGroup = new THREE.Group();
         shopGroup.position.set(36.0, 0, 36.0);
         shopGroup.rotation.y = -Math.PI / 2;
 
-        // Counter Bar (Wooden & Steel)
-        const barGeo = new THREE.BoxGeometry(6.0, 1.1, 1.8);
-        const barMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.5, metalness: 0.3 });
+        // 1. Thân Bàn Quầy Bar & Mặt Bàn Nướng Ấm Vàng
+        const barGeo = new THREE.BoxGeometry(6.4, 1.1, 1.8);
+        const barMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.4, metalness: 0.7 });
         const bar = new THREE.Mesh(barGeo, barMat);
         bar.position.set(0, 0.55, 0);
         bar.castShadow = true;
         bar.receiveShadow = true;
         shopGroup.add(bar);
 
-        // Counter Top Slab (Polished Wood)
-        const topGeo = new THREE.BoxGeometry(6.4, 0.08, 2.0);
-        const topMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.3, metalness: 0.1 });
+        // Mặt Bàn Ấm Vàng Chuẩn 100% Ảnh Mẫu Jesse Zhou
+        const topGeo = new THREE.BoxGeometry(6.8, 0.12, 2.1);
+        const topMat = new THREE.MeshStandardMaterial({
+            color: 0xfff2cc,
+            emissive: 0xffe89e,
+            emissiveIntensity: 0.35,
+            roughness: 0.3
+        });
         const top = new THREE.Mesh(topGeo, topMat);
         top.position.set(0, 1.12, 0);
         top.castShadow = true;
         shopGroup.add(top);
 
-        // Cyberpunk Canopy Roof (Purple/Blue Stripes)
-        const roofGeo = new THREE.BoxGeometry(7.0, 0.2, 2.8);
-        const roofMat = new THREE.MeshStandardMaterial({ color: 0x9333ea, roughness: 0.4, metalness: 0.2, emissive: 0x581c87, emissiveIntensity: 0.4 });
+        // 2. Mái Che Cong Tím/Xanh Cyberpunk Canopy Roof (Nâng cao +0.95m mở rộng tầm nhìn)
+        const roofGeo = new THREE.BoxGeometry(7.2, 0.28, 2.8);
+        const roofMat = new THREE.MeshStandardMaterial({ color: 0x6b21a8, roughness: 0.4, metalness: 0.3 });
         const roof = new THREE.Mesh(roofGeo, roofMat);
-        roof.position.set(0, 2.8, 0.2);
+        roof.position.set(0, 3.75, 0.2);
         roof.castShadow = true;
         shopGroup.add(roof);
 
-        // Create Canvas Texture for Glowing Text "QUẦY RAMEN CYBERPUNK"
-        const textCanvas = document.createElement('canvas');
-        textCanvas.width = 1024;
-        textCanvas.height = 256;
-        const ctx = textCanvas.getContext('2d');
+        // 3. BIỂN HIỆU CHÍNH "JESSE'S RAMEN" VỚI VIỀN NEON CYAN & HỒNG
+        const signCanvas = document.createElement('canvas');
+        signCanvas.width = 1024;
+        signCanvas.height = 256;
+        const sCtx = signCanvas.getContext('2d');
+        sCtx.fillStyle = '#090d16';
+        sCtx.fillRect(0, 0, 1024, 256);
 
-        // Dark Cyberpunk Background
-        ctx.fillStyle = '#090d16';
-        ctx.fillRect(0, 0, 1024, 256);
+        // Dual Neon Frame (Cyan & Magenta)
+        sCtx.strokeStyle = '#00f5d4';
+        sCtx.lineWidth = 14;
+        sCtx.strokeRect(14, 14, 996, 228);
+        sCtx.strokeStyle = '#ff007f';
+        sCtx.lineWidth = 6;
+        sCtx.strokeRect(26, 26, 972, 204);
 
-        // Neon Cyan Border
-        ctx.strokeStyle = '#00f5d4';
-        ctx.lineWidth = 12;
-        ctx.strokeRect(12, 12, 1000, 232);
+        sCtx.shadowColor = '#c084fc';
+        sCtx.shadowBlur = 30;
+        sCtx.fillStyle = '#f0abfc';
+        sCtx.font = '900 82px "Space Grotesk", sans-serif';
+        sCtx.textAlign = 'center';
+        sCtx.textBaseline = 'middle';
+        sCtx.fillText("JESSE'S RAMEN", 512, 128);
 
-        // Neon Glowing Text "🍜 QUẦY RAMEN CYBERPUNK 🍜"
-        ctx.font = '900 52px "Outfit", "Space Grotesk", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        const signTexture = new THREE.CanvasTexture(signCanvas);
 
-        // Pink Outer Glow
-        ctx.shadowColor = '#ff007f';
-        ctx.shadowBlur = 35;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText('🍜 QUẦY RAMEN CYBERPUNK 🍜', 512, 128);
-
-        // Cyan Core Text
-        ctx.shadowColor = '#00f5d4';
-        ctx.shadowBlur = 20;
-        ctx.fillStyle = '#00f5d4';
-        ctx.fillText('🍜 QUẦY RAMEN CYBERPUNK 🍜', 512, 128);
-
-        const textTexture = new THREE.CanvasTexture(textCanvas);
-
-        // Neon Main Logo Signboard: "QUẦY RAMEN CYBERPUNK"
-        const signGeo = new THREE.BoxGeometry(5.4, 0.9, 0.12);
+        const signGeo = new THREE.BoxGeometry(5.8, 1.1, 0.12);
         const signMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.2, metalness: 0.8 });
         const sign = new THREE.Mesh(signGeo, signMat);
-        sign.position.set(0, 3.4, 1.5);
+        sign.position.set(0, 4.45, 1.5);
 
-        // Neon Text Strip Plane
-        const neonStripGeo = new THREE.PlaneGeometry(5.2, 0.82);
         const neonStripMat = new THREE.MeshStandardMaterial({
-            map: textTexture,
-            emissiveMap: textTexture,
+            map: signTexture,
+            emissiveMap: signTexture,
             emissive: 0xffffff,
-            emissiveIntensity: 1.0,
+            emissiveIntensity: 1.2,
             roughness: 0.2
         });
-        const neonStrip = new THREE.Mesh(neonStripGeo, neonStripMat);
+        const neonStrip = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 1.02), neonStripMat);
         neonStrip.position.set(0, 0, 0.065);
         sign.add(neonStrip);
         shopGroup.add(sign);
 
-        // Bar Stools (4 Stools)
-        for (let i = 0; i < 4; i++) {
-            const stoolSeatGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.08, 16);
-            const stoolSeatMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.6 });
-            const stoolSeat = new THREE.Mesh(stoolSeatGeo, stoolSeatMat);
-            stoolSeat.position.set(-2.1 + i * 1.4, 0.55, 1.4);
-            stoolSeat.castShadow = true;
-            shopGroup.add(stoolSeat);
+        // 🎬 4. MÀN HÌNH 3D TV PHÁT VIDEO TEXTURE NGAY TRÊN ĐỈNH QUẦY RAMEN
+        const videoTex = this._createCyberVideoTexture();
+        const tvGroup = new THREE.Group();
+        tvGroup.position.set(-0.8, 5.95, 1.2);
 
-            const stoolLegGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.55, 8);
-            const stoolLegMat = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.8 });
-            const stoolLeg = new THREE.Mesh(stoolLegGeo, stoolLegMat);
-            stoolLeg.position.set(-2.1 + i * 1.4, 0.275, 1.4);
-            shopGroup.add(stoolLeg);
-        }
+        // Main Metallic TV Frame & Glowing Cyan Bezel
+        const tvFrameMesh = new THREE.Mesh(
+            new THREE.BoxGeometry(3.0, 1.8, 0.12),
+            new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.8 })
+        );
+        tvGroup.add(tvFrameMesh);
 
-        // Steaming Noodle Bowl Props on Counter
-        for (let i = 0; i < 3; i++) {
-            const bowlGeo = new THREE.CylinderGeometry(0.18, 0.12, 0.14, 16);
-            const bowlMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3 });
-            const bowl = new THREE.Mesh(bowlGeo, bowlMat);
-            bowl.position.set(-1.4 + i * 1.4, 1.22, 0.2);
-            bowl.castShadow = true;
+        const tvBorderMesh = new THREE.Mesh(
+            new THREE.BoxGeometry(3.08, 1.88, 0.06),
+            new THREE.MeshStandardMaterial({ color: 0x00f5d4, emissive: 0x00f5d4, emissiveIntensity: 2.5, roughness: 0.1 })
+        );
+        tvBorderMesh.position.z = -0.03;
+        tvGroup.add(tvBorderMesh);
+
+        // 3D Video Screen Plane Playing Video Texture
+        const tvScreenPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(2.88, 1.68),
+            new THREE.MeshBasicMaterial({ map: videoTex })
+        );
+        tvScreenPlane.position.z = 0.07;
+        tvGroup.add(tvScreenPlane);
+
+        // Title Overlay "BEAUTIFUL VANCOUVER - LIVE"
+        const tvTitleCanvas = document.createElement('canvas');
+        tvTitleCanvas.width = 512;
+        tvTitleCanvas.height = 64;
+        const tCtx = tvTitleCanvas.getContext('2d');
+        tCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        tCtx.fillRect(0, 0, 512, 64);
+        tCtx.fillStyle = '#00f5d4';
+        tCtx.font = 'bold 24px "Space Grotesk", sans-serif';
+        tCtx.textAlign = 'center';
+        tCtx.fillText('BEAUTIFUL VANCOUVER - LIVE STREAM', 256, 40);
+
+        const tvTitleTex = new THREE.CanvasTexture(tvTitleCanvas);
+        const tvTitleMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(2.88, 0.35),
+            new THREE.MeshBasicMaterial({ map: tvTitleTex, transparent: true })
+        );
+        tvTitleMesh.position.set(0, -0.66, 0.08);
+        tvGroup.add(tvTitleMesh);
+
+        // Secondary Small Sub-Screen under Main Video Screen
+        const subTvFrame = new THREE.Mesh(
+            new THREE.BoxGeometry(1.4, 0.85, 0.1),
+            new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.8 })
+        );
+        subTvFrame.position.set(-0.5, -1.25, 0.02);
+        tvGroup.add(subTvFrame);
+
+        const subTvScreen = new THREE.Mesh(
+            new THREE.PlaneGeometry(1.32, 0.78),
+            new THREE.MeshBasicMaterial({ map: videoTex })
+        );
+        subTvScreen.position.set(-0.5, -1.25, 0.08);
+        tvGroup.add(subTvScreen);
+
+        shopGroup.add(tvGroup);
+
+        // 10. NHÂN VẬT ANIME BEAN ĐEO TAI NGHE DỰNG ĐỨNG ĐẰNG SAU QUẦY
+        const beanNPC = this._createHeadphoneBeanNPC();
+        beanNPC.scale.set(1.75, 1.75, 1.75);
+        beanNPC.position.set(0.0, 0.0, -1.8);
+        shopGroup.add(beanNPC);
+        this.beanNPC = beanNPC;
+
+        // 5. 🍜 NỔI BẬT NỐM BIỂN BÁT MÌ RAMEN & ĐÔI ĐŨA NEON TRÊN MÁI
+        const bowlArtGroup = new THREE.Group();
+        bowlArtGroup.position.set(2.2, 5.95, 1.2);
+
+        // Glowing Cyan Bowl Rim
+        const neonBowlRing = new THREE.Mesh(
+            new THREE.TorusGeometry(0.65, 0.06, 12, 32),
+            new THREE.MeshStandardMaterial({ color: 0x00f5d4, emissive: 0x00f5d4, emissiveIntensity: 3.0 })
+        );
+        neonBowlRing.rotation.x = Math.PI / 3;
+        bowlArtGroup.add(neonBowlRing);
+
+        // Glowing Yellow Noodles & Chopsticks
+        const chopsticksMat = new THREE.MeshStandardMaterial({ color: 0xffd166, emissive: 0xffb703, emissiveIntensity: 3.0 });
+        [-0.1, 0.1].forEach(dx => {
+            const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.03, 1.4, 8), chopsticksMat);
+            stick.position.set(dx + 0.3, 0.5, 0);
+            stick.rotation.z = -Math.PI / 4;
+            bowlArtGroup.add(stick);
+        });
+
+        shopGroup.add(bowlArtGroup);
+
+        // 6. 🏮 BIỂN NEON DỌC "RAMEN" BÊN TRÁI QUẦY
+        const vertSignGroup = new THREE.Group();
+        vertSignGroup.position.set(-3.6, 4.75, 1.5);
+
+        const vertSignBack = new THREE.Mesh(
+            new THREE.BoxGeometry(0.7, 3.2, 0.12),
+            new THREE.MeshStandardMaterial({ color: 0x050508, roughness: 0.2, metalness: 0.8 })
+        );
+        vertSignGroup.add(vertSignBack);
+
+        const vertBorder = new THREE.Mesh(
+            new THREE.BoxGeometry(0.76, 3.28, 0.06),
+            new THREE.MeshStandardMaterial({ color: 0x00f5d4, emissive: 0x00f5d4, emissiveIntensity: 2.5 })
+        );
+        vertBorder.position.z = -0.03;
+        vertSignGroup.add(vertBorder);
+
+        const vCanvas = document.createElement('canvas');
+        vCanvas.width = 128;
+        vCanvas.height = 512;
+        const vCtx = vCanvas.getContext('2d');
+        vCtx.fillStyle = '#050508';
+        vCtx.fillRect(0, 0, 128, 512);
+        vCtx.fillStyle = '#00f5d4';
+        vCtx.shadowColor = '#00f5d4';
+        vCtx.shadowBlur = 20;
+        vCtx.font = '900 56px "Space Grotesk", sans-serif';
+        vCtx.textAlign = 'center';
+
+        const letters = ['R', 'A', 'M', 'E', 'N'];
+        letters.forEach((char, idx) => {
+            vCtx.fillText(char, 64, 80 + idx * 85);
+        });
+
+        const vTex = new THREE.CanvasTexture(vCanvas);
+        const vMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.64, 3.1),
+            new THREE.MeshBasicMaterial({ map: vTex, transparent: true })
+        );
+        vMesh.position.z = 0.07;
+        vertSignGroup.add(vMesh);
+
+        shopGroup.add(vertSignGroup);
+
+        // 7. CỤM ĐÈN NÒN MẠ HỒNG (PINK GLOBE LIGHT) BÊN TRÁI
+        const pinkGlobe = new THREE.Mesh(
+            new THREE.SphereGeometry(0.42, 24, 24),
+            new THREE.MeshStandardMaterial({ color: 0xff007f, emissive: 0xff007f, emissiveIntensity: 3.5, roughness: 0.1 })
+        );
+        pinkGlobe.position.set(-3.6, 2.95, 1.8);
+        shopGroup.add(pinkGlobe);
+
+        const pinkPointLight = new THREE.PointLight(0xff007f, 4.0, 15);
+        pinkPointLight.position.set(-3.6, 2.95, 1.8);
+        shopGroup.add(pinkPointLight);
+
+        // 8. 4 TÔ MÌ RAMEN SIÊU THẬT & 4 GHẾ BAR CYBERPUNK SIÊU ĐẸP
+        const stoolPositionsX = [-2.1, -0.7, 0.7, 2.1];
+
+        // Đặt 4 Ghế Bar Siêu Đẹp
+        stoolPositionsX.forEach(x => {
+            const stool = this._createCyberBarStool();
+            stool.position.set(x, 0, 1.4);
+            shopGroup.add(stool);
+        });
+
+        // Đặt 4 Tô Mì Ramen Siêu Thật Trên Mặt Bàn
+        stoolPositionsX.forEach(x => {
+            const bowl = this._createDetailedRamenBowl();
+            bowl.position.set(x, 1.18, 0.3);
             shopGroup.add(bowl);
-        }
+        });
 
-        // Arcade Game Cabinet Machine (Left Station)
+        // 9. BẢNG GỖ CLICK & DRAG BÊN PHẢI (CHALKBOARD SIGN)
+        const boardGroup = new THREE.Group();
+        boardGroup.position.set(3.2, 0.6, 2.0);
+        boardGroup.rotation.y = -0.3;
+
+        const boardFrame = new THREE.Mesh(
+            new THREE.BoxGeometry(1.0, 1.2, 0.08),
+            new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.8 })
+        );
+        boardGroup.add(boardFrame);
+
+        const cCanvas = document.createElement('canvas');
+        cCanvas.width = 256;
+        cCanvas.height = 320;
+        const cCtx = cCanvas.getContext('2d');
+        cCtx.fillStyle = '#1e293b';
+        cCtx.fillRect(0, 0, 256, 320);
+        cCtx.fillStyle = '#ffffff';
+        cCtx.font = '900 32px "Space Grotesk", sans-serif';
+        cCtx.textAlign = 'center';
+        cCtx.fillText('CLICK &', 128, 120);
+        cCtx.fillText('DRAG', 128, 170);
+
+        const cTex = new THREE.CanvasTexture(cCanvas);
+        const cMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.9, 1.1),
+            new THREE.MeshBasicMaterial({ map: cTex })
+        );
+        cMesh.position.z = 0.05;
+        boardGroup.add(cMesh);
+
+        shopGroup.add(boardGroup);
+
+        // Arcade & Vending Machines
         this._buildArcadeCabinet(shopGroup);
-
-        // Cyberpunk Vending Machine (Right Station)
         this._buildVendingMachine(shopGroup);
 
-        // 📺 Giant Cyberpunk LED Billboard TV Screen (Jesse Zhou Style)
+        // 📺 Màn Hình LED Cột Đứng ("Hi, I'm Viet Anh.") Đặt Dịch Sang Bên Phải (x = 8.5m) Không Che Quầy
         this._buildCyberpunkLedTv(shopGroup);
 
         this.scene.add(shopGroup);
     }
 
+    /* 🎧 TẠO NHÂN VẬT ANIME BEAN ĐEO TAI NGHE & BÓNG THOẠI CHẤM THÁN [!] ĐỨNG Ở QUẦY (CHUẨN 100% ẢNH MẪU) */
+    _createHeadphoneBeanNPC() {
+        const npcGroup = new THREE.Group();
+
+        // 1. Thân Đậu Màu Cyan/Teal Smooth Bean Capsule Body
+        const beanMat = new THREE.MeshStandardMaterial({
+            color: 0x00a896,
+            emissive: 0x004d40,
+            emissiveIntensity: 0.15,
+            roughness: 0.3,
+            metalness: 0.05
+        });
+        const bodyMesh = new THREE.Mesh(
+            new THREE.CapsuleGeometry(0.28, 0.65, 16, 24),
+            beanMat
+        );
+        bodyMesh.position.y = 0.65;
+        bodyMesh.castShadow = true;
+        npcGroup.add(bodyMesh);
+
+        // 2. Mặt Trắng Oval Face Plate & Đôi Mắt Chấm Đen
+        const facePatch = new THREE.Mesh(
+            new THREE.SphereGeometry(0.18, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0xffffff })
+        );
+        facePatch.scale.set(1.0, 1.25, 0.4);
+        facePatch.position.set(0, 0.72, 0.22);
+        npcGroup.add(facePatch);
+
+        // 2 Mắt Chấm Đen Cute
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+        [-0.07, 0.07].forEach(ex => {
+            const eye = new THREE.Mesh(new THREE.SphereGeometry(0.026, 10, 10), eyeMat);
+            eye.position.set(ex, 0.76, 0.28);
+            npcGroup.add(eye);
+        });
+
+        // Nét Miệng Bo Cong Hình Chữ U Nụ Cười (U-Shaped Mouth Curve)
+        const mouthGeo = new THREE.TorusGeometry(0.042, 0.008, 12, 24, Math.PI * 0.75);
+        const mouthMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+        const mouthMesh = new THREE.Mesh(mouthGeo, mouthMat);
+        mouthMesh.rotation.x = Math.PI / 2 + 0.2;
+        mouthMesh.position.set(0, 0.69, 0.285);
+        npcGroup.add(mouthMesh);
+
+        // Chấm Ửng Hồng Cheeks
+        const blushMat = new THREE.MeshBasicMaterial({ color: 0xf472b6, transparent: true, opacity: 0.6 });
+        [-0.10, 0.10].forEach(bx => {
+            const blush = new THREE.Mesh(new THREE.CircleGeometry(0.032, 12), blushMat);
+            blush.position.set(bx, 0.70, 0.285);
+            npcGroup.add(blush);
+        });
+
+        // 3. DJ TAI NGHE ĐEO ĐẦU VÒNG ÔM SÁT ĐỈNH ĐẦU DẠNG PARABOL MỊN MÀNG (SNUG PARABOLIC HEADBAND)
+        const headbandCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(-0.31, 0.75, 0.0),
+            new THREE.Vector3(-0.30, 0.95, 0.0),
+            new THREE.Vector3(-0.21, 1.18, 0.0),
+            new THREE.Vector3(0.00, 1.28, 0.0), // Vòng parabol ôm sát đỉnh đầu (cao 1.28m vừa chớm trên đầu 1.25m)
+            new THREE.Vector3(0.21, 1.18, 0.0),
+            new THREE.Vector3(0.30, 0.95, 0.0),
+            new THREE.Vector3(0.31, 0.75, 0.0)
+        ]);
+        headbandCurve.curveType = 'centripetal';
+
+        const headbandGeo = new THREE.TubeGeometry(headbandCurve, 40, 0.036, 14, false);
+        const headbandMat = new THREE.MeshStandardMaterial({
+            color: 0x1e293b,
+            roughness: 0.2,
+            metalness: 0.8
+        });
+        const headband = new THREE.Mesh(headbandGeo, headbandMat);
+        npcGroup.add(headband);
+
+        // 2 Củ Đèn Tai Ốp Vòng Kim Loại Silver (Cắm nối khớp trực tiếp hai đầu của vòm)
+        const cupMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.2, metalness: 0.8 });
+        const silverRimMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.1, metalness: 0.95 });
+
+        [-0.31, 0.31].forEach(cx => {
+            const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.08, 20), cupMat);
+            cup.rotation.z = Math.PI / 2;
+            cup.position.set(cx, 0.75, 0);
+            npcGroup.add(cup);
+
+            const silverRing = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.018, 10, 20), silverRimMat);
+            silverRing.rotation.y = Math.PI / 2;
+            silverRing.position.set(cx + (cx > 0 ? 0.04 : -0.04), 0.75, 0);
+            npcGroup.add(silverRing);
+        });
+
+        // 4. CHÂN THỂ THAO VÀ GIÀY SNEAKER TRẮNG
+        const legMat = new THREE.MeshStandardMaterial({ color: 0x0f3833, roughness: 0.5 });
+        const shoeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+
+        [-0.14, 0.14].forEach(lx => {
+            const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.055, 0.44, 12), legMat);
+            leg.position.set(lx, 0.22, 0);
+            leg.castShadow = true;
+            npcGroup.add(leg);
+
+            const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.10, 0.25), shoeMat);
+            shoe.position.set(lx, 0.05, 0.04);
+            shoe.castShadow = true;
+            npcGroup.add(shoe);
+        });
+
+        // 5. CÁNH TAY TẠO DÁNG SUY NGHĨ (THINKING POSE WITH HAND NEAR CHIN)
+        const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.05, 0.36, 8, 12), beanMat);
+        armL.position.set(-0.31, 0.55, 0.04);
+        armL.rotation.z = 0.2;
+        npcGroup.add(armL);
+
+        const armR = new THREE.Mesh(new THREE.CapsuleGeometry(0.05, 0.36, 8, 12), beanMat);
+        armR.position.set(0.24, 0.62, 0.18);
+        armR.rotation.set(-0.8, -0.4, -0.9);
+        npcGroup.add(armR);
+
+        // 6. ❗ BÓNG THOẠI HÌNH CHỮ NHẬT CHỨA DẤU CHẤM THÁN NỔI BẬT CHUẨN 100% ẢNH MẪU
+        const bubbleGroup = new THREE.Group();
+        bubbleGroup.position.set(0, 1.82, 0);
+
+        const bubbleBack = new THREE.Mesh(
+            new THREE.BoxGeometry(0.58, 0.42, 0.05),
+            new THREE.MeshBasicMaterial({ color: 0xffffff })
+        );
+        bubbleGroup.add(bubbleBack);
+
+        const bubbleTail = new THREE.Mesh(
+            new THREE.ConeGeometry(0.08, 0.12, 3),
+            new THREE.MeshBasicMaterial({ color: 0xffffff })
+        );
+        bubbleTail.rotation.z = Math.PI;
+        bubbleTail.position.set(-0.08, -0.26, 0);
+        bubbleGroup.add(bubbleTail);
+
+        const exStem = new THREE.Mesh(
+            new THREE.CapsuleGeometry(0.045, 0.15, 8, 12),
+            new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 0.6 })
+        );
+        exStem.position.set(0, 0.05, 0.035);
+        bubbleGroup.add(exStem);
+
+        const exDot = new THREE.Mesh(
+            new THREE.SphereGeometry(0.045, 12, 12),
+            new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 0.6 })
+        );
+        exDot.position.set(0, -0.12, 0.035);
+        bubbleGroup.add(exDot);
+
+        npcGroup.add(bubbleGroup);
+        npcGroup.userData.bubbleGroup = bubbleGroup;
+
+        return npcGroup;
+    }
+
+    /* 🍜 TẠO TÔ MÌ RAMEN CHÂN THỰC 3D (4 HYPER-REALISTIC RAMEN BOWLS) */
+    _createDetailedRamenBowl() {
+        const bowlGroup = new THREE.Group();
+
+        // 1. Vỏ Tô Sứ Đỏ/Đen Bóng Bẩy (Ceramic Bowl Body)
+        const bowlGeo = new THREE.CylinderGeometry(0.24, 0.15, 0.20, 24);
+        const bowlMat = new THREE.MeshStandardMaterial({
+            color: 0xd90429,
+            roughness: 0.15,
+            metalness: 0.1
+        });
+        const bowlMesh = new THREE.Mesh(bowlGeo, bowlMat);
+        bowlMesh.castShadow = true;
+        bowlGroup.add(bowlMesh);
+
+        // Viền Đen Bóng Quanh Miệng Tô
+        const rimMesh = new THREE.Mesh(
+            new THREE.TorusGeometry(0.24, 0.02, 12, 24),
+            new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1 })
+        );
+        rimMesh.rotation.x = Math.PI / 2;
+        rimMesh.position.y = 0.10;
+        bowlGroup.add(rimMesh);
+
+        // 2. Nước Lèo Tonkotsu Đậm Đà (Rich Ramen Broth)
+        const brothMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.22, 0.22, 0.02, 24),
+            new THREE.MeshStandardMaterial({
+                color: 0x9a3412,
+                roughness: 0.05,
+                emissive: 0x7c2d12,
+                emissiveIntensity: 0.25
+            })
+        );
+        brothMesh.position.y = 0.07;
+        bowlGroup.add(brothMesh);
+
+        // 3. Vắt Mì Vàng Cong Bồng Bềnh (Curly Noodle Strands)
+        const noodleMat = new THREE.MeshStandardMaterial({
+            color: 0xfef08a,
+            emissive: 0xfde047,
+            emissiveIntensity: 0.2,
+            roughness: 0.4
+        });
+        for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI * 2;
+            const r = 0.08 + (i % 2) * 0.04;
+            const noodleRing = new THREE.Mesh(new THREE.TorusGeometry(r, 0.02, 8, 16), noodleMat);
+            noodleRing.rotation.x = Math.PI / 2 + (i % 3) * 0.1;
+            noodleRing.position.set(Math.cos(angle) * 0.06, 0.085, Math.sin(angle) * 0.06);
+            bowlGroup.add(noodleRing);
+        }
+
+        // 4. TOPPINGS CHI TIẾT SIÊU THẬT (Narutomaki, Trứng, Thịt Xá Xíu, Rong Biển Nori)
+        // Chả cá xoắn Narutomaki
+        const narutoGeo = new THREE.CylinderGeometry(0.055, 0.055, 0.015, 16);
+        const narutoMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+        const narutoMesh = new THREE.Mesh(narutoGeo, narutoMat);
+        narutoMesh.position.set(-0.08, 0.095, -0.05);
+        narutoMesh.rotation.z = 0.1;
+        bowlGroup.add(narutoMesh);
+
+        const pinkSwirl = new THREE.Mesh(
+            new THREE.TorusGeometry(0.025, 0.008, 8, 16),
+            new THREE.MeshBasicMaterial({ color: 0xff007f })
+        );
+        pinkSwirl.rotation.x = Math.PI / 2;
+        pinkSwirl.position.set(-0.08, 0.103, -0.05);
+        bowlGroup.add(pinkSwirl);
+
+        // Nửa Trứng Ajitsuke Tamago
+        const eggWhite = new THREE.Mesh(
+            new THREE.SphereGeometry(0.06, 12, 12),
+            new THREE.MeshStandardMaterial({ color: 0xfffbeb, roughness: 0.2 })
+        );
+        eggWhite.scale.set(1.2, 0.5, 0.9);
+        eggWhite.position.set(0.08, 0.095, -0.06);
+        bowlGroup.add(eggWhite);
+
+        const eggYolk = new THREE.Mesh(
+            new THREE.SphereGeometry(0.035, 10, 10),
+            new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.1 })
+        );
+        eggYolk.position.set(0.08, 0.105, -0.06);
+        bowlGroup.add(eggYolk);
+
+        // Lát Thịt Xá Xíu Chashu Pork
+        const chashuMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.075, 0.075, 0.015, 12),
+            new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.6 })
+        );
+        chashuMesh.scale.set(1.3, 1, 0.9);
+        chashuMesh.position.set(-0.04, 0.092, 0.08);
+        chashuMesh.rotation.y = 0.4;
+        bowlGroup.add(chashuMesh);
+
+        // Lá Rong Biển Nori
+        const noriMesh = new THREE.Mesh(
+            new THREE.BoxGeometry(0.08, 0.13, 0.008),
+            new THREE.MeshStandardMaterial({ color: 0x064e3b, roughness: 0.8 })
+        );
+        noriMesh.position.set(0.12, 0.14, 0.05);
+        noriMesh.rotation.set(0.3, -0.2, 0.2);
+        bowlGroup.add(noriMesh);
+
+        // 5. Đôi Đũa Tre Gác Trực Tiếp Qua Thành Tô
+        const stickMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4 });
+        [-0.02, 0.02].forEach(dz => {
+            const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.018, 0.55, 8), stickMat);
+            stick.rotation.z = Math.PI / 2.4;
+            stick.rotation.y = 0.2;
+            stick.position.set(0.05, 0.13, dz + 0.04);
+            bowlGroup.add(stick);
+        });
+
+        return bowlGroup;
+    }
+
+    /* 🪑 TẠO GHẾ BAR CYBERPUNK SIÊU ĐẸP (4 CYBERBAR STOOLS) */
+    _createCyberBarStool() {
+        const stoolGroup = new THREE.Group();
+
+        // 1. Vòng Chân Chrome Kim Loại Phát Sáng LED Cyan
+        const baseRing = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.34, 0.36, 0.05, 24),
+            new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9, roughness: 0.2 })
+        );
+        baseRing.position.y = 0.025;
+        stoolGroup.add(baseRing);
+
+        const neonBaseRing = new THREE.Mesh(
+            new THREE.TorusGeometry(0.35, 0.025, 12, 32),
+            new THREE.MeshStandardMaterial({ color: 0x00f5d4, emissive: 0x00f5d4, emissiveIntensity: 2.0 })
+        );
+        neonBaseRing.rotation.x = Math.PI / 2;
+        neonBaseRing.position.y = 0.025;
+        stoolGroup.add(neonBaseRing);
+
+        // 2. Cột Trục Thủy Lực Chrome Cao Cấp & Vòng Gác Chân
+        const poleMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.04, 0.05, 0.52, 12),
+            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.95, roughness: 0.1 })
+        );
+        poleMesh.position.y = 0.28;
+        stoolGroup.add(poleMesh);
+
+        const footrestRing = new THREE.Mesh(
+            new THREE.TorusGeometry(0.22, 0.025, 8, 24),
+            new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.9, roughness: 0.2 })
+        );
+        footrestRing.rotation.x = Math.PI / 2;
+        footrestRing.position.y = 0.22;
+        stoolGroup.add(footrestRing);
+
+        // 3. Đệm Ghế Bo Cong Tròn Bọc Da Neon Hồng Sáng Đẹp
+        const seatMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.34, 0.30, 0.10, 24),
+            new THREE.MeshStandardMaterial({
+                color: 0xff007f,
+                emissive: 0xff007f,
+                emissiveIntensity: 0.8,
+                roughness: 0.2
+            })
+        );
+        seatMesh.position.y = 0.55;
+        seatMesh.castShadow = true;
+        stoolGroup.add(seatMesh);
+
+        return stoolGroup;
+    }
+
     /* 📺 GIANT CYBERPUNK OUTDOOR LED TV BILLBOARD (JESSE ZHOU PORTFOLIO STYLE) */
     _buildCyberpunkLedTv(parentGroup) {
         const tvGroup = new THREE.Group();
-        tvGroup.position.set(4.2, 0, 1.4);
+        tvGroup.position.set(8.5, 0, 0.5);
 
         // 1. Glowing Cyan Energy Ring Base Platform
         const baseRingGeo = new THREE.CylinderGeometry(0.85, 0.95, 0.12, 32);
@@ -5356,6 +6019,21 @@ export class Shop3DScene {
 
             this.exhibitionDoorHingeL.rotation.y = THREE.MathUtils.lerp(this.exhibitionDoorHingeL.rotation.y, targetRotL, deltaTime * 6.0);
             this.exhibitionDoorHingeR.rotation.y = THREE.MathUtils.lerp(this.exhibitionDoorHingeR.rotation.y, targetRotR, deltaTime * 6.0);
+        }
+
+        // 📺 CẬP NHẬT REALTIME MÀN HÌNH LED BILLBOARD ("Hi, I'm Viet Anh.") BÊN CẠNH QUẦY RAMEN
+        this._updateLedTvDisplay(deltaTime);
+
+        // 🎬 CẬP NHẬT REALTIME MÀN HÌNH TV LIVE STREAM 60FPS TRÊN MÁI QUẦY RAMEN
+        this._updateCyberLiveStream(deltaTime);
+
+        // 🎧 HOẠT HỌA REALTIME NHÂN VẬT ANIME BEAN ĐEO TAI NGHE DỰNG Ở SÀN QUẦY RAMEN
+        if (this.beanNPC) {
+            const time = performance.now() * 0.003;
+            this.beanNPC.position.y = 0.0 + Math.sin(time * 2.5) * 0.02;
+            if (this.beanNPC.userData.bubbleGroup) {
+                this.beanNPC.userData.bubbleGroup.position.y = 1.7 + Math.sin(time * 3.5) * 0.025;
+            }
         }
 
         // 📍 CẬP NHẬT REALTIME TỌA ĐỘ X, Y, Z TRÊN HUD GÓC PHẢI MÀN HÌNH
