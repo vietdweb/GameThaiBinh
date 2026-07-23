@@ -21,35 +21,56 @@ Cấu trúc dự án được thiết kế modular giúp phân tách các thành
 
 ```
 gametulam/
-├── index.html                  # File HTML chính chứa canvas và các khung UI lớp phủ
-├── package.json                # Quản lý các thư viện phụ thuộc (three, vite, v.v.)
+├── index.html                  # File HTML chính chứa canvas và các khung UI lớp phủ (Import duy nhất /src/style.css)
+├── package.json                # Quản lý các thư viện phụ thuộc (three, vite, lucide, v.v.)
 ├── vite.config.js              # Cấu hình Vite
 ├── docs/                       # Thư mục tài liệu dự án
-│   ├── PRD.md
-│   ├── TECH_ARCHITECTURE.md
-│   └── PLAN.md
-├── public/                     # Tài sản tĩnh (không bị Vite xử lý khi build)
-│   ├── models/                 # Quản lý thủ công các mô hình GLB/GLTF low-poly
-│   ├── textures/               # Texture môi trường, bầu trời, hiệu ứng đường chạy
-│   └── audio/                  # Nhạc nền điện tử kết hợp nhạc cụ truyền thống và SFX
+│   ├── PRD.md                  # Tài liệu Yêu cầu Sản phẩm
+│   ├── TECH_ARCHITECTURE.md    # Tài liệu Kiến trúc Kỹ thuật
+│   └── PLAN.md                 # Kế hoạch & Tiến độ phát triển
+├── public/                     # Tài sản tĩnh (models GLB, textures, audio, avatars)
+│   ├── models/                 # Các mô hình GLB/GLTF low-poly
+│   ├── textures/               # Texture môi trường, bầu trời, hiệu ứng
+│   └── audio/                  # Nhạc nền BGM và âm thanh SFX
+├── scripts/                    # Scripts tối ưu & phụ trợ
+│   └── optimize-models.js
 └── src/                        # Mã nguồn dự án
-    ├── main.js                 # Điểm khởi chạy ứng dụng (Entry point), import CSS chính
-    ├── core/                   # Các thành phần cốt lõi của Engine
-    │   ├── Game.js             # Bộ điều phối chính toàn bộ vòng lặp (loop) và hệ thống game
-    │   ├── SceneManager.js     # Khởi tạo camera, renderer, ánh sáng, đổ bóng, hậu kỳ
-    │   └── StateMachine.js     # Quản lý các trạng thái game: MENU, PLAYING, FEVER, PAUSED, GAMEOVER
+    ├── main.js                 # Entry point khởi chạy game
+    ├── style.css               # File CSS đồng bộ DUY NHẤT chứa toàn bộ style UI, HUD, Modals & Layout
+    ├── core/                   # Các thành phần cốt lõi của Engine 3D & Scenes
+    │   ├── Game.js             # Điều phối chính vòng lặp (loop) & trạng thái game
+    │   ├── SceneManager.js     # Khởi tạo camera, renderer, ánh sáng
+    │   ├── City3DScene.js      # Bối cảnh 3D thành phố & tương tác
+    │   ├── ComputerOfficeScene.js # Bối cảnh 3D Góc làm việc Retro CRT & Zoom PC Tương tác
+    │   └── Shop3DScene.js      # Bối cảnh 3D Showroom / Shop Lamborghini
+    ├── effects/                # Hiệu ứng hình ảnh & kỹ xảo 3D
+    │   └── ExhaustFlameBoostEffect.js # Hiệu ứng lửa ống xả & tăng tốc
     ├── entities/               # Các đối tượng 3D trong game
-    │   ├── Player.js           # Xử lý mô hình nhân vật, hoạt ảnh và logic chuyển làn
-    │   ├── Obstacle.js         # Lớp cơ sở & các lớp cụ thể cho xe máy, lô cốt, xe bán hàng
-    │   ├── Collectible.js      # Ly cà phê sữa đá, các vật phẩm hỗ trợ (Power-ups)
-    │   └── Environment.js      # Mặt đất, đường chạy cuộn vô tận, tòa nhà hai bên phố
+    │   ├── Player.js           # Xử lý nhân vật, xe, hoạt ảnh & chuyển làn
+    │   ├── Obstacle.js         # Lớp chướng ngại vật (xe máy, lô cốt, chướng ngại)
+    │   ├── Collectible.js      # Vật phẩm thu thập (xu, kim cương, thịt, power-up)
+    │   ├── Environment.js      # Đường chạy vô tận, công trình phố xá
+    │   ├── NPCManager.js       # Quản lý NPC giao thông & người đi bộ
+    │   └── StylizedTree.js     # Đối tượng cây cối Low-poly
     ├── managers/               # Các lớp quản lý logic phụ trợ
-    │   ├── AssetManager.js     # Quản lý tải bất đồng bộ (Async loading) cho GLTF, Audio, Textures
-    │   ├── CollisionManager.js # Xử lý phát hiện va chạm dựa trên thuật toán AABB
-    │   ├── ScoreManager.js     # Quản lý điểm số, kỷ lục điểm cao, số ly cà phê thu thập được
-    │   └── AudioManager.js     # Quản lý phát nhạc nền, hiệu ứng âm thanh SFX
-    └── utils/                  # Thư viện tiện ích phụ trợ
-        └── Constants.js        # Chứa cấu hình toàn cục, giá trị tọa độ làn đường, tốc độ, màu sắc
+    │   ├── AssetManager.js     # Quản lý nạp bất đồng bộ mô hình, audio, texture
+    │   ├── AudioManager.js     # Quản lý âm thanh BGM, SFX & Jukebox
+    │   ├── CharacterViewerManager.js # Xử lý xoay 360° xe/nhân vật
+    │   ├── CityManager.js      # Quản lý di chuyển & tương tác trong thành phố
+    │   ├── CollisionManager.js # Xử lý phát hiện va chạm AABB
+    │   ├── CurrencyManager.js  # Quản lý tiền tệ (Xu, Kim Cương, Thịt)
+    │   ├── MatchHistoryManager.js # Quản lý lịch sử đấu & lưu trữ
+    │   ├── ModelPipelineManager.js # Xử lý nạp & chuẩn hóa mô hình 3D
+    │   ├── ObstacleManager.js  # Quản lý sinh & tái sử dụng chướng ngại vật
+    │   ├── OfficeManager.js    # Quản lý di chuyển & tương tác Map Văn Phòng 3D
+    │   ├── PlayerManager.js    # Quản lý thông tin người chơi, Level, EXP
+    │   ├── ShopManager.js      # Quản lý cửa hàng & nâng cấp
+    │   └── StateMachine.js     # Quản lý các trạng thái game (MENU, PLAYING, FEVER, GAMEOVER...)
+    ├── ui/                     # Thành phần Giao diện Người dùng
+    │   └── UIManager.js        # Điều khiển Profile HUD, Modal thông tin & giao diện
+    └── utils/                  # Tiện ích phụ trợ & Cấu hình
+        ├── Constants.js        # Cấu hình toàn cục, mốc tọa độ, tốc độ, thông số
+        └── mobile.js           # Xử lý điều khiển cảm ứng & nút mobile
 ```
 
 ---

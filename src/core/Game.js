@@ -3,6 +3,8 @@ import { ShopManager } from '../managers/ShopManager.js';
 import { Shop3DScene } from './Shop3DScene.js';
 import { City3DScene } from './City3DScene.js';
 import { CityManager } from '../managers/CityManager.js';
+import { ComputerOfficeScene } from './ComputerOfficeScene.js';
+import { OfficeManager } from '../managers/OfficeManager.js';
 import { SceneManager } from './SceneManager.js';
 import { StateMachine } from '../managers/StateMachine.js';
 import { CollisionManager } from '../managers/CollisionManager.js';
@@ -187,6 +189,8 @@ export class Game {
     this.shop3DScene = new Shop3DScene(this.sceneManager.renderer, this);
     this.city3DScene = new City3DScene(this.sceneManager.renderer, this);
     this.cityManager = new CityManager(this, this.city3DScene);
+    this.computerOfficeScene = new ComputerOfficeScene(this.sceneManager.renderer, this);
+    this.officeManager = new OfficeManager(this, this.computerOfficeScene);
 
     // 3. Gắn sự kiện các nút bấm UI & Cửa hàng
     this._setupUIEvents();
@@ -915,7 +919,7 @@ export class Game {
   }
 
   /**
-   * Ẩn / hiện Audio Control Panel và Top Bar Currency HUD (chỉ hiện duy nhất ở Menu chính)
+   * Ẩn / hiện Audio Control Panel, Top Bar Currency HUD & Profile HUD (chỉ hiện duy nhất ở Menu chính)
    */
   _setAudioPanelVisible(visible) {
     const panel = this.domElements.audioPanel;
@@ -925,6 +929,9 @@ export class Game {
     const topBar = this.domElements.topCurrencyBar;
     if (topBar) {
       topBar.classList.toggle('visible-in-menu', visible);
+    }
+    if (this.uiManager) {
+      this.uiManager.showProfileHUD(visible);
     }
     if (visible) {
       this.currencyManager.updateUI();
@@ -1658,6 +1665,11 @@ export class Game {
   }
 
   _update(deltaTime) {
+    if (this.computerOfficeScene && this.computerOfficeScene.isActive) {
+      this.computerOfficeScene.update(deltaTime);
+      return;
+    }
+
     if (this.city3DScene && this.city3DScene.isActive) {
       this.city3DScene.update(deltaTime);
       return;
@@ -1736,6 +1748,9 @@ export class Game {
 
     // Cộng dồn thời gian chơi tính theo giây
     this.gameTimer = (this.gameTimer || 0) + deltaTime;
+    if (this.playerManager) {
+      this.playerManager.addPlaytime(deltaTime);
+    }
 
     this._updateHUDDisplay();
 
@@ -1868,6 +1883,11 @@ export class Game {
   }
 
   _render() {
+    if (this.computerOfficeScene && this.computerOfficeScene.isActive) {
+      this.computerOfficeScene.render();
+      return;
+    }
+
     if (this.city3DScene && this.city3DScene.isActive) {
       this.city3DScene.render();
       return;

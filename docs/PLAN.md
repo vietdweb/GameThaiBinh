@@ -352,3 +352,87 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
 - [x] **Task 22.3: Định Dạng CSS Glassmorphism Neon (`src/style.css`)**
   - [x] Định dạng UI Joystick & Action Buttons glassmorphic cyan neon glow, `touch-action: none !important`, responsive trên điện thoại.
 
+---
+
+## Phase 23: Bảng Thông Tin Nhân Vật (Player Profile Modal) & HUD Level/EXP/Playtime
+**Mục tiêu:** Xây dựng hệ thống HUD Level/EXP/Avatar góc trái và Bảng Thông Tin Nhân Vật (Player Profile Modal) phong cách Cyberpunk Glassmorphism 2 cột, tích hợp Playtime Tracker và quy gom toàn bộ CSS về `src/ui/styles/style.css`.
+
+### Checklist công việc chi tiết
+- [x] **Task 23.1: State Management & Playtime Tracker (`src/managers/PlayerManager.js`)**
+  - [x] Quản lý Level, EXP, Base64 Avatar, Tên nhân vật, và Thời gian chơi tích lũy (`playtime`).
+  - [x] Định dạng đồng hồ đếm `getFormattedPlaytime()` dạng `HH:MM:SS`.
+- [x] **Task 23.2: HUD & Character Profile Modal UI (`src/ui/UIManager.js`)**
+  - [x] HUD góc trái `player-hud-widget` click mở Modal Profile.
+  - [x] Bảng Thông Tin Nhân Vật `profile-modal-card` thiết kế 2 cột Cyberpunk Glassmorphism (`backdrop-filter`, viền neon `#00f5d4`).
+  - [x] Cột trái: Avatar lớn với nút "📸 Đổi ảnh đại diện" và Đổi tên nhân vật.
+  - [x] Cột phải: Level big badge, thanh EXP, Đồng hồ thời gian chơi (Playtime Tracker), 6 ô Grid trang bị & chỉ số vật phẩm dự phòng.
+  - [x] Nút Đóng `X` và nút "ĐỒNG Ý" ở footer.
+- [x] **Task 23.3: Tích hợp Game Loop & EXP (`src/core/Game.js`)**
+  - [x] Nhặt ly cà phê -> gọi `playerManager.addExp(25)` tăng EXP.
+  - [x] Trạng thái PLAYING/FEVER -> tích lũy `playerManager.addPlaytime(deltaTime)`.
+- [x] **Task 23.4: Quy gom Style CSS (`src/ui/styles/style.css`)**
+  - [x] Quy gom toàn bộ style HUD và Profile Modal về `src/ui/styles/style.css`.
+
+---
+
+## Phase 24: Dọn Dẹp & Đồng Bộ CSS Toàn Dự Án (`src/style.css`)
+**Mục tiêu:** Gom toàn bộ nội dung CSS từ các file CSS lẻ/tách biệt (`src/ui/styles/style.css`, `ui.css`) vào duy nhất một stylesheet chính `src/style.css`, dừng import các file trùng lặp cũ, và cập nhật sơ đồ cấu trúc thư mục dự án trong tài liệu kỹ thuật (`TECH_ARCHITECTURE.md`).
+
+### Checklist công việc chi tiết
+- [x] **Task 24.1: Gom toàn bộ CSS vào `src/style.css`**
+  - [x] Hợp nhất 100% các selector từ `src/ui/styles/style.css` (Profile HUD, Level Badge, EXP Bar, Toast Level Up, Profile Modal 2-column, Playtime Clock, Inventory Grid) vào duy nhất file `src/style.css`.
+- [x] **Task 24.2: Dọn dẹp & Ngừng import CSS cũ**
+  - [x] Loại bỏ thẻ `<link rel="stylesheet" href="/src/ui/styles/style.css">` khỏi file `index.html`.
+  - [x] Cập nhật phương thức `_injectStyleSheet()` trong `src/ui/UIManager.js` chuyển hướng tự động nạp duy nhất `/src/style.css`.
+  - [x] Thay thế/Dọn dẹp các file CSS cũ `src/ui/styles/ui.css` và `src/ui/styles/style.css`.
+- [x] **Task 24.3: Cập nhật Tài liệu Kiến trúc (`TECH_ARCHITECTURE.md`)**
+  - [x] Cập nhật sơ đồ cây thư mục trong `TECH_ARCHITECTURE.md` ghi nhận `src/style.css` là file CSS đồng bộ duy nhất của dự án.
+
+---
+
+## Phase 25: Thiết Kế Đồng Bộ Cụm Nút Phụ Menu Chính (AAA Game Menu Form Redesign)
+**Mục tiêu:** Chuẩn hóa toàn bộ 4 nút tính năng phụ của Menu chính (Xem Nhân Vật 360°, Cửa Hàng 3D, Showroom Lamborghini, Thành Phố 3D) về duy nhất một form thiết kế Cyberpunk Glassmorphic 2x2 Grid đẳng cấp game quốc tế.
+
+### Checklist công việc chi tiết
+- [x] **Task 25.1: Chuẩn hóa Cấu trúc HTML (`index.html`)**
+  - [x] Chuyển đổi cụm 4 nút phụ từ kiểu tự do/inline thành cụm `.menu-secondary-grid` với cấu trúc chuẩn gồm: Container Icon (`sub-btn-icon-wrap`), Tiêu đề (`sub-btn-title`), và Mô tả tính năng (`sub-btn-desc`).
+  - [x] Giữ nguyên 100% các ID gốc (`btn-view-360`, `btn-open-shop`, `btn-view-lamborghini`, `btn-open-city`) đảm bảo các hàm xử lý sự kiện trong JS vận hành chính xác.
+- [x] **Task 25.2: Thiết kế Style Đồng bộ AAA Game Form (`src/style.css`)**
+  - [x] Quy định kích thước đồng bộ 62px height, 16px corner radius, background kính mờ Cyberpunk (`backdrop-filter: blur(12px)`).
+  - [x] Tích hợp hiệu ứng vệt sáng quét (Shimmer Sweep) và Micro-animation khi hover (`translateY(-3px)`, `scale(1.02)`).
+  - [x] Phối dải màu Accent hài hòa nhưng cùng 1 form thiết kế: Cyan (Nhân vật 360°), Gold (Cửa hàng), Flame Orange (Lamborghini), Electric Cyan (Thành phố 3D).
+
+---
+
+## Phase 26: Thêm Icon Game (Favicon Web App Icon) Cho Trang Web
+**Mục tiêu:** Tạo và tích hợp Icon Game (Favicon) chất lượng cao hiển thị trên tab trình duyệt web cho trò chơi **Thái Bình Rush**.
+
+### Checklist công việc chi tiết
+- [x] **Task 26.1: Thiết Kế & Khai Báo Favicon Vector (`public/favicon.svg`)**
+  - [x] Thiết kế file vector SVG `public/favicon.svg` độ phân giải cao phong cách 3D Cyberpunk Racing Helmet & Năng lượng Sét Vàng - Xanh Neon.
+- [x] **Task 26.2: Tích Hợp Vào Trang (`index.html`)**
+  - [x] Thêm thẻ `<link rel="icon" type="image/svg+xml" href="/favicon.svg">` và `<link rel="shortcut icon" href="/favicon.svg">` trong `<head>` của `index.html`.
+
+---
+
+## Phase 27: Map 3D Máy Tính Retro CRT 90s & Màn Hình Tương Tác Windows 98 (`ComputerOfficeScene.js`)
+**Mục tiêu:** Phát triển Map 3D mới `ComputerOfficeScene.js` dựng góc làm việc máy tính CRT cổ điển thập niên 90 (bàn gỗ, máy CRT, cốc cà phê khói bốc, hồ sơ, chậu cây) hỗ trợ cơ chế nhấn phím `E` để ngồi vào máy tính (Camera Zoom FPS mượt mà) / `ESC` đứng dậy, và hệ điều hành Retro Windows 98 tương tác $100\%$ (mở file, chơi Dò Mìn, xem thông số siêu xe, duyệt web).
+
+### Checklist công việc chi tiết
+- [x] **Task 27.1: Dựng Scene 3D Góc Làm Việc Văn Phòng (`src/core/ComputerOfficeScene.js`)**
+  - [x] Dựng hình khối 3D bàn gỗ, máy tính CRT dày thập niên 90, bàn phím, chuột, cốc cà phê khói nghi ngút, đống tài liệu & chậu cây cảnh.
+  - [x] Ánh sáng SpotLight ấm từ trên bàn chiếu xuống kết hợp ánh sáng hắt dịu Cyan Blue từ màn hình CRT.
+  - [x] Bắt khoảng cách $< 2.5m$ hiển thị UI Prompt `[E] NGỒI VÀO MÁY TÍNH`.
+  - [x] Xử lý mượt mà chuyển cảnh Camera Lerp (TPS Overview $\leftrightarrow$ FPS CRT Screen View) khi bấm phím `E` / `ESC`.
+- [x] **Task 27.2: Quản Lý Chuyển Map (`src/managers/OfficeManager.js`)**
+  - [x] Điều phối nạp Map `enterOfficeMap()` và `exitOfficeMap()`, tự động ẩn/hiện Top Currency Bar & Audio Panel chuẩn quy tắc UI HUD Rules.
+- [x] **Task 27.3: Màn Hình Tương Tác Windows 98 Retro OS (`index.html` & `src/style.css`)**
+  - [x] Thiết kế giao diện Windows 98 Retro Teal Desktop với 4 Icon ứng dụng: `TaiLieu.txt` (Notepad), `DoMin.exe` (Game Dò Mìn chơi thật 100%), `XeLambo3D.exe` (Thông số xe), `Internet.exe` (Trình duyệt Netscape).
+  - [x] Taskbar Start Menu & Đồng hồ thời gian thực.
+  - [x] Tích hợp nút `#btn-open-office` ở Menu chính và các nút thoát `#btn-exit-pc`, `#btn-exit-office-3d`.
+
+
+
+
+
+

@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Thai Binh Rush - Game 3D Endless Runner Viet Nam</title>
+  <!-- Game Favicon App Icon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.svg">
   <!-- Google Fonts: Outfit cho van ban, Space Grotesk cho tieu de, Rajdhani cho so HUD -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,7 +15,6 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Rajdhani:wght@600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css">
-  <link rel="stylesheet" href="/src/ui/styles/ui.css">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -169,22 +171,57 @@
           <span class="cost-badge-meat">x10 🍖</span>
         </button>
 
-        <!-- Nút phụ -->
-        <div class="menu-secondary-btns">
-          <button id="btn-view-360" class="btn-outline-neon btn-neon-cyan">
-            <span>🔍</span>
-            <span>Xem Nhân Vật 360°</span>
+        <!-- Nút phụ: 4 Nút Chuẩn Đồng Bộ AAA International Game Form (2x2 Grid) -->
+        <div class="menu-secondary-grid">
+          <button id="btn-view-360" class="menu-sub-btn sub-cyan">
+            <div class="sub-btn-icon-wrap">
+              <span class="sub-btn-icon">🔍</span>
+            </div>
+            <div class="sub-btn-content">
+              <span class="sub-btn-title">XEM NHÂN VẬT 360°</span>
+              <span class="sub-btn-desc">Phòng xem 3D</span>
+            </div>
           </button>
-          <button id="btn-open-shop" class="btn-primary glow-btn glow-btn-lambo" style="margin-bottom: 10px;">
-            <span>🛒 CỬA HÀNG</span>
+
+          <button id="btn-open-shop" class="menu-sub-btn sub-gold">
+            <div class="sub-btn-icon-wrap">
+              <span class="sub-btn-icon">🛒</span>
+            </div>
+            <div class="sub-btn-content">
+              <span class="sub-btn-title">CỬA HÀNG 3D</span>
+              <span class="sub-btn-desc">Mua sắm & Nâng cấp</span>
+            </div>
           </button>
-          <button id="btn-view-lamborghini" class="btn-outline-neon btn-neon-amber">
-            <span>🏎️</span>
-            <span>Xem Lamborghini</span>
+
+          <button id="btn-view-lamborghini" class="menu-sub-btn sub-orange">
+            <div class="sub-btn-icon-wrap">
+              <span class="sub-btn-icon">🏎️</span>
+            </div>
+            <div class="sub-btn-content">
+              <span class="sub-btn-title">XEM LAMBORGHINI</span>
+              <span class="sub-btn-desc">Showroom siêu xe</span>
+            </div>
           </button>
-          <button id="btn-open-city" class="btn-outline-neon btn-neon-cyan" style="margin-top: 10px; width: 100%; border-color: #00f5ff; background: rgba(0, 245, 255, 0.14);">
-            <span>🌆</span>
-            <span>Khám Phá Thành Phố 3D</span>
+
+          <button id="btn-open-city" class="menu-sub-btn sub-blue">
+            <div class="sub-btn-icon-wrap">
+              <span class="sub-btn-icon">🌆</span>
+            </div>
+            <div class="sub-btn-content">
+              <span class="sub-btn-title">THÀNH PHỐ 3D</span>
+              <span class="sub-btn-desc">Khám phá thế giới mở</span>
+            </div>
+          </button>
+
+          <!-- Nút phụ thứ 5: MÁY TÍNH RETRO CRT 90s -->
+          <button id="btn-open-office" class="menu-sub-btn sub-purple sub-pc-office" style="grid-column: span 2;">
+            <div class="sub-btn-icon-wrap">
+              <span class="sub-btn-icon">🖥️</span>
+            </div>
+            <div class="sub-btn-content">
+              <span class="sub-btn-title">MÁY TÍNH RETRO CRT 90s</span>
+              <span class="sub-btn-desc">Góc làm việc & Hệ điều hành tương tác 100% (Henry Heffernan Style)</span>
+            </div>
           </button>
         </div>
       </div>
@@ -196,6 +233,138 @@
   <button id="btn-exit-city-3d" class="btn-exit-shop-3d hidden" style="top: 24px; left: 24px; z-index: 3000;">
     <span>✕ THOÁT THÀNH PHỐ</span>
   </button>
+
+  <!-- Nút thoát Map Văn Phòng CRT 3D -->
+  <button id="btn-exit-office-3d" class="btn-exit-shop-3d hidden" style="top: 24px; left: 24px; z-index: 3000;">
+    <span>✕ THOÁT VĂN PHÒNG</span>
+  </button>
+
+  <!-- Floating Proximity Badge for Sitting at PC -->
+  <div id="pc-proximity-prompt" class="pc-proximity-prompt hidden">
+    <span class="key-badge">E</span>
+    <span class="prompt-text">NGỒI VÀO MÁY TÍNH CRT</span>
+  </div>
+
+  <!-- Top Action Button for Exiting PC Zoom Mode -->
+  <button id="btn-exit-pc" class="btn-exit-pc hidden">
+    <span class="key-badge-small">ESC</span>
+    <span>ĐỨNG DẬY / THOÁT MÁY TÍNH</span>
+  </button>
+
+  <!-- RETRO WINDOWS 98 OS INTERACTIVE SCREEN DISPLAY (HENRY HEFFERNAN STYLE) -->
+  <div id="crt-os-overlay" class="crt-os-overlay hidden">
+    <div class="win98-desktop">
+      <!-- CRT Scanline Effect -->
+      <div class="crt-scanline-effect"></div>
+
+      <!-- Desktop Icons Grid -->
+      <div class="win98-desktop-icons">
+        <div class="win98-icon" onclick="window.openWin98App && window.openWin98App('docs')">
+          <div class="win98-icon-img">📝</div>
+          <span class="win98-icon-label">TaiLieu.txt</span>
+        </div>
+
+        <div class="win98-icon" onclick="window.openWin98App && window.openWin98App('mines')">
+          <div class="win98-icon-img">💣</div>
+          <span class="win98-icon-label">DoMin.exe</span>
+        </div>
+
+        <div class="win98-icon" onclick="window.openWin98App && window.openWin98App('car')">
+          <div class="win98-icon-img">🏎️</div>
+          <span class="win98-icon-label">XeLambo3D.exe</span>
+        </div>
+
+        <div class="win98-icon" onclick="window.openWin98App && window.openWin98App('browser')">
+          <div class="win98-icon-img">🌐</div>
+          <span class="win98-icon-label">Internet.exe</span>
+        </div>
+      </div>
+
+      <!-- Win98 Window: Notepad Docs -->
+      <div id="win98-app-docs" class="win98-window hidden">
+        <div class="win98-titlebar">
+          <div class="win98-title-text">📝 TaiLieu.txt - Notepad</div>
+          <button class="win98-close-btn" onclick="window.closeWin98App && window.closeWin98App('docs')">✕</button>
+        </div>
+        <div class="win98-window-body">
+          <textarea class="win98-notepad-text" readonly>
+DỰ ÁN: THÁI BÌNH RUSH 3D (CYBERPUNK ENDLESS RUNNER)
+---------------------------------------------------
+- Động cơ: Three.js WebGL & Interactive CRT Display
+- Tác giả: Creative Technologist
+- Tính năng:
+  + Game 3D Chạy vô tận đường phố Việt Nam
+  + Showroom Siêu Xe Lamborghini 360°
+  + Thành phố 3D Open World Explorer
+  + Máy tính Retro CRT Windows 98 Tương tác 100%!
+
+Ghi chú: Nhấn phím ESC (hoặc nút góc trên) bất cứ lúc nào để đứng dậy khỏi máy tính.
+          </textarea>
+        </div>
+      </div>
+
+      <!-- Win98 Window: Minesweeper Game -->
+      <div id="win98-app-mines" class="win98-window hidden">
+        <div class="win98-titlebar">
+          <div class="win98-title-text">💣 Dò Mìn v1.0 - Win98 Retro Game</div>
+          <button class="win98-close-btn" onclick="window.closeWin98App && window.closeWin98App('mines')">✕</button>
+        </div>
+        <div class="win98-window-body win98-mines-body">
+          <div class="win98-mines-header">
+            <span id="mines-count">💣 10</span>
+            <button id="btn-reset-mines" onclick="window.resetMinesweeper && window.resetMinesweeper()">😎</button>
+            <span id="mines-timer">⏱️ 000</span>
+          </div>
+          <div id="win98-mines-grid" class="win98-mines-grid"></div>
+        </div>
+      </div>
+
+      <!-- Win98 Window: Car Spec Viewer -->
+      <div id="win98-app-car" class="win98-window hidden">
+        <div class="win98-titlebar">
+          <div class="win98-title-text">🏎️ Showroom Siêu Xe Lamborghini V12</div>
+          <button class="win98-close-btn" onclick="window.closeWin98App && window.closeWin98App('car')">✕</button>
+        </div>
+        <div class="win98-window-body">
+          <div class="win98-car-spec-card">
+            <h3>LAMBORGHINI V12 CYBERPUNK</h3>
+            <p>🚀 Tốc độ tối đa: 350 km/h</p>
+            <p>⚡ Gia tốc 0-100 km/h: 2.8 giây</p>
+            <p>💎 Giá niêm yết: 800 Kim Cương</p>
+            <p>✨ Đặc tính: Tự động hút Coin phạm vi 5m</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Win98 Window: Web Browser -->
+      <div id="win98-app-browser" class="win98-window hidden">
+        <div class="win98-titlebar">
+          <div class="win98-title-text">🌐 Netscape Navigator 1998</div>
+          <button class="win98-close-btn" onclick="window.closeWin98App && window.closeWin98App('browser')">✕</button>
+        </div>
+        <div class="win98-window-body">
+          <div class="win98-url-bar">
+            <span>Address:</span>
+            <input type="text" value="https://thaibinh-rush.vn/portfolio" readonly />
+          </div>
+          <div class="win98-browser-content">
+            <h2>WELCOME TO THÁI BÌNH RUSH 3D</h2>
+            <p>Trải nghiệm game 3D Web đỉnh cao kết hợp công nghệ Interactive Desk 3D!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Win98 Taskbar -->
+      <div class="win98-taskbar">
+        <button class="win98-start-btn">
+          <span class="win98-flag">🪟</span>
+          <span>Start</span>
+        </button>
+        <div class="win98-task-items" id="win98-task-items"></div>
+        <div class="win98-clock" id="win98-clock">10:45 AM</div>
+      </div>
+    </div>
+  </div>
 
 
   <!-- 2b. Giao dien Phong Xem 360 (Character Viewer Room Overlay) -->

@@ -11,9 +11,12 @@ export class PlayerManager {
     this.level = 1;
     this.currentExp = 0;
     this.avatarUrl = DEFAULT_AVATAR_SVG;
+    this.playerName = 'RUNNER';
+    this.playtime = 0;
 
     this.listeners = [];
     this.onLevelUpCallback = null;
+    this._lastPlaytimeSave = 0;
 
     this.load();
   }
@@ -61,6 +64,48 @@ export class PlayerManager {
         });
       }
     }
+  }
+
+  /**
+   * Tăng thời gian chơi tích lũy (Playtime Tracker)
+   * @param {number} seconds - Thời gian trôi qua tính theo giây
+   */
+  addPlaytime(seconds) {
+    if (typeof seconds !== 'number' || seconds <= 0) return;
+    this.playtime += seconds;
+
+    const now = Date.now();
+    if (!this._lastPlaytimeSave || now - this._lastPlaytimeSave > 3000) {
+      this.save();
+      this._lastPlaytimeSave = now;
+    }
+    this._notifyChange();
+  }
+
+  /**
+   * Trả về định dạng thời gian chơi HH:MM:SS
+   * @returns {string} Chuỗi HH:MM:SS
+   */
+  getFormattedPlaytime() {
+    const totalSecs = Math.floor(this.playtime || 0);
+    const hrs = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+  }
+
+  /**
+   * Đặt tên mới cho Nhân vật / Người chơi
+   * @param {string} newName - Tên mới (tối đa 16 ký tự)
+   */
+  setPlayerName(newName) {
+    if (typeof newName !== 'string') return;
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    this.playerName = trimmed.substring(0, 16);
+    this.save();
+    this._notifyChange();
   }
 
   /**
@@ -112,7 +157,9 @@ export class PlayerManager {
       const data = {
         level: this.level,
         currentExp: this.currentExp,
-        avatarUrl: this.avatarUrl
+        avatarUrl: this.avatarUrl,
+        playerName: this.playerName,
+        playtime: this.playtime
       };
       localStorage.setItem(this.SAVE_KEY, JSON.stringify(data));
     } catch (e) {
@@ -137,12 +184,20 @@ export class PlayerManager {
         if (data.avatarUrl && typeof data.avatarUrl === 'string') {
           this.avatarUrl = data.avatarUrl;
         }
+        if (data.playerName && typeof data.playerName === 'string' && data.playerName.trim()) {
+          this.playerName = data.playerName.trim();
+        }
+        if (typeof data.playtime === 'number' && data.playtime >= 0) {
+          this.playtime = data.playtime;
+        }
       }
     } catch (e) {
       console.error('Lỗi khi đọc PLAYER_DATA từ localStorage:', e);
       this.level = 1;
       this.currentExp = 0;
       this.avatarUrl = DEFAULT_AVATAR_SVG;
+      this.playerName = 'RUNNER';
+      this.playtime = 0;
     }
   }
 
@@ -180,6 +235,9 @@ export class PlayerManager {
       currentExp: this.currentExp,
       maxExp: this.getMaxExp(),
       avatarUrl: this.avatarUrl,
+      playerName: this.playerName || 'RUNNER',
+      playtime: this.playtime || 0,
+      formattedPlaytime: this.getFormattedPlaytime(),
       progressPercent: Math.min(100, Math.max(0, (this.currentExp / this.getMaxExp()) * 100))
     };
   }
