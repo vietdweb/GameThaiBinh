@@ -99,9 +99,9 @@ export class Shop3DScene {
         this.stationTargetLookAt = null;
 
         this.stationCameraTargets = {
-            projects: { pos: new THREE.Vector3(29.5, 1.8, 42.0), lookAt: new THREE.Vector3(35.0, 1.6, 42.0) },
-            articles: { pos: new THREE.Vector3(29.5, 1.8, 30.0), lookAt: new THREE.Vector3(35.0, 1.6, 30.0) },
-            about: { pos: new THREE.Vector3(29.5, 1.8, 36.0), lookAt: new THREE.Vector3(35.0, 1.3, 36.0) },
+            projects: { pos: new THREE.Vector3(29.5, 1.8, 36.0), lookAt: new THREE.Vector3(35.0, 1.3, 36.0) },
+            articles: { pos: new THREE.Vector3(32.0, 2.85, 30.0), lookAt: new THREE.Vector3(37.0, 2.85, 30.0) },
+            about: { pos: new THREE.Vector3(29.5, 1.8, 42.0), lookAt: new THREE.Vector3(35.0, 1.6, 42.0) },
             credits: { pos: new THREE.Vector3(23.0, 3.2, 36.0), lookAt: new THREE.Vector3(29.0, 2.5, 36.0) }
         };
 
@@ -4671,9 +4671,9 @@ export class Shop3DScene {
 
         shopGroup.add(bowlArtGroup);
 
-        // 6. 🏮 BIỂN NEON DỌC "RAMEN" BÊN TRÁI QUẦY
+        // 6. 🏮 BIỂN NEON DỌC "RAMEN" BÊN CẠNH QUẦY (DỊCH RA CẠNH SHOP - KHÔNG ĐÈ LÊN QUẦY)
         const vertSignGroup = new THREE.Group();
-        vertSignGroup.position.set(-3.6, 4.75, 1.5);
+        vertSignGroup.position.set(-4.2, 2.4, 0.5);
 
         const vertSignBack = new THREE.Mesh(
             new THREE.BoxGeometry(0.7, 3.2, 0.12),
@@ -4715,18 +4715,6 @@ export class Shop3DScene {
 
         shopGroup.add(vertSignGroup);
 
-        // 7. CỤM ĐÈN NÒN MẠ HỒNG (PINK GLOBE LIGHT) BÊN TRÁI
-        const pinkGlobe = new THREE.Mesh(
-            new THREE.SphereGeometry(0.42, 24, 24),
-            new THREE.MeshStandardMaterial({ color: 0xff007f, emissive: 0xff007f, emissiveIntensity: 3.5, roughness: 0.1 })
-        );
-        pinkGlobe.position.set(-3.6, 2.95, 1.8);
-        shopGroup.add(pinkGlobe);
-
-        const pinkPointLight = new THREE.PointLight(0xff007f, 4.0, 15);
-        pinkPointLight.position.set(-3.6, 2.95, 1.8);
-        shopGroup.add(pinkPointLight);
-
         // 8. 4 TÔ MÌ RAMEN SIÊU THẬT & 4 GHẾ BAR CYBERPUNK SIÊU ĐẸP
         const stoolPositionsX = [-2.1, -0.7, 0.7, 2.1];
 
@@ -4744,47 +4732,467 @@ export class Shop3DScene {
             shopGroup.add(bowl);
         });
 
-        // 9. BẢNG GỖ CLICK & DRAG BÊN PHẢI (CHALKBOARD SIGN)
-        const boardGroup = new THREE.Group();
-        boardGroup.position.set(3.2, 0.6, 2.0);
-        boardGroup.rotation.y = -0.3;
+        // 9. 💻 TRẠM MÁY TÍNH BÀN CRT RETRO & GHẾ XOAY LÀM VIỆC (THAY THẾ CHÍNH THỨC VỊ TRÍ ARTICLE CŨ - CHUẨN IMAGE 2 & 3)
+        this._buildRetroComputerStation(shopGroup);
 
-        const boardFrame = new THREE.Mesh(
-            new THREE.BoxGeometry(1.0, 1.2, 0.08),
-            new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.8 })
-        );
-        boardGroup.add(boardFrame);
-
-        const cCanvas = document.createElement('canvas');
-        cCanvas.width = 256;
-        cCanvas.height = 320;
-        const cCtx = cCanvas.getContext('2d');
-        cCtx.fillStyle = '#1e293b';
-        cCtx.fillRect(0, 0, 256, 320);
-        cCtx.fillStyle = '#ffffff';
-        cCtx.font = '900 32px "Space Grotesk", sans-serif';
-        cCtx.textAlign = 'center';
-        cCtx.fillText('CLICK &', 128, 120);
-        cCtx.fillText('DRAG', 128, 170);
-
-        const cTex = new THREE.CanvasTexture(cCanvas);
-        const cMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.9, 1.1),
-            new THREE.MeshBasicMaterial({ map: cTex })
-        );
-        cMesh.position.z = 0.05;
-        boardGroup.add(cMesh);
-
-        shopGroup.add(boardGroup);
-
-        // Arcade & Vending Machines
-        this._buildArcadeCabinet(shopGroup);
+        // Vending Machine
         this._buildVendingMachine(shopGroup);
 
         // 📺 Màn Hình LED Cột Đứng ("Hi, I'm Viet Anh.") Đặt Dịch Sang Bên Phải (x = 8.5m) Không Che Quầy
         this._buildCyberpunkLedTv(shopGroup);
 
         this.scene.add(shopGroup);
+    }
+
+    /* 💻 TRẠM MÁY TÍNH BÀN CRT RETRO & GHẾ XOAY LÀM VIỆC (THAY THẾ CHÍNH THỨC VỊ TRÍ ARTICLES CŨ - CHUẨN IMAGE 2 & 3) */
+    _buildRetroComputerStation(shopGroup) {
+        const pcGroup = new THREE.Group();
+        pcGroup.position.set(-6.0, 0, -1.0);
+        pcGroup.scale.set(2.5, 2.5, 2.5);
+        pcGroup.rotation.y = 0.0;
+
+        // 1. Bàn Gỗ Làm Việc Chân Kim Loại (Wooden Desk)
+        const deskTopMat = new THREE.MeshStandardMaterial({ color: 0x3b291a, roughness: 0.6 });
+        const metalMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.8 });
+        const deskTop = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 0.9), deskTopMat);
+        deskTop.position.set(0, 0.74, 0);
+        deskTop.castShadow = true;
+        pcGroup.add(deskTop);
+
+        // Chân Bàn Metal Legs
+        [[-0.72, -0.38], [0.72, -0.38], [-0.72, 0.38], [0.72, 0.38]].forEach(([dx, dz]) => {
+            const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.70, 12), metalMat);
+            leg.position.set(dx, 0.35, dz);
+            pcGroup.add(leg);
+        });
+
+        // 2. Thùng Máy Cây CRT Cổ Điển (Desktop Case Tower)
+        const pcPlastMat = new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.7 });
+        const pcCase = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.14, 0.44), pcPlastMat);
+        pcCase.position.set(0, 0.85, -0.1);
+        pcGroup.add(pcCase);
+
+        const floppySlot = new THREE.Mesh(
+            new THREE.BoxGeometry(0.14, 0.025, 0.01),
+            new THREE.MeshStandardMaterial({ color: 0x111111 })
+        );
+        floppySlot.position.set(0.14, 0.87, 0.12);
+        pcGroup.add(floppySlot);
+
+        // 3. Màn Hình CRT Dày Dặn & Mặt Màn Hình HĐH Windows 98
+        const monitorGroup = new THREE.Group();
+        monitorGroup.position.set(0, 1.14, -0.1);
+
+        const bezelMesh = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.48, 0.42), pcPlastMat);
+        monitorGroup.add(bezelMesh);
+
+        // Canvas Texture Hiển Thị Desktop Windows 98
+        const osCanvas = document.createElement('canvas');
+        osCanvas.width = 512;
+        osCanvas.height = 384;
+        const osCtx = osCanvas.getContext('2d');
+
+        // Hình Nền Teal Windows 98 Standard Desktop
+        osCtx.fillStyle = '#008080';
+        osCtx.fillRect(0, 0, 512, 384);
+
+        // Icons Trên Màn Hình Desktop
+        const icons = [
+            { label: 'THƯ VIỆN ẢNH', icon: '🖼️', x: 40, y: 40 },
+            { label: 'NHẬT KÝ', icon: '📖', x: 40, y: 120 },
+            { label: 'XEM VIDEO', icon: '🎬', x: 40, y: 200 },
+            { label: 'RẮN SĂN MỒI', icon: '🐍', x: 40, y: 280 }
+        ];
+        icons.forEach(ic => {
+            osCtx.fillStyle = '#ffffff';
+            osCtx.font = '32px sans-serif';
+            osCtx.fillText(ic.icon, ic.x, ic.y + 24);
+            osCtx.font = 'bold 13px "Space Grotesk", sans-serif';
+            osCtx.fillText(ic.label, ic.x + 45, ic.y + 20);
+        });
+
+        // Windows Start Taskbar ở đáy
+        osCtx.fillStyle = '#c0c0c0';
+        osCtx.fillRect(0, 356, 512, 28);
+        osCtx.fillStyle = '#000080';
+        osCtx.fillRect(4, 359, 65, 22);
+        osCtx.fillStyle = '#ffffff';
+        osCtx.font = 'bold 12px sans-serif';
+        osCtx.fillText('Start 🪟', 12, 374);
+
+        const osTex = new THREE.CanvasTexture(osCanvas);
+        const crtScreen = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.52, 0.38),
+            new THREE.MeshBasicMaterial({ map: osTex })
+        );
+        crtScreen.position.z = 0.215;
+        monitorGroup.add(crtScreen);
+        pcGroup.add(monitorGroup);
+
+        // 4. Bàn Phím & Chuột
+        const kb = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.02, 0.16), pcPlastMat);
+        kb.position.set(-0.05, 0.79, 0.22);
+        pcGroup.add(kb);
+
+        const mouse = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.025, 0.10), pcPlastMat);
+        mouse.position.set(0.28, 0.79, 0.22);
+        pcGroup.add(mouse);
+
+        // 5. 🪑 GHẾ NGHÌ HÁY TÍNH CHUẨN 100% ẢNH MẪU (BROWN LEATHER SWIVEL CHAIR MATCHING IMAGE 2)
+        const chairGroup = new THREE.Group();
+        chairGroup.position.set(0, 0, 0.65);
+
+        // Chân Xoay 5 Nhánh & Cột Thủy Lực Chrome
+        const chairBase = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.035, 0.035, 0.44, 12),
+            new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3, metalness: 0.8 })
+        );
+        chairBase.position.y = 0.22;
+        chairGroup.add(chairBase);
+
+        // 5 Bánh Xe Xoay
+        for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI * 2;
+            const leg = new THREE.Mesh(
+                new THREE.BoxGeometry(0.26, 0.03, 0.05),
+                new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4 })
+            );
+            leg.rotation.y = angle;
+            leg.position.set(Math.cos(angle) * 0.13, 0.06, Math.sin(angle) * 0.13);
+            chairGroup.add(leg);
+        }
+
+        // Đệm Ghế Nâu Da Bò Bo Cong (Brown Leather Seat Cushion)
+        const seatMat = new THREE.MeshStandardMaterial({ color: 0x854d0e, roughness: 0.5 });
+        const seatMesh = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.08, 0.48), seatMat);
+        seatMesh.position.y = 0.48;
+        seatMesh.castShadow = true;
+        chairGroup.add(seatMesh);
+
+        // Khung Kim Loại Đỡ Tựa Lưng Phía Sau
+        const backSupport = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.02, 0.02, 0.35, 8),
+            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9 })
+        );
+        backSupport.rotation.x = -0.2;
+        backSupport.position.set(0, 0.62, 0.24);
+        chairGroup.add(backSupport);
+
+        // Tựa Lưng Ghế Nâu Da Bò
+        const backrestMesh = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.32, 0.06), seatMat);
+        backrestMesh.position.set(0, 0.78, 0.26);
+        backrestMesh.castShadow = true;
+        chairGroup.add(backrestMesh);
+
+        pcGroup.add(chairGroup);
+
+        // 6. 📁 KHAY GIẤY HỒ SƠ & TÀI LIỆU A4 (THIẾT KẾ BÊN TRÁI BÀN - CHUẨN ẢNH MẪU 1)
+        const trayMat = new THREE.MeshStandardMaterial({ color: 0xd6c7b2, roughness: 0.7 });
+        const paperMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9 });
+
+        // 2 Khay Đựng Giấy Xếp Chồng
+        [0.78, 0.84].forEach(ty => {
+            const tray = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.04, 0.46), trayMat);
+            tray.position.set(-0.58, ty, -0.15);
+            pcGroup.add(tray);
+
+            const paperStack = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.03, 0.40), paperMat);
+            paperStack.position.set(-0.58, ty + 0.02, -0.15);
+            pcGroup.add(paperStack);
+        });
+
+        // Tờ Giấy Đang Đọc Nằm Flat Trên Bàn
+        const flatDoc = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.32), paperMat);
+        flatDoc.rotation.x = -Math.PI / 2;
+        flatDoc.rotation.z = -0.1;
+        flatDoc.position.set(-0.48, 0.785, 0.24);
+        pcGroup.add(flatDoc);
+
+        // 7. 📚 BÌA HỒ SƠ DỰ ÁN & CỐC CÀ PHÊ NÓNG (THIẾT KẾ BÊN PHẢI BÀN - CHUẨN ẢNH MẪU 1)
+        const binderMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.6 });
+        [-0.15, -0.04].forEach(bz => {
+            const binder = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.42, 0.28), binderMat);
+            binder.position.set(0.56, 0.95, bz);
+            pcGroup.add(binder);
+        });
+
+        // Cốc Cà Phê Trắng Porcelain Coffee Mug
+        const mugMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2 });
+        const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.055, 0.14, 16), mugMat);
+        mug.position.set(0.62, 0.85, 0.22);
+        pcGroup.add(mug);
+
+        // Nước Cà Phê Đen Bên Trong
+        const coffeeSurface = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.058, 0.01, 16), new THREE.MeshBasicMaterial({ color: 0x27190d }));
+        coffeeSurface.position.set(0.62, 0.91, 0.22);
+        pcGroup.add(coffeeSurface);
+
+        // 8. BẢNG GỖ HIỂN THỊ HƯỚNG DẪN TƯƠNG TÁC PC
+        const promptGroup = new THREE.Group();
+        promptGroup.position.set(0, 1.55, 0);
+
+        const promptCanvas = document.createElement('canvas');
+        promptCanvas.width = 512;
+        promptCanvas.height = 128;
+        const prCtx = promptCanvas.getContext('2d');
+        prCtx.fillStyle = '#0f172a';
+        prCtx.fillRect(0, 0, 512, 128);
+        prCtx.strokeStyle = '#00f5d4';
+        prCtx.lineWidth = 6;
+        prCtx.strokeRect(6, 6, 500, 116);
+        prCtx.fillStyle = '#ffffff';
+        prCtx.font = '900 30px "Space Grotesk", sans-serif';
+        prCtx.textAlign = 'center';
+        prCtx.fillText('💻 MÁY TÍNH WINDOWS 98', 256, 52);
+        prCtx.fillStyle = '#00f5d4';
+        prCtx.font = 'bold 24px "Space Grotesk", sans-serif';
+        prCtx.fillText('BẤM VÀO ĐỂ NGỒI & SỬ DỤNG', 256, 92);
+
+        const promptTex = new THREE.CanvasTexture(promptCanvas);
+        const promptMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(1.2, 0.3),
+            new THREE.MeshBasicMaterial({ map: promptTex })
+        );
+        promptGroup.add(promptMesh);
+        pcGroup.add(promptGroup);
+
+        // Đăng ký tương tác click an toàn
+        if (crtScreen) crtScreen.userData.onClick = () => this._openRetroComputerOSModal();
+        if (bezelMesh) bezelMesh.userData.onClick = () => this._openRetroComputerOSModal();
+        if (seatMesh) seatMesh.userData.onClick = () => this._openRetroComputerOSModal();
+        if (promptMesh) promptMesh.userData.onClick = () => this._openRetroComputerOSModal();
+
+        shopGroup.add(pcGroup);
+    }
+
+    /* 🖥️ MỞ GIAO DIỆN WINDOWS 98 OVERLAY VỚI 4 ỨNG DỤNG (ẢNH, NHẬT KÝ, VIDEO, RẮN SĂN MỒI) */
+    _openRetroComputerOSModal() {
+        let modal = document.getElementById('retro-computer-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'retro-computer-modal';
+            modal.style.cssText = `
+                position: fixed; inset: 0; z-index: 99999;
+                background: rgba(10, 14, 23, 0.92);
+                backdrop-filter: blur(12px);
+                display: flex; flex-direction: column;
+                align-items: center; justify-content: center;
+                font-family: "Outfit", sans-serif;
+            `;
+
+            modal.innerHTML = `
+                <div style="width: 900px; max-width: 95vw; height: 600px; background: #008080; border: 4px solid #c0c0c0; border-radius: 6px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; overflow: hidden; position: relative;">
+                    <!-- Windows Title Bar -->
+                    <div style="background: linear-gradient(90deg, #000080, #1084d0); color: white; padding: 8px 14px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; font-family: 'Space Grotesk', sans-serif;">
+                        <span>🪟 RETRO WINDOWS 98 OS - VIET ANH WORKSTATION</span>
+                        <button id="btn-close-pc-modal" style="background: #c0c0c0; border: 2px outset #ffffff; color: black; font-weight: 900; width: 28px; height: 24px; cursor: pointer; line-height: 18px;">✕</button>
+                    </div>
+
+                    <!-- Desktop Workspace -->
+                    <div style="flex: 1; padding: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 20px; align-content: start; position: relative;">
+                        
+                        <!-- Desktop Icons -->
+                        <div class="pc-app-icon" data-app="gallery" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: white; text-align: center; font-weight: 700; text-shadow: 1px 1px 2px black;">
+                            <div style="font-size: 48px;">🖼️</div>
+                            <span style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-size: 13px; margin-top: 4px;">Thư Viện Ảnh</span>
+                        </div>
+
+                        <div class="pc-app-icon" data-app="diary" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: white; text-align: center; font-weight: 700; text-shadow: 1px 1px 2px black;">
+                            <div style="font-size: 48px;">📖</div>
+                            <span style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-size: 13px; margin-top: 4px;">Nhật Ký</span>
+                        </div>
+
+                        <div class="pc-app-icon" data-app="video" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: white; text-align: center; font-weight: 700; text-shadow: 1px 1px 2px black;">
+                            <div style="font-size: 48px;">🎬</div>
+                            <span style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-size: 13px; margin-top: 4px;">Xem Video</span>
+                        </div>
+
+                        <div class="pc-app-icon" data-app="snake" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: white; text-align: center; font-weight: 700; text-shadow: 1px 1px 2px black;">
+                            <div style="font-size: 48px;">🐍</div>
+                            <span style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-size: 13px; margin-top: 4px;">Rắn Săn Mồi</span>
+                        </div>
+
+                        <!-- Active Window Area -->
+                        <div id="pc-window-area" style="position: absolute; inset: 16px; display: none; background: #c0c0c0; border: 3px outset #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-direction: column; z-index: 10;">
+                            <div style="background: #000080; color: white; padding: 6px 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+                                <span id="pc-window-title">App Window</span>
+                                <button id="btn-close-app-win" style="background: #c0c0c0; border: 1px solid black; cursor: pointer; width: 22px; height: 20px; font-weight: bold;">✕</button>
+                            </div>
+                            <div id="pc-window-body" style="flex: 1; padding: 16px; background: #ffffff; overflow-y: auto; color: #111111;">
+                                Content
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Taskbar -->
+                    <div style="height: 36px; background: #c0c0c0; border-top: 2px solid #ffffff; display: flex; align-items: center; padding: 0 8px; justify-content: space-between;">
+                        <button style="background: #c0c0c0; border: 2px outset #ffffff; font-weight: 900; padding: 4px 12px; cursor: pointer;">Start 🪟</button>
+                        <span style="font-weight: bold; font-family: monospace; border: 1px inset #808080; padding: 2px 8px; background: #dfdfdf;">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Bind Event Listeners
+            document.getElementById('btn-close-pc-modal').onclick = () => {
+                modal.style.display = 'none';
+            };
+
+            document.getElementById('btn-close-app-win').onclick = () => {
+                document.getElementById('pc-window-area').style.display = 'none';
+            };
+
+            const appIcons = modal.querySelectorAll('.pc-app-icon');
+            appIcons.forEach(icon => {
+                icon.onclick = () => {
+                    const appType = icon.getAttribute('data-app');
+                    this._launchPCApp(appType);
+                };
+            });
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    /* 🚀 KHỞI CHẠY CÁC ỨNG DỤNG RETRO (ẢNH, NHẬT KÝ, VIDEO, RẮN SĂN MỒI) */
+    _launchPCApp(appType) {
+        const winArea = document.getElementById('pc-window-area');
+        const winTitle = document.getElementById('pc-window-title');
+        const winBody = document.getElementById('pc-window-body');
+        winArea.style.display = 'flex';
+
+        if (appType === 'gallery') {
+            winTitle.innerText = '🖼️ Thư Viện Ảnh - Photo Showcase';
+            winBody.innerHTML = `
+                <h3 style="margin-top:0; color:#000080;">BỘ BỘ ANH CHỌN LỌC DỰ ÁN 3D</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <div style="border:2px solid #ccc; padding:6px; background:#f8fafc; text-align:center;">
+                        <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400" style="width:100%; height:110px; object-fit:cover; border-radius:4px;" />
+                        <p style="margin:4px 0 0; font-size:12px; font-weight:bold;">Biển Đảo Cyberpunk</p>
+                    </div>
+                    <div style="border:2px solid #ccc; padding:6px; background:#f8fafc; text-align:center;">
+                        <img src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=400" style="width:100%; height:110px; object-fit:cover; border-radius:4px;" />
+                        <p style="margin:4px 0 0; font-size:12px; font-weight:bold;">Đêm Neon Vancouver</p>
+                    </div>
+                    <div style="border:2px solid #ccc; padding:6px; background:#f8fafc; text-align:center;">
+                        <img src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=400" style="width:100%; height:110px; object-fit:cover; border-radius:4px;" />
+                        <p style="margin:4px 0 0; font-size:12px; font-weight:bold;">Siêu Xe Lamborghini</p>
+                    </div>
+                </div>
+            `;
+        } else if (appType === 'diary') {
+            winTitle.innerText = '📖 Nhật Ký Phát Triển - Developer Log';
+            winBody.innerHTML = `
+                <div style="font-family: monospace; background:#fffae6; padding:16px; border:1px solid #d97706; border-radius:4px; line-height:1.6;">
+                    <h3 style="margin-top:0; color:#b45309;">📝 NHẬT KÝ DỰ ÁN VIỆT ANH 3D</h3>
+                    <p><strong>[2026-07-23]</strong> Hoàn thiện góc quầy Ramen Cyberpunk Jesse Zhou Style 100%.</p>
+                    <p><strong>[Features]</strong> Đã thiết kế 4 tô mì Ramen siêu thật, 4 ghế Bar Cyberpunk, Màn hình TV phát video Live 4K, Cột LED Billboard "Hi, I'm Viet Anh." bên phải.</p>
+                    <p><strong>[Character]</strong> Nhân vật Chú Đậu Anime đeo tai nghe DJ uốn vòm Parabol cực mịn với nét miệng cười nụ chữ U siêu đáng yêu.</p>
+                    <p><strong>[Workstation]</strong> Nâng cấp trạm máy tính bàn Retro CRT với ghế xoay làm việc bọc da nâu chuẩn 100% ảnh mẫu!</p>
+                </div>
+            `;
+        } else if (appType === 'video') {
+            winTitle.innerText = '🎬 Retro Media Player - Trailer Video';
+            winBody.innerHTML = `
+                <div style="text-align:center;">
+                    <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" controls autoplay style="width:100%; max-height:300px; border:3px solid #000; border-radius:6px;"></video>
+                    <p style="font-weight:bold; color:#000080; margin-top:8px;">Live Stream Showreel Cyberpunk Demo</p>
+                </div>
+            `;
+        } else if (appType === 'snake') {
+            winTitle.innerText = '🐍 Game Rắn Săn Mồi - Classic Retro Snake Game';
+            winBody.innerHTML = `
+                <div style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+                    <div style="display:flex; justify-content:space-between; width:360px; margin-bottom:8px; font-weight:bold; font-size:16px; color:#000080;">
+                        <span>Điểm: <span id="snake-score">0</span></span>
+                        <span>Kỷ Lục: <span id="snake-highscore">0</span></span>
+                    </div>
+                    <canvas id="snake-canvas" width="360" height="280" style="background:#050508; border:3px solid #00f5d4; border-radius:4px;"></canvas>
+                    <p style="font-size:12px; color:#64748b; margin-top:6px;">Dùng phím Mũi tên / WASD để điều khiển Rắn ăn táo 🍎</p>
+                </div>
+            `;
+
+            setTimeout(() => this._initSnakeGame(), 50);
+        }
+    }
+
+    /* 🐍 GAME RẮN SĂN MỒI RETRO 60FPS THUẬT TOÁN CANVASCORRECT */
+    _initSnakeGame() {
+        const canvas = document.getElementById('snake-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('snake-score');
+        const highEl = document.getElementById('snake-highscore');
+
+        const gridSize = 15;
+        const cols = canvas.width / gridSize;
+        const rows = canvas.height / gridSize;
+
+        let snake = [{ x: 10, y: 8 }, { x: 9, y: 8 }, { x: 8, y: 8 }];
+        let food = { x: 15, y: 8 };
+        let dir = { x: 1, y: 0 };
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('snake_highscore') || '0');
+        if (highEl) highEl.innerText = highScore;
+
+        const onKeyDown = (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') { if (dir.y !== 1) dir = { x: 0, y: -1 }; }
+            else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') { if (dir.y !== -1) dir = { x: 0, y: 1 }; }
+            else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { if (dir.x !== 1) dir = { x: -1, y: 0 }; }
+            else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { if (dir.x !== -1) dir = { x: 1, y: 0 }; }
+        };
+
+        window.removeEventListener('keydown', onKeyDown);
+        window.addEventListener('keydown', onKeyDown);
+
+        if (this.snakeInterval) clearInterval(this.snakeInterval);
+        this.snakeInterval = setInterval(() => {
+            const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+            // Game Over Collision Wall or Self
+            if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows || snake.some(s => s.x === head.x && s.y === head.y)) {
+                snake = [{ x: 10, y: 8 }, { x: 9, y: 8 }, { x: 8, y: 8 }];
+                dir = { x: 1, y: 0 };
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('snake_highscore', highScore);
+                    if (highEl) highEl.innerText = highScore;
+                }
+                score = 0;
+                if (scoreEl) scoreEl.innerText = score;
+                return;
+            }
+
+            snake.unshift(head);
+
+            // Eat Food
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                if (scoreEl) scoreEl.innerText = score;
+                food = {
+                    x: Math.floor(Math.random() * cols),
+                    y: Math.floor(Math.random() * rows)
+                };
+            } else {
+                snake.pop();
+            }
+
+            // Draw Snake Game
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Food 🍎
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(food.x * gridSize + 1, food.y * gridSize + 1, gridSize - 2, gridSize - 2);
+
+            // Snake Body 🐍
+            snake.forEach((s, idx) => {
+                ctx.fillStyle = idx === 0 ? '#00f5d4' : '#10b981';
+                ctx.fillRect(s.x * gridSize + 1, s.y * gridSize + 1, gridSize - 2, gridSize - 2);
+            });
+        }, 110);
     }
 
     /* 🎧 TẠO NHÂN VẬT ANIME BEAN ĐEO TAI NGHE & BÓNG THOẠI CHẤM THÁN [!] ĐỨNG Ở QUẦY (CHUẨN 100% ẢNH MẪU) */
@@ -5602,14 +6010,20 @@ export class Shop3DScene {
 
         const overlay = document.getElementById('cyber-station-overlay');
         const exitBtn = document.getElementById('btn-exit-station');
-        const winEl = document.getElementById(`station-window-${stationType}`);
 
         if (exitBtn) exitBtn.classList.remove('hidden');
 
-        setTimeout(() => {
-            if (overlay) overlay.classList.remove('hidden');
-            if (winEl) winEl.classList.remove('hidden');
-        }, 600);
+        if (stationType === 'articles') {
+            setTimeout(() => {
+                this._openRetroComputerOSModal();
+            }, 650);
+        } else {
+            const winEl = document.getElementById(`station-window-${stationType}`);
+            setTimeout(() => {
+                if (overlay) overlay.classList.remove('hidden');
+                if (winEl) winEl.classList.remove('hidden');
+            }, 600);
+        }
     }
 
     exitStation() {
