@@ -1068,10 +1068,14 @@ body {
   padding: 9px 18px;
   border-radius: 14px;
   cursor: pointer;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10;
   transition: all 0.2s ease;
   box-shadow: 0 4px 14px rgba(255, 111, 0, 0.35);
   letter-spacing: 0.5px;
 }
+
 
 .btn-upgrade-action:hover, .btn-trail-action:hover {
   transform: scale(1.05);

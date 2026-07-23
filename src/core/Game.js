@@ -1985,7 +1985,53 @@ export class Game {
     }
   }
 
+  _showGarageToast(message, isError = false) {
+    let toast = document.getElementById('garage-toast-banner');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'garage-toast-banner';
+      toast.style.cssText = `
+        position: fixed;
+        top: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        z-index: 3000;
+        padding: 12px 24px;
+        border-radius: 20px;
+        font-family: var(--font-heading);
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: #ffffff;
+        background: rgba(15, 23, 42, 0.94);
+        backdrop-filter: blur(16px);
+        border: 1.5px solid #00f5d4;
+        box-shadow: 0 0 25px rgba(0, 245, 212, 0.4);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+      `;
+      document.body.appendChild(toast);
+    }
+
+    toast.style.borderColor = isError ? '#ff4757' : '#00f5d4';
+    toast.style.boxShadow = isError ? '0 0 25px rgba(255, 71, 87, 0.5)' : '0 0 25px rgba(0, 245, 212, 0.5)';
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+
+    if (this.garageToastTimer) clearTimeout(this.garageToastTimer);
+    this.garageToastTimer = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(-20px)';
+    }, 2200);
+  }
+
   _renderGarageModal() {
+    // 同步 UI currency
+    if (this.currencyManager) {
+      this.currencyManager.updateUI();
+    }
+
     // 1. Render Power-up 5-Level Upgrades Grid
     const powerupGrid = document.getElementById('powerup-upgrade-grid');
     if (powerupGrid && this.powerUpUpgradeManager) {
@@ -2027,14 +2073,18 @@ export class Game {
         if (!isMax) {
           const btnUpgrade = card.querySelector('.btn-upgrade-action');
           if (btnUpgrade) {
-            btnUpgrade.addEventListener('click', () => {
+            btnUpgrade.addEventListener('click', (e) => {
+              e.stopPropagation();
               const res = this.powerUpUpgradeManager.upgrade(type);
               if (res.success) {
                 this.audioManager?.playPowerUp?.();
+                this.currencyManager.updateUI('val-coffee');
+                this._showGarageToast(`✨ NÂNG CẤP THÀNH CÔNG: ${config.name} lên LV ${res.newLevel}!`);
                 this._renderGarageModal();
                 this._updateHUDDisplay();
               } else if (res.reason === 'NOT_ENOUGH_COFFEE') {
-                alert('Không đủ Cà phê! Hãy chạy ăn thêm Cà phê trên đường phố nhé.');
+                this.audioManager?.playCollision?.();
+                this._showGarageToast('☕ Không đủ Cà phê! Hãy chạy ăn thêm Cà phê nhé.', true);
               }
             });
           }
@@ -2085,18 +2135,23 @@ export class Game {
         if (!isEquipped) {
           const btnAction = card.querySelector('.btn-trail-action');
           if (btnAction) {
-            btnAction.addEventListener('click', () => {
+            btnAction.addEventListener('click', (e) => {
+              e.stopPropagation();
               if (isOwned) {
                 this.speedTrailManager.equipTrail(trailId);
                 this.audioManager?.playCoin?.();
+                this._showGarageToast(`⚡ ĐÃ TRANG BỊ: ${config.name}!`);
                 this._renderGarageModal();
               } else {
                 const res = this.speedTrailManager.buyTrail(trailId);
                 if (res.success) {
                   this.audioManager?.playPowerUp?.();
+                  this.currencyManager.updateUI('val-coffee');
+                  this._showGarageToast(`🎉 MỞ KHÓA & TRANG BỊ THÀNH CÔNG: ${config.name}!`);
                   this._renderGarageModal();
                 } else if (res.reason === 'NOT_ENOUGH_COFFEE') {
-                  alert('Không đủ Cà phê để mở khóa vệt tốc độ này!');
+                  this.audioManager?.playCollision?.();
+                  this._showGarageToast('☕ Không đủ Cà phê để mở khóa vệt tốc độ này!', true);
                 }
               }
             });
@@ -2107,6 +2162,8 @@ export class Game {
       });
     }
   }
+
+
 
   _render() {
     if (this.computerOfficeScene && this.computerOfficeScene.isActive) {

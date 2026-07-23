@@ -4,8 +4,8 @@
 const CURRENCY_KEY = 'tb_rush_currency';
 
 const DEFAULT_CURRENCY = {
-  coins: 0,
-  gems: 50,
+  coins: 10000, // Tặng 10,000 Cà phê free để người chơi nâng cấp & mua sắm thoải mái
+  gems: 500,
   meat: 1000 // Tặng 1000 thịt free khi lần đầu vào game
 };
 
@@ -15,7 +15,7 @@ export class CurrencyManager {
   }
 
   /**
-   * Đọc tài nguyên từ localStorage hoặc khởi tạo mặc định 1000 thịt
+   * Đọc tài nguyên từ localStorage hoặc khởi tạo mặc định 10000 Cà phê free
    */
   _loadData() {
     try {
@@ -23,7 +23,7 @@ export class CurrencyManager {
       if (saved) {
         const parsed = JSON.parse(saved);
         return {
-          coins: parsed.coins !== undefined ? parsed.coins : DEFAULT_CURRENCY.coins,
+          coins: (parsed.coins !== undefined && parsed.coins > 0) ? Math.max(parsed.coins, 5000) : 10000,
           gems: parsed.gems !== undefined ? parsed.gems : DEFAULT_CURRENCY.gems,
           meat: parsed.meat !== undefined ? parsed.meat : DEFAULT_CURRENCY.meat
         };
@@ -35,6 +35,7 @@ export class CurrencyManager {
     this._saveData(DEFAULT_CURRENCY);
     return { ...DEFAULT_CURRENCY };
   }
+
 
   /**
    * Đồng bộ dữ liệu vào localStorage
@@ -75,14 +76,37 @@ export class CurrencyManager {
   }
 
   /**
-   * Thêm Xu thu thập được sau trận đấu
+   * Kiểm tra xem có đủ Cà phê (Coins) không
+   */
+  hasEnoughCoins(amount) {
+    return this.data.coins >= amount;
+  }
+
+  /**
+   * Trừ Cà phê (Coins) khi nâng cấp / mua hiệu ứng
+   */
+  deductCoins(amount) {
+    if (this.data.coins < amount) {
+      return false;
+    }
+    this.data.coins -= amount;
+    this._saveData();
+    this.updateUI('val-coins');
+    this.updateUI('val-coffee');
+    return true;
+  }
+
+  /**
+   * Thêm Xu / Cà phê thu thập được
    */
   addCoins(amount) {
     if (!amount || amount <= 0) return;
     this.data.coins += Math.floor(amount);
     this._saveData();
     this.updateUI('val-coins');
+    this.updateUI('val-coffee');
   }
+
 
   /**
    * Thêm Kim Cương
@@ -93,6 +117,21 @@ export class CurrencyManager {
     this._saveData();
     this.updateUI('val-gems');
   }
+
+  hasEnoughGems(amount) {
+    return this.data.gems >= amount;
+  }
+
+  deductGems(amount) {
+    if (this.data.gems < amount) {
+      return false;
+    }
+    this.data.gems -= amount;
+    this._saveData();
+    this.updateUI('val-gems');
+    return true;
+  }
+
 
   /**
    * Thêm/Nạp Thịt Thể Lực
