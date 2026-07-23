@@ -4358,22 +4358,57 @@ export class Shop3DScene {
         roof.castShadow = true;
         shopGroup.add(roof);
 
-        // Neon Main Logo Sign: "CYBER MOTORS / RAMEN"
-        const signGeo = new THREE.BoxGeometry(4.2, 0.6, 0.1);
+        // Create Canvas Texture for Glowing Text "QUẦY RAMEN CYBERPUNK"
+        const textCanvas = document.createElement('canvas');
+        textCanvas.width = 1024;
+        textCanvas.height = 256;
+        const ctx = textCanvas.getContext('2d');
+
+        // Dark Cyberpunk Background
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(0, 0, 1024, 256);
+
+        // Neon Cyan Border
+        ctx.strokeStyle = '#00f5d4';
+        ctx.lineWidth = 12;
+        ctx.strokeRect(12, 12, 1000, 232);
+
+        // Neon Glowing Text "🍜 QUẦY RAMEN CYBERPUNK 🍜"
+        ctx.font = '900 52px "Outfit", "Space Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Pink Outer Glow
+        ctx.shadowColor = '#ff007f';
+        ctx.shadowBlur = 35;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('🍜 QUẦY RAMEN CYBERPUNK 🍜', 512, 128);
+
+        // Cyan Core Text
+        ctx.shadowColor = '#00f5d4';
+        ctx.shadowBlur = 20;
+        ctx.fillStyle = '#00f5d4';
+        ctx.fillText('🍜 QUẦY RAMEN CYBERPUNK 🍜', 512, 128);
+
+        const textTexture = new THREE.CanvasTexture(textCanvas);
+
+        // Neon Main Logo Signboard: "QUẦY RAMEN CYBERPUNK"
+        const signGeo = new THREE.BoxGeometry(5.4, 0.9, 0.12);
         const signMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.2, metalness: 0.8 });
         const sign = new THREE.Mesh(signGeo, signMat);
-        sign.position.set(0, 3.2, 1.5);
+        sign.position.set(0, 3.4, 1.5);
 
-        // Neon Text Strip
-        const neonStripGeo = new THREE.PlaneGeometry(4.0, 0.4);
+        // Neon Text Strip Plane
+        const neonStripGeo = new THREE.PlaneGeometry(5.2, 0.82);
         const neonStripMat = new THREE.MeshStandardMaterial({
-            color: 0x00f5d4,
-            emissive: 0x00f5d4,
-            emissiveIntensity: 1.2,
-            roughness: 0.1
+            map: textTexture,
+            emissiveMap: textTexture,
+            emissive: 0xffffff,
+            emissiveIntensity: 1.0,
+            roughness: 0.2
         });
         const neonStrip = new THREE.Mesh(neonStripGeo, neonStripMat);
-        neonStrip.position.set(0, 0, 0.055);
+        neonStrip.position.set(0, 0, 0.065);
         sign.add(neonStrip);
         shopGroup.add(sign);
 
@@ -4409,7 +4444,231 @@ export class Shop3DScene {
         // Cyberpunk Vending Machine (Right Station)
         this._buildVendingMachine(shopGroup);
 
+        // 📺 Giant Cyberpunk LED Billboard TV Screen (Jesse Zhou Style)
+        this._buildCyberpunkLedTv(shopGroup);
+
         this.scene.add(shopGroup);
+    }
+
+    /* 📺 GIANT CYBERPUNK OUTDOOR LED TV BILLBOARD (JESSE ZHOU PORTFOLIO STYLE) */
+    _buildCyberpunkLedTv(parentGroup) {
+        const tvGroup = new THREE.Group();
+        tvGroup.position.set(4.2, 0, 1.4);
+
+        // 1. Glowing Cyan Energy Ring Base Platform
+        const baseRingGeo = new THREE.CylinderGeometry(0.85, 0.95, 0.12, 32);
+        const baseRingMat = new THREE.MeshStandardMaterial({
+            color: 0x090d16,
+            emissive: 0x00f5d4,
+            emissiveIntensity: 0.9,
+            roughness: 0.2,
+            metalness: 0.8
+        });
+        const baseRing = new THREE.Mesh(baseRingGeo, baseRingMat);
+        baseRing.position.y = 0.06;
+        baseRing.castShadow = true;
+        tvGroup.add(baseRing);
+
+        // Sub Platform Cylinder Grid (Jesse Zhou Metallic Stand)
+        const gridPedestalGeo = new THREE.CylinderGeometry(0.7, 0.75, 0.35, 32);
+        const gridPedestalMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.4, metalness: 0.7 });
+        const gridPedestal = new THREE.Mesh(gridPedestalGeo, gridPedestalMat);
+        gridPedestal.position.y = 0.28;
+        tvGroup.add(gridPedestal);
+
+        // 2. Heavy Metallic Support Pole
+        const poleGeo = new THREE.CylinderGeometry(0.1, 0.14, 2.2, 16);
+        const poleMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.3, metalness: 0.9 });
+        const pole = new THREE.Mesh(poleGeo, poleMat);
+        pole.position.y = 1.45;
+        pole.castShadow = true;
+        tvGroup.add(pole);
+
+        // 3. Metallic TV Bezel Outer Frame
+        const frameGeo = new THREE.BoxGeometry(3.6, 2.3, 0.18);
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.8 });
+        const frame = new THREE.Mesh(frameGeo, frameMat);
+        frame.position.set(0, 2.45, 0);
+        frame.castShadow = true;
+
+        // Glowing Frame Neon Accent Trim
+        const trimGeo = new THREE.BoxGeometry(3.68, 2.38, 0.06);
+        const trimMat = new THREE.MeshStandardMaterial({ color: 0x00f5d4, emissive: 0x00f5d4, emissiveIntensity: 0.9, roughness: 0.1 });
+        const trim = new THREE.Mesh(trimGeo, trimMat);
+        trim.position.set(0, 2.45, -0.04);
+        tvGroup.add(trim);
+        tvGroup.add(frame);
+
+        // 4. Dynamic HTML5 Canvas LED Screen Texture
+        this.ledTvCanvas = document.createElement('canvas');
+        this.ledTvCanvas.width = 1024;
+        this.ledTvCanvas.height = 600;
+        this.ledTvCtx = this.ledTvCanvas.getContext('2d');
+        this.ledTvAnimTime = 0;
+
+        this.ledTvTexture = new THREE.CanvasTexture(this.ledTvCanvas);
+
+        const screenGeo = new THREE.PlaneGeometry(3.48, 2.18);
+        const screenMat = new THREE.MeshStandardMaterial({
+            map: this.ledTvTexture,
+            emissiveMap: this.ledTvTexture,
+            emissive: 0xffffff,
+            emissiveIntensity: 1.0,
+            roughness: 0.1
+        });
+        const screenPlane = new THREE.Mesh(screenGeo, screenMat);
+        screenPlane.position.set(0, 2.45, 0.095);
+        tvGroup.add(screenPlane);
+
+        parentGroup.add(tvGroup);
+    }
+
+    _updateLedTvDisplay(deltaTime) {
+        if (!this.ledTvCtx) return;
+        this.ledTvAnimTime += deltaTime;
+        const time = this.ledTvAnimTime;
+
+        const ctx = this.ledTvCtx;
+        const w = 1024;
+        const h = 600;
+
+        // 1. Dark Cyberpunk Background
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(0, 0, w, h);
+
+        // Cyber Grid Lines
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.08)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < w; x += 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+        }
+        for (let y = 0; y < h; y += 40) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+        }
+
+        // Outer Neon Frame Border
+        ctx.strokeStyle = '#00f5d4';
+        ctx.lineWidth = 8;
+        ctx.strokeRect(10, 10, w - 20, h - 20);
+
+        // 2. Top Header Navigation Bar (Jesse Zhou Style)
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(18, 18, w - 36, 60);
+
+        // Back Button Text
+        ctx.font = 'bold 24px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#00f5d4';
+        ctx.textAlign = 'left';
+        ctx.fillText('← Back', 36, 54);
+
+        // Top Accent Color Strips (Cyan, Orange, Pink)
+        ctx.fillStyle = '#00f5d4';
+        ctx.fillRect(160, 32, 100, 8);
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(270, 32, 70, 8);
+        ctx.fillStyle = '#ff007f';
+        ctx.fillRect(350, 32, 120, 8);
+
+        // Top Right Vertical Tabs
+        ctx.font = 'bold 20px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#00f5d4';
+        ctx.fillText('About', w - 380, 54);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('Skills', w - 280, 54);
+        ctx.fillText('Experience', w - 160, 54);
+
+        // 3. Main Hero Profile Box
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.fillRect(36, 100, 680, 360);
+        ctx.strokeRect(36, 100, 680, 360);
+
+        // Hero Greeting Title
+        ctx.font = '900 44px "Outfit", sans-serif';
+        ctx.shadowColor = '#00f5d4';
+        ctx.shadowBlur = 20;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText("Hi, I'm Viet Anh.", 64, 160);
+
+        // Colorful Sub-line Strips under greeting
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#00f5d4';
+        ctx.fillRect(64, 180, 120, 6);
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(190, 180, 80, 6);
+        ctx.fillStyle = '#ff007f';
+        ctx.fillRect(276, 180, 140, 6);
+
+        // Bio Text Paragraph
+        ctx.font = '500 22px "Inter", sans-serif';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillText("I'm a Senior Creative Technologist & WebGL Master.", 64, 230);
+        ctx.fillText("Building AAA Interactive 3D Web Apps & Cyberpunk Worlds.", 64, 268);
+        ctx.fillText("Dự án tiêu biểu: Thái Bình Rush 3D & Showroom Siêu Xe.", 64, 306);
+        ctx.fillText("Tích hợp Three.js, GLSL Shaders & Windows 98 Retro OS.", 64, 344);
+
+        // Social Icons Row
+        ctx.font = 'bold 26px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#00f5d4';
+        ctx.fillText('𝕏   in   🐙   ✉   🎮', 64, 420);
+
+        // 4. Right Side Equalizer & Animated Visualizer Panel
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+        ctx.strokeStyle = 'rgba(255, 0, 127, 0.4)';
+        ctx.fillRect(736, 100, 252, 360);
+        ctx.strokeRect(736, 100, 252, 360);
+
+        ctx.font = 'bold 18px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#ff007f';
+        ctx.textAlign = 'center';
+        ctx.fillText('● AUDIO SPECTRUM', 862, 134);
+
+        // 10 Animated Spectrum Equalizer Bars
+        const numBars = 10;
+        const barWidth = 14;
+        const startX = 760;
+        for (let i = 0; i < numBars; i++) {
+            const barHeight = Math.abs(Math.sin(time * 3.5 + i * 0.6)) * 220 + 20;
+            const x = startX + i * 22;
+            const y = 430 - barHeight;
+
+            // Gradient fill for visualizer bars
+            const grad = ctx.createLinearGradient(0, y, 0, 430);
+            grad.addColorStop(0, '#ff007f');
+            grad.addColorStop(0.5, '#00f5d4');
+            grad.addColorStop(1, '#3b82f6');
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, barWidth, barHeight);
+        }
+
+        // 5. Bottom Live System Status Bar
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(18, 480, w - 36, 95);
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.5)';
+        ctx.strokeRect(18, 480, w - 36, 95);
+
+        ctx.font = 'bold 20px "Space Grotesk", sans-serif';
+        ctx.fillStyle = '#00f5d4';
+        ctx.textAlign = 'left';
+        ctx.fillText('● SYSTEM METRICS:', 36, 520);
+
+        ctx.fillStyle = '#4ade80';
+        ctx.fillText('WEBGL 2.0: ACTIVE  |  FPS: 60  |  SHADER: STYLISED CLAY  |  RESOLUTION: 4K UHD', 260, 520);
+
+        // Animated Moving Scanline
+        const scanlineY = (time * 120) % h;
+        ctx.fillStyle = 'rgba(0, 245, 212, 0.15)';
+        ctx.fillRect(0, scanlineY, w, 6);
+
+        this.ledTvTexture.needsUpdate = true;
     }
 
     _buildArcadeCabinet(parentGroup) {
@@ -4481,7 +4740,7 @@ export class Shop3DScene {
         pole.castShadow = true;
         signpostGroup.add(pole);
 
-        // 4 Directional Neon Arrow Signboards
+        // 4 Directional Neon Arrow Signboards with Text CanvasTextures
         const signsConfig = [
             { type: 'projects', label: '[PROJECTS]', color: 0x00f5d4, y: 3.6, rotY: -0.4 },
             { type: 'articles', label: '[ARTICLES]', color: 0xff007f, y: 3.0, rotY: 0.4 },
@@ -4494,24 +4753,80 @@ export class Shop3DScene {
             arrowGroup.position.set(0, cfg.y, 0);
             arrowGroup.rotation.y = cfg.rotY;
 
-            // Arrow Board Mesh
+            // Generate High-Res 2D Canvas Texture for Glowing Neon Text
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            const hexColor = '#' + cfg.color.toString(16).padStart(6, '0');
+
+            // Dark Cyberpunk Board Background
+            ctx.fillStyle = '#090d16';
+            ctx.fillRect(0, 0, 512, 128);
+
+            // Neon Glowing Border
+            ctx.strokeStyle = hexColor;
+            ctx.lineWidth = 10;
+            ctx.strokeRect(8, 8, 496, 112);
+
+            // Neon Text Styling
+            ctx.font = '900 42px "Outfit", "Space Grotesk", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Outer Glow
+            ctx.shadowColor = hexColor;
+            ctx.shadowBlur = 24;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(cfg.label, 256, 64);
+
+            // Inner Vibrant Color Text
+            ctx.shadowColor = hexColor;
+            ctx.shadowBlur = 12;
+            ctx.fillStyle = hexColor;
+            ctx.fillText(cfg.label, 256, 64);
+
+            const texture = new THREE.CanvasTexture(canvas);
+
+            // Arrow Board Base Box
             const boardGeo = new THREE.BoxGeometry(1.6, 0.38, 0.08);
             const boardMat = new THREE.MeshStandardMaterial({
                 color: 0x090d16,
                 roughness: 0.3,
                 metalness: 0.7,
                 emissive: cfg.color,
-                emissiveIntensity: 0.45
+                emissiveIntensity: 0.35
             });
             const board = new THREE.Mesh(boardGeo, boardMat);
             board.castShadow = true;
+
+            // Text Plane Front
+            const textMat = new THREE.MeshStandardMaterial({
+                map: texture,
+                emissiveMap: texture,
+                emissive: 0xffffff,
+                emissiveIntensity: 1.0,
+                roughness: 0.2
+            });
+
+            const textPlaneF = new THREE.Mesh(new THREE.PlaneGeometry(1.56, 0.36), textMat);
+            textPlaneF.position.set(0, 0, 0.042);
+            board.add(textPlaneF);
+
+            // Text Plane Back
+            const textPlaneB = new THREE.Mesh(new THREE.PlaneGeometry(1.56, 0.36), textMat);
+            textPlaneB.position.set(0, 0, -0.042);
+            textPlaneB.rotation.y = Math.PI;
+            board.add(textPlaneB);
 
             // Store metadata & raycaster target
             board.userData = {
                 isSignpostArrow: true,
                 signType: cfg.type,
                 baseColor: cfg.color,
-                baseEmissiveIntensity: 0.45
+                baseEmissiveIntensity: 0.35,
+                textMat: textMat
             };
 
             this.signpostArrowMeshes.push(board);
@@ -4593,15 +4908,21 @@ export class Shop3DScene {
     _setSignHover(mesh) {
         document.body.style.cursor = 'pointer';
         if (mesh && mesh.material) {
-            mesh.material.emissiveIntensity = 1.35;
-            mesh.scale.set(1.08, 1.08, 1.08);
+            mesh.material.emissiveIntensity = 1.2;
+            if (mesh.userData && mesh.userData.textMat) {
+                mesh.userData.textMat.emissiveIntensity = 1.6;
+            }
+            mesh.scale.set(1.1, 1.1, 1.1);
         }
     }
 
     _resetSignHover(mesh) {
         document.body.style.cursor = 'default';
         if (mesh && mesh.material) {
-            mesh.material.emissiveIntensity = mesh.userData.baseEmissiveIntensity || 0.45;
+            mesh.material.emissiveIntensity = mesh.userData.baseEmissiveIntensity || 0.35;
+            if (mesh.userData && mesh.userData.textMat) {
+                mesh.userData.textMat.emissiveIntensity = 1.0;
+            }
             mesh.scale.set(1.0, 1.0, 1.0);
         }
     }
@@ -4653,6 +4974,9 @@ export class Shop3DScene {
 
         // Cập nhật NPC Đi Lại Trên Phố
         this._updateNPCs(deltaTime);
+
+        // 📺 Cập nhật Animation Màn Hình TV LED Cyberpunk (Jesse Zhou Style)
+        this._updateLedTvDisplay(deltaTime);
 
         // Cập nhật Prompts Tương Tác Cửa Hàng Trang Bị, Cửa Nhà, Siêu Xe & Cân Đẩu Vân
         this._updateVehiclePrompts();
