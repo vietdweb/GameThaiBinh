@@ -5100,3 +5100,222 @@ body {
   border: 1px solid #808080;
   background: #e0e0e0;
 }
+
+/* ============================================================ */
+/* CYBERPUNK RAMEN SHOP INTERACTIVE STATIONS OVERLAY (JESSE ZHOU)*/
+/* ============================================================ */
+.cyber-station-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 13, 23, 0.4);
+  backdrop-filter: blur(8px);
+  pointer-events: auto !important;
+}
+
+.cyber-station-window {
+  position: relative;
+  width: 85vw;
+  max-width: 800px;
+  max-height: 80vh;
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px solid #00f5d4;
+  border-radius: 20px;
+  box-shadow: 0 0 35px rgba(0, 245, 212, 0.4), inset 0 0 15px rgba(0, 245, 212, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: #ffffff;
+  font-family: 'Space Grotesk', 'Outfit', sans-serif;
+  animation: stationPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes stationPopIn {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.station-header {
+  background: linear-gradient(90deg, rgba(0, 245, 212, 0.2), rgba(255, 0, 127, 0.2));
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.5px solid rgba(0, 245, 212, 0.3);
+}
+
+.station-header h2 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin: 0;
+  color: #00f5d4;
+  text-shadow: 0 0 10px rgba(0, 245, 212, 0.6);
+}
+
+.station-close-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid #ef4444;
+  color: #ff4d4d;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.station-close-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.station-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Projects Cards Grid */
+.projects-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.project-card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(0, 245, 212, 0.25);
+  border-radius: 14px;
+  padding: 16px;
+  transition: all 0.25s ease;
+}
+
+.project-card:hover {
+  border-color: #00f5d4;
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px rgba(0, 245, 212, 0.35);
+}
+
+.project-card-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.15);
+  padding: 3px 8px;
+  border-radius: 8px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.project-card h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+}
+
+.project-card p {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Articles List */
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.article-item {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 0, 127, 0.3);
+  border-radius: 12px;
+  padding: 14px 18px;
+  transition: all 0.25s ease;
+}
+
+.article-item:hover {
+  border-color: #ff007f;
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.35);
+}
+
+.article-date {
+  font-size: 10px;
+  color: #ff007f;
+  font-weight: 700;
+}
+
+.article-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 4px 0;
+}
+
+.article-snippet {
+  font-size: 12px;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+/* About Profile Card */
+.about-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.about-avatar {
+  font-size: 64px;
+  background: rgba(255, 215, 0, 0.15);
+  border: 2px solid #ffd700;
+  border-radius: 20px;
+  padding: 10px;
+}
+
+.about-info h3 {
+  font-size: 16px;
+  color: #ffd700;
+  margin: 0 0 8px 0;
+}
+
+.about-bio {
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.about-skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.skill-tag {
+  background: rgba(0, 245, 212, 0.15);
+  border: 1px solid rgba(0, 245, 212, 0.4);
+  color: #00f5d4;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+
+/* Credits Content */
+.credits-content p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #cbd5e1;
+  margin: 8px 0;
+}

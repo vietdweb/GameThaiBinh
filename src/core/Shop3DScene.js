@@ -88,6 +88,23 @@ export class Shop3DScene {
         this.nimbusFlightHeight = 0.8;
         this.nimbusMaxHeight = 35.0;
 
+        // 🏙️ CYBERPUNK RAMEN SHOP & INTERACTIVE SIGNPOST STATIONS (JESSE ZHOU STYLE)
+        this.signpostArrowMeshes = [];
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        this.hoveredSign = null;
+        this.isStationActive = false;
+        this.activeStationType = null;
+        this.stationTargetCamPos = null;
+        this.stationTargetLookAt = null;
+
+        this.stationCameraTargets = {
+            projects: { pos: new THREE.Vector3(29.5, 1.8, 42.0), lookAt: new THREE.Vector3(35.0, 1.6, 42.0) },
+            articles: { pos: new THREE.Vector3(29.5, 1.8, 30.0), lookAt: new THREE.Vector3(35.0, 1.6, 30.0) },
+            about: { pos: new THREE.Vector3(29.5, 1.8, 36.0), lookAt: new THREE.Vector3(35.0, 1.3, 36.0) },
+            credits: { pos: new THREE.Vector3(23.0, 3.2, 36.0), lookAt: new THREE.Vector3(29.0, 2.5, 36.0) }
+        };
+
         // Khởi tạo toàn bộ thế giới mở kết hợp Cung Điện La Mã, Cổ Đền Nhật Bản & Vườn Sougen
         this._initSanctuaryEnvironment();
         this._initSanctuaryLighting();
@@ -97,6 +114,9 @@ export class Shop3DScene {
         this._initHangingLanternCables();
         this._initRiverStreamAndBridge();
         this._initTownHousesAndShops();
+        this._initCyberpunkRamenShop();
+        this._initInteractiveSignpost();
+        this._setupSignpostRaycaster();
         this._initGreekMarblePalace(); // Cung Điện Cột Đá Trắng Thiết Kế Nâng Cấp Tuyệt Đẹp z = 30
         this._initSougenGardenAndFloatingText(); // Vườn Sougen & Chữ "Viet Anh Nguyen" Sau Nhà z = -34
         this._initSakuraAndCoastalTrees();
@@ -4307,6 +4327,326 @@ export class Shop3DScene {
         return currentTargetGroundY;
     }
 
+    /* 🏙️ CYBERPUNK RAMEN SHOP & STATIONS (JESSE ZHOU STYLE) */
+    _initCyberpunkRamenShop() {
+        const shopGroup = new THREE.Group();
+        shopGroup.position.set(36.0, 0, 36.0);
+        shopGroup.rotation.y = -Math.PI / 2;
+
+        // Counter Bar (Wooden & Steel)
+        const barGeo = new THREE.BoxGeometry(6.0, 1.1, 1.8);
+        const barMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.5, metalness: 0.3 });
+        const bar = new THREE.Mesh(barGeo, barMat);
+        bar.position.set(0, 0.55, 0);
+        bar.castShadow = true;
+        bar.receiveShadow = true;
+        shopGroup.add(bar);
+
+        // Counter Top Slab (Polished Wood)
+        const topGeo = new THREE.BoxGeometry(6.4, 0.08, 2.0);
+        const topMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.3, metalness: 0.1 });
+        const top = new THREE.Mesh(topGeo, topMat);
+        top.position.set(0, 1.12, 0);
+        top.castShadow = true;
+        shopGroup.add(top);
+
+        // Cyberpunk Canopy Roof (Purple/Blue Stripes)
+        const roofGeo = new THREE.BoxGeometry(7.0, 0.2, 2.8);
+        const roofMat = new THREE.MeshStandardMaterial({ color: 0x9333ea, roughness: 0.4, metalness: 0.2, emissive: 0x581c87, emissiveIntensity: 0.4 });
+        const roof = new THREE.Mesh(roofGeo, roofMat);
+        roof.position.set(0, 2.8, 0.2);
+        roof.castShadow = true;
+        shopGroup.add(roof);
+
+        // Neon Main Logo Sign: "CYBER MOTORS / RAMEN"
+        const signGeo = new THREE.BoxGeometry(4.2, 0.6, 0.1);
+        const signMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.2, metalness: 0.8 });
+        const sign = new THREE.Mesh(signGeo, signMat);
+        sign.position.set(0, 3.2, 1.5);
+
+        // Neon Text Strip
+        const neonStripGeo = new THREE.PlaneGeometry(4.0, 0.4);
+        const neonStripMat = new THREE.MeshStandardMaterial({
+            color: 0x00f5d4,
+            emissive: 0x00f5d4,
+            emissiveIntensity: 1.2,
+            roughness: 0.1
+        });
+        const neonStrip = new THREE.Mesh(neonStripGeo, neonStripMat);
+        neonStrip.position.set(0, 0, 0.055);
+        sign.add(neonStrip);
+        shopGroup.add(sign);
+
+        // Bar Stools (4 Stools)
+        for (let i = 0; i < 4; i++) {
+            const stoolSeatGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.08, 16);
+            const stoolSeatMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.6 });
+            const stoolSeat = new THREE.Mesh(stoolSeatGeo, stoolSeatMat);
+            stoolSeat.position.set(-2.1 + i * 1.4, 0.55, 1.4);
+            stoolSeat.castShadow = true;
+            shopGroup.add(stoolSeat);
+
+            const stoolLegGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.55, 8);
+            const stoolLegMat = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.8 });
+            const stoolLeg = new THREE.Mesh(stoolLegGeo, stoolLegMat);
+            stoolLeg.position.set(-2.1 + i * 1.4, 0.275, 1.4);
+            shopGroup.add(stoolLeg);
+        }
+
+        // Steaming Noodle Bowl Props on Counter
+        for (let i = 0; i < 3; i++) {
+            const bowlGeo = new THREE.CylinderGeometry(0.18, 0.12, 0.14, 16);
+            const bowlMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3 });
+            const bowl = new THREE.Mesh(bowlGeo, bowlMat);
+            bowl.position.set(-1.4 + i * 1.4, 1.22, 0.2);
+            bowl.castShadow = true;
+            shopGroup.add(bowl);
+        }
+
+        // Arcade Game Cabinet Machine (Left Station)
+        this._buildArcadeCabinet(shopGroup);
+
+        // Cyberpunk Vending Machine (Right Station)
+        this._buildVendingMachine(shopGroup);
+
+        this.scene.add(shopGroup);
+    }
+
+    _buildArcadeCabinet(parentGroup) {
+        const arcadeGroup = new THREE.Group();
+        arcadeGroup.position.set(-6.0, 0, -1.0);
+
+        // Cabinet Body
+        const cabGeo = new THREE.BoxGeometry(1.2, 2.4, 1.1);
+        const cabMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.5, metalness: 0.3 });
+        const cabinet = new THREE.Mesh(cabGeo, cabMat);
+        cabinet.position.y = 1.2;
+        cabinet.castShadow = true;
+        arcadeGroup.add(cabinet);
+
+        // CRT Screen (Cyan Emissive)
+        const screenGeo = new THREE.PlaneGeometry(0.9, 0.7);
+        const screenMat = new THREE.MeshStandardMaterial({
+            color: 0x00f5d4,
+            emissive: 0x00f5d4,
+            emissiveIntensity: 0.9,
+            roughness: 0.1
+        });
+        const screen = new THREE.Mesh(screenGeo, screenMat);
+        screen.position.set(0, 1.4, 0.56);
+        arcadeGroup.add(screen);
+
+        // Marquee Header "ARCADE 1998"
+        const marqueeGeo = new THREE.BoxGeometry(1.1, 0.3, 0.05);
+        const marqueeMat = new THREE.MeshStandardMaterial({ color: 0xff007f, emissive: 0xff007f, emissiveIntensity: 1.0 });
+        const marquee = new THREE.Mesh(marqueeGeo, marqueeMat);
+        marquee.position.set(0, 2.25, 0.56);
+        arcadeGroup.add(marquee);
+
+        parentGroup.add(arcadeGroup);
+    }
+
+    _buildVendingMachine(parentGroup) {
+        const vendGroup = new THREE.Group();
+        vendGroup.position.set(6.0, 0, -1.0);
+
+        // Machine Body
+        const vendGeo = new THREE.BoxGeometry(1.3, 2.5, 1.1);
+        const vendMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.4, metalness: 0.2 });
+        const vend = new THREE.Mesh(vendGeo, vendMat);
+        vend.position.y = 1.25;
+        vend.castShadow = true;
+        vendGroup.add(vend);
+
+        // Glass Front Window
+        const glassGeo = new THREE.PlaneGeometry(1.0, 1.4);
+        const glassMat = new THREE.MeshStandardMaterial({ color: 0xa5f3fc, emissive: 0x38bdf8, emissiveIntensity: 0.6, roughness: 0.1, transparent: true, opacity: 0.85 });
+        const glass = new THREE.Mesh(glassGeo, glassMat);
+        glass.position.set(0, 1.45, 0.56);
+        vendGroup.add(glass);
+
+        parentGroup.add(vendGroup);
+    }
+
+    /* 🚦 INTERACTIVE NEON SIGNPOST POLE */
+    _initInteractiveSignpost() {
+        const signpostGroup = new THREE.Group();
+        signpostGroup.position.set(29.0, 0, 36.0);
+
+        // Main Cyber Pole
+        const poleGeo = new THREE.CylinderGeometry(0.08, 0.1, 4.4, 16);
+        const poleMat = new THREE.MeshStandardMaterial({ color: 0x3f3f46, roughness: 0.3, metalness: 0.8 });
+        const pole = new THREE.Mesh(poleGeo, poleMat);
+        pole.position.y = 2.2;
+        pole.castShadow = true;
+        signpostGroup.add(pole);
+
+        // 4 Directional Neon Arrow Signboards
+        const signsConfig = [
+            { type: 'projects', label: '[PROJECTS]', color: 0x00f5d4, y: 3.6, rotY: -0.4 },
+            { type: 'articles', label: '[ARTICLES]', color: 0xff007f, y: 3.0, rotY: 0.4 },
+            { type: 'about', label: '[ABOUT ME]', color: 0xffd700, y: 2.4, rotY: -0.2 },
+            { type: 'credits', label: '[CREDITS]', color: 0x00e5ff, y: 1.8, rotY: 0.3 }
+        ];
+
+        signsConfig.forEach((cfg) => {
+            const arrowGroup = new THREE.Group();
+            arrowGroup.position.set(0, cfg.y, 0);
+            arrowGroup.rotation.y = cfg.rotY;
+
+            // Arrow Board Mesh
+            const boardGeo = new THREE.BoxGeometry(1.6, 0.38, 0.08);
+            const boardMat = new THREE.MeshStandardMaterial({
+                color: 0x090d16,
+                roughness: 0.3,
+                metalness: 0.7,
+                emissive: cfg.color,
+                emissiveIntensity: 0.45
+            });
+            const board = new THREE.Mesh(boardGeo, boardMat);
+            board.castShadow = true;
+
+            // Store metadata & raycaster target
+            board.userData = {
+                isSignpostArrow: true,
+                signType: cfg.type,
+                baseColor: cfg.color,
+                baseEmissiveIntensity: 0.45
+            };
+
+            this.signpostArrowMeshes.push(board);
+            arrowGroup.add(board);
+            signpostGroup.add(arrowGroup);
+        });
+
+        this.scene.add(signpostGroup);
+    }
+
+    /* 🖱️ RAYCASTER HOVER & CLICK LOGIC */
+    _setupSignpostRaycaster() {
+        const exitBtn = document.getElementById('btn-exit-station');
+
+        // Mouse Move Hover Detector
+        window.addEventListener('pointermove', (e) => {
+            if (!this.isActive || this.isStationActive) return;
+
+            this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+            const intersects = this.raycaster.intersectObjects(this.signpostArrowMeshes, false);
+
+            if (intersects.length > 0) {
+                const hitObj = intersects[0].object;
+                if (this.hoveredSign !== hitObj) {
+                    if (this.hoveredSign) this._resetSignHover(this.hoveredSign);
+                    this.hoveredSign = hitObj;
+                    this._setSignHover(hitObj);
+                }
+            } else {
+                if (this.hoveredSign) {
+                    this._resetSignHover(this.hoveredSign);
+                    this.hoveredSign = null;
+                }
+            }
+        });
+
+        // Mouse Click Station Zoom Trigger
+        window.addEventListener('pointerdown', (e) => {
+            if (!this.isActive || this.isStationActive) return;
+
+            this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+            const intersects = this.raycaster.intersectObjects(this.signpostArrowMeshes, false);
+
+            if (intersects.length > 0) {
+                const hitObj = intersects[0].object;
+                const stationType = hitObj.userData.signType;
+                if (stationType) {
+                    e.stopPropagation();
+                    this.zoomToStation(stationType);
+                }
+            }
+        });
+
+        // Keydown ESC Exit Station
+        window.addEventListener('keydown', (e) => {
+            if (!this.isActive) return;
+            if (e.key.toUpperCase() === 'ESCAPE' && this.isStationActive) {
+                this.exitStation();
+            }
+        });
+
+        // Click Exit Button
+        if (exitBtn) {
+            exitBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.isStationActive) {
+                    this.exitStation();
+                }
+            });
+        }
+    }
+
+    _setSignHover(mesh) {
+        document.body.style.cursor = 'pointer';
+        if (mesh && mesh.material) {
+            mesh.material.emissiveIntensity = 1.35;
+            mesh.scale.set(1.08, 1.08, 1.08);
+        }
+    }
+
+    _resetSignHover(mesh) {
+        document.body.style.cursor = 'default';
+        if (mesh && mesh.material) {
+            mesh.material.emissiveIntensity = mesh.userData.baseEmissiveIntensity || 0.45;
+            mesh.scale.set(1.0, 1.0, 1.0);
+        }
+    }
+
+    /* 🎥 STATION CAMERA ZOOM TWEEN CONTROLLER */
+    zoomToStation(stationType) {
+        const targetConfig = this.stationCameraTargets[stationType];
+        if (!targetConfig) return;
+
+        this.isStationActive = true;
+        this.activeStationType = stationType;
+        this.stationTargetCamPos = targetConfig.pos.clone();
+        this.stationTargetLookAt = targetConfig.lookAt.clone();
+
+        const overlay = document.getElementById('cyber-station-overlay');
+        const exitBtn = document.getElementById('btn-exit-station');
+        const winEl = document.getElementById(`station-window-${stationType}`);
+
+        if (exitBtn) exitBtn.classList.remove('hidden');
+
+        setTimeout(() => {
+            if (overlay) overlay.classList.remove('hidden');
+            if (winEl) winEl.classList.remove('hidden');
+        }, 600);
+    }
+
+    exitStation() {
+        this.isStationActive = false;
+
+        const overlay = document.getElementById('cyber-station-overlay');
+        const exitBtn = document.getElementById('btn-exit-station');
+
+        if (overlay) overlay.classList.add('hidden');
+        if (exitBtn) exitBtn.classList.add('hidden');
+
+        ['projects', 'articles', 'about', 'credits'].forEach(id => {
+            const winEl = document.getElementById(`station-window-${id}`);
+            if (winEl) winEl.classList.add('hidden');
+        });
+
+        this.activeStationType = null;
+        this.stationTargetCamPos = null;
+        this.stationTargetLookAt = null;
+    }
+
     /* 🕹️ 20. VÒNG LẶP UPDATE GAME LOOP (XỬ LÝ ĐI BỘ & LÁI SIÊU XE TỰ DO) */
     update(deltaTime) {
         if (!this.isActive) return;
@@ -4658,17 +4998,23 @@ export class Shop3DScene {
         }
 
         // GTA & ROBLOX STYLE CAMERA ORBIT LERP
-        const targetCamX = this.playerPos.x + Math.sin(this.cameraYaw) * Math.cos(this.cameraPitch) * this.cameraDistance;
-        const targetCamY = this.playerPos.y + Math.sin(this.cameraPitch) * this.cameraDistance + (this.isGrounded ? 0 : 0.3);
-        const targetCamZ = this.playerPos.z + Math.cos(this.cameraYaw) * Math.cos(this.cameraPitch) * this.cameraDistance;
+        if (this.isStationActive && this.stationTargetCamPos && this.stationTargetLookAt) {
+            this.camera.position.lerp(this.stationTargetCamPos, deltaTime * 6.0);
+            this.currentLookAt.lerp(this.stationTargetLookAt, deltaTime * 6.0);
+            this.camera.lookAt(this.currentLookAt);
+        } else {
+            const targetCamX = this.playerPos.x + Math.sin(this.cameraYaw) * Math.cos(this.cameraPitch) * this.cameraDistance;
+            const targetCamY = this.playerPos.y + Math.sin(this.cameraPitch) * this.cameraDistance + (this.isGrounded ? 0 : 0.3);
+            const targetCamZ = this.playerPos.z + Math.cos(this.cameraYaw) * Math.cos(this.cameraPitch) * this.cameraDistance;
 
-        this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, targetCamX, deltaTime * 8.0);
-        this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, targetCamY, deltaTime * 8.0);
-        this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, targetCamZ, deltaTime * 8.0);
+            this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, targetCamX, deltaTime * 8.0);
+            this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, targetCamY, deltaTime * 8.0);
+            this.camera.position.z = THREE.MathUtils.lerp(this.camera.position.z, targetCamZ, deltaTime * 8.0);
 
-        this.targetLookAt.set(this.playerPos.x, this.playerPos.y + 1.2, this.playerPos.z);
-        this.currentLookAt.lerp(this.targetLookAt, deltaTime * 9.0);
-        this.camera.lookAt(this.currentLookAt);
+            this.targetLookAt.set(this.playerPos.x, this.playerPos.y + 1.2, this.playerPos.z);
+            this.currentLookAt.lerp(this.targetLookAt, deltaTime * 9.0);
+            this.camera.lookAt(this.currentLookAt);
+        }
 
         // 🏆 XOAY 4 MÔ HÌNH TRƯNG BÀY 3D GOKU BÊN TRONG CĂN NHÀ VÀNG (INSIDE HOUSE EXHIBITION)
         if (this.gokuExhibitionModels && this.gokuExhibitionModels.length > 0) {

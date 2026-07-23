@@ -431,6 +431,24 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
   - [x] Taskbar Start Menu & Đồng hồ thời gian thực.
   - [x] Tích hợp nút `#btn-open-office` ở Menu chính và các nút thoát `#btn-exit-pc`, `#btn-exit-office-3d`.
 
+---
+
+## Phase 28: Nâng Cấp Quầy Ramen Cyberpunk & Trạm Máy Tính Tương Tác Signpost (`Shop3DScene.js`)
+**Mục tiêu:** Nâng cấp file `Shop3DScene.js` biến nó thành Quầy Cửa Hàng Ramen Cyberpunk & Cột Biển Hiệu Neon Signpost 4 Hướng Tương Tác đẳng cấp thế giới theo phong cách **Jesse Zhou** (`jesse-zhou.com`).
+
+### Checklist công việc chi tiết
+- [x] **Task 28.1: Dựng Cảnh Quan 3D Quầy Ramen & Cột Signpost (`src/core/Shop3DScene.js`)**
+  - [x] Dựng quầy bán Ramen Cyberpunk đặt ngay trước Căn Nhà Màu Xanh Mái Hồng (`x: 36, z: 36`): Mái che tím/xanh, quầy gỗ có dãy ghế đẩu, biển hiệu Neon "CYBER MOTORS / RAMEN".
+  - [x] Dựng Máy Game Arcade Cabinet cổ điển (Projects Station) và Máy Bán Nước Tự Động Cyberpunk Vending Machine (Articles Station).
+  - [x] Dựng Cột Đèn Biển Hiệu Signpost đặt trên vỉa hè trước nhà xanh với 4 mũi tên Neon phát sáng: `[PROJECTS]` (Cyan), `[ARTICLES]` (Magenta), `[ABOUT ME]` (Gold), `[CREDITS]` (Electric Blue).
+- [x] **Task 28.2: Xử Lý Tương Tác Raycaster & Camera Station Lerp (`Shop3DScene.js`)**
+  - [x] Bắt sự kiện hover/click trên 4 biển hiệu bằng Raycaster, tự động đổi màu phát sáng và con trỏ chuột sang pointer.
+  - [x] Khi click vào mũi tên, Camera lướt xoay/zoom mượt mà (1.5s Lerp) tiến sát tới trạm tương tác (Màn hình Arcade/PC, Cuộn sổ giới thiệu, Bài viết, Credits).
+  - [x] Xử lý phím `ESC` và nút `[ESC] THOÁT TRẠM TƯƠNG TÁC` lùi camera về vị trí ban đầu.
+- [x] **Task 28.3: Giao Diện HTML Overlays Trạm Tương Tác (`index.html` & `src/style.css`)**
+  - [x] Bổ sung giao diện UI Card cho Projects Station, Articles Station, About Me Profile Scroll và Credits Board.
+
+
 
 
 

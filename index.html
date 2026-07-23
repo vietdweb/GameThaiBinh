@@ -251,6 +251,106 @@
     <span>ĐỨNG DẬY / THOÁT MÁY TÍNH</span>
   </button>
 
+  <!-- Top Action Button for Exiting Interactive Station Zoom Mode (Jesse Zhou Style) -->
+  <button id="btn-exit-station" class="btn-exit-pc hidden" style="background: rgba(0, 245, 212, 0.25); border-color: #00f5d4; box-shadow: 0 0 20px rgba(0, 245, 212, 0.5);">
+    <span class="key-badge-small" style="background: #00f5d4; color: #0f172a; font-weight: bold;">ESC</span>
+    <span style="color: #00f5d4;">THOÁT TRẠM TƯƠNG TÁC</span>
+  </button>
+
+  <!-- CYBERPUNK RAMEN SHOP INTERACTIVE STATIONS OVERLAY (JESSE ZHOU STYLE) -->
+  <div id="cyber-station-overlay" class="cyber-station-overlay hidden">
+    
+    <!-- 1. PROJECTS STATION WINDOW -->
+    <div id="station-window-projects" class="cyber-station-window hidden">
+      <div class="station-header">
+        <h2>🩵 [PROJECTS] DỰ ÁN 3D INTERACTIVE</h2>
+        <button class="station-close-btn" onclick="window.closeStationWindow && window.closeStationWindow('projects')">✕</button>
+      </div>
+      <div class="station-body">
+        <div class="projects-cards-grid">
+          <div class="project-card">
+            <div class="project-card-badge">🎮 3D GAME</div>
+            <h3>Thái Bình Rush 3D</h3>
+            <p>Endless Runner 3D đường phố Việt Nam với hiệu ứng Fever Mode, ly cà phê sữa đá & chướng ngại vật sinh động.</p>
+          </div>
+          <div class="project-card">
+            <div class="project-card-badge">🏎️ SHOWROOM</div>
+            <h3>Showroom Siêu Xe 360°</h3>
+            <p>Bản đồ Cung Điện & Cụm Siêu xe Lamborghini V12, Cyberpsycho, Futuristic Car có thể trèo lên lái tự do.</p>
+          </div>
+          <div class="project-card">
+            <div class="project-card-badge">🖥️ DESK 3D</div>
+            <h3>Máy Tính CRT Retro 90s</h3>
+            <p>Góc làm việc máy tính màn hình CRT, cốc cà phê khói nghi ngút & hệ điều hành Windows 98 chơi Dò Mìn 100%.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. ARTICLES STATION WINDOW -->
+    <div id="station-window-articles" class="cyber-station-window hidden">
+      <div class="station-header">
+        <h2>🩷 [ARTICLES] BÀI VIẾT KỸ THUẬT & BLOG</h2>
+        <button class="station-close-btn" onclick="window.closeStationWindow && window.closeStationWindow('articles')">✕</button>
+      </div>
+      <div class="station-body">
+        <div class="articles-list">
+          <div class="article-item">
+            <span class="article-date">2026-07-23</span>
+            <h4 class="article-title">Tối ưu hóa Three.js WebGL 60 FPS trên thiết bị di động</h4>
+            <p class="article-snippet">Kỹ thuật gom Mesh, InstancedMesh, texture compression và PCFSoftShadowMap trong Three.js...</p>
+          </div>
+          <div class="article-item">
+            <span class="article-date">2026-07-20</span>
+            <h4 class="article-title">Xây dựng Interactive 3D Portfolio phong cách Jesse Zhou</h4>
+            <p class="article-snippet">Cơ chế Raycaster, Camera Station Tweening và CSS3D Overlay trong không gian WebGL 3D...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. ABOUT ME STATION WINDOW -->
+    <div id="station-window-about" class="cyber-station-window hidden">
+      <div class="station-header">
+        <h2>💛 [ABOUT ME] HỒ SƠ DEVELOPER</h2>
+        <button class="station-close-btn" onclick="window.closeStationWindow && window.closeStationWindow('about')">✕</button>
+      </div>
+      <div class="station-body">
+        <div class="about-profile-card">
+          <div class="about-avatar">🧑‍💻</div>
+          <div class="about-info">
+            <h3>Senior Creative Technologist & WebGL Master</h3>
+            <p class="about-bio">Đam mê sáng tạo trải nghiệm WebGL 3D tương tác đỉnh cao, kết hợp Three.js, GSAP, Shader GLSL và giao diện Cyberpunk AAA.</p>
+            <div class="about-skills-tags">
+              <span class="skill-tag">Three.js</span>
+              <span class="skill-tag">WebGL</span>
+              <span class="skill-tag">GLSL Shaders</span>
+              <span class="skill-tag">JavaScript ES6</span>
+              <span class="skill-tag">GSAP Animations</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. CREDITS STATION WINDOW -->
+    <div id="station-window-credits" class="cyber-station-window hidden">
+      <div class="station-header">
+        <h2>💙 [CREDITS] ĐỘI NGU & TÀI NGUYÊN DỰ ÁN</h2>
+        <button class="station-close-btn" onclick="window.closeStationWindow && window.closeStationWindow('credits')">✕</button>
+      </div>
+      <div class="station-body">
+        <div class="credits-content">
+          <p>⚡ <strong>Framework & Core Engine:</strong> Three.js v0.160.0 & Vite 5</p>
+          <p>🎨 <strong>Art Style:</strong> Stylized Low-Poly Cyberpunk & Coastal World</p>
+          <p>🎵 <strong>Audio & Music:</strong> Procedural Audio Manager & Synthwave Soundtracks</p>
+          <p>✨ <strong>Post-Processing:</strong> Three.js EffectComposer & UnrealBloomPass</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- RETRO WINDOWS 98 OS INTERACTIVE SCREEN DISPLAY (HENRY HEFFERNAN STYLE) -->
   <div id="crt-os-overlay" class="crt-os-overlay hidden">
     <div class="win98-desktop">
