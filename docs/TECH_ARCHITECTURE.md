@@ -42,7 +42,7 @@ gametulam/
     │   ├── SceneManager.js     # Khởi tạo camera, renderer, ánh sáng
     │   ├── City3DScene.js      # Bối cảnh 3D thành phố & tương tác
     │   ├── ComputerOfficeScene.js # Bối cảnh 3D Góc làm việc Retro CRT & Zoom PC Tương tác
-    │   ├── Shop3DScene.js      # Bối cảnh 3D Cyberpunk Ramen Shop, Showroom Siêu xe & Trạm Tương tác Signpost (Jesse Zhou Style)
+    │   ├── Shop3DScene.js      # Bối cảnh 3D Cyberpunk Ramen Shop, Showroom Siêu xe & Trạm Tương tác Signpost (ANH Zhou Style)
     ├── effects/                # Hiệu ứng hình ảnh & kỹ xảo 3D
     │   └── ExhaustFlameBoostEffect.js # Hiệu ứng lửa ống xả & tăng tốc
     ├── entities/               # Các đối tượng 3D trong game

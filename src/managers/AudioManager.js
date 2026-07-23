@@ -416,4 +416,67 @@ export class AudioManager {
   playGameOver() {
     this._playTone('sawtooth', 220, 0.6, 0.5, 110);
   }
+
+  /**
+   * Còi hú rượt đuổi dual-tone Siren
+   */
+  playSirenSFX() {
+    if (!this.enabled) return;
+    const ctx = this._ensureContext();
+    if (!ctx) return;
+    this.stopSirenSFX();
+
+    try {
+      const osc = ctx.createOscillator();
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(750, ctx.currentTime);
+
+      // LFO biến thiên tần số còi hú (2 Hz warble)
+      lfo.type = 'sine';
+      lfo.frequency.setValueAtTime(2.5, ctx.currentTime);
+      lfoGain.gain.setValueAtTime(350, ctx.currentTime); // Dao động +- 350Hz (400Hz -> 1100Hz)
+
+      lfo.connect(osc.frequency);
+      
+      const volume = 0.2 * this.masterVolume * this._duckGain;
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+
+      lfo.start();
+      osc.start();
+
+      this._sirenOsc = osc;
+      this._sirenLfo = lfo;
+      this._sirenGain = gain;
+    } catch (e) {
+      // Ignore audio synthesis errors
+    }
+  }
+
+  /**
+   * Tắt còi hú rượt đuổi
+   */
+  stopSirenSFX() {
+    if (this._sirenOsc) {
+      try {
+        this._sirenOsc.stop();
+        this._sirenOsc.disconnect();
+      } catch (e) {}
+      this._sirenOsc = null;
+    }
+    if (this._sirenLfo) {
+      try {
+        this._sirenLfo.stop();
+        this._sirenLfo.disconnect();
+      } catch (e) {}
+      this._sirenLfo = null;
+    }
+  }
 }
+

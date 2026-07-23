@@ -426,15 +426,16 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
   - [x] Xử lý mượt mà chuyển cảnh Camera Lerp (TPS Overview $\leftrightarrow$ FPS CRT Screen View) khi bấm phím `E` / `ESC`.
 - [x] **Task 27.2: Quản Lý Chuyển Map (`src/managers/OfficeManager.js`)**
   - [x] Điều phối nạp Map `enterOfficeMap()` và `exitOfficeMap()`, tự động ẩn/hiện Top Currency Bar & Audio Panel chuẩn quy tắc UI HUD Rules.
-- [x] **Task 27.3: Màn Hình Tương Tác Windows 98 Retro OS (`index.html` & `src/style.css`)**
   - [x] Thiết kế giao diện Windows 98 Retro Teal Desktop với 4 Icon ứng dụng: `TaiLieu.txt` (Notepad), `DoMin.exe` (Game Dò Mìn chơi thật 100%), `XeLambo3D.exe` (Thông số xe), `Internet.exe` (Trình duyệt Netscape).
+  - [x] Sắp xếp các app theo hàng dọc bên trái màn hình với SVG icon sắc nét chuẩn Retro Win98.
+  - [x] Hiệu ứng hover / click selection hiển thị khung hình vuông xanh đậm (`#000080`) viền nét đứt trắng (`1px dotted #ffffff`) bao quanh icon + nhãn chữ chuẩn Windows 98.
   - [x] Taskbar Start Menu & Đồng hồ thời gian thực.
   - [x] Tích hợp nút `#btn-open-office` ở Menu chính và các nút thoát `#btn-exit-pc`, `#btn-exit-office-3d`.
 
 ---
 
 ## Phase 28: Nâng Cấp Quầy Ramen Cyberpunk & Trạm Máy Tính Tương Tác Signpost (`Shop3DScene.js`)
-**Mục tiêu:** Nâng cấp file `Shop3DScene.js` biến nó thành Quầy Cửa Hàng Ramen Cyberpunk & Cột Biển Hiệu Neon Signpost 4 Hướng Tương Tác đẳng cấp thế giới theo phong cách **Jesse Zhou** (`jesse-zhou.com`).
+**Mục tiêu:** Nâng cấp file `Shop3DScene.js` biến nó thành Quầy Cửa Hàng Ramen Cyberpunk & Cột Biển Hiệu Neon Signpost 4 Hướng Tương Tác đẳng cấp thế giới theo phong cách **ANH Zhou** (`ANH-zhou.com`).
 
 ### Checklist công việc chi tiết
 - [x] **Task 28.1: Dựng Cảnh Quan 3D Quầy Ramen & Cột Signpost (`src/core/Shop3DScene.js`)**
@@ -447,6 +448,53 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
   - [x] Xử lý phím `ESC` và nút `[ESC] THOÁT TRẠM TƯƠNG TÁC` lùi camera về vị trí ban đầu.
 - [x] **Task 28.3: Giao Diện HTML Overlays Trạm Tương Tác (`index.html` & `src/style.css`)**
   - [x] Bổ sung giao diện UI Card cho Projects Station, Articles Station, About Me Profile Scroll và Credits Board.
+
+---
+
+## Phase 29: Hệ Thống "Đô Thị Đuổi Theo" Xe Cẩu 3D Neon Rượt Đuổi (`PursuitManager.js`)
+**Mục tiêu:** Xây dựng tính năng rượt đuổi Xe Cẩu Đô Thị Neon 3D xuất hiện dồn dập đằng sau xe người chơi với dàn còi cảnh sát nhấp nháy Đỏ - Xanh, âm thanh Dual-Tone Siren, đồng hồ đếm ngược Cắt Đuôi 15s và phần thưởng hấp dẫn.
+
+### Checklist công việc chi tiết
+- [x] **Task 29.1: Cấu hình `Constants.js` & Âm thanh Dual-Tone Siren (`AudioManager.js`)**
+  - [x] Khai báo `PURSUIT_CONFIG` với thời gian 15s, thưởng 500 Cà phê & 200 EXP.
+  - [x] Viết hàm `playSirenSFX()` và `stopSirenSFX()` tổng hợp tiếng còi hú cảnh sát warble 2.5Hz qua Web Audio API.
+- [x] **Task 29.2: Mô Hình Xe Cẩu 3D Neon & Quản Lý Rượt Đuổi (`PursuitManager.js`)**
+  - [x] Dựng mô hình 3D Xe Cẩu Đô Thị Cyberpunk với thân xe navy/vàng phản quang, cản bọc thép, cần cẩu móc cứu hộ và 4 bánh xe cao su.
+  - [x] Dải đèn Siren Đỏ - Xanh Cyan nhấp nháy liên tục cùng PointLight phản chiếu mặt đường.
+  - [x] Vị trí xe cẩu bám sát sau lưng người chơi 5.5m với lerp chuyển làn mượt mà.
+  - [x] Đếm ngược 15s Cắt Đuôi: Thành công thưởng `+500 Cà phê` & `+200 EXP`, Thất bại (đâm vật cản khi đang rượt) `GAMEOVER` lập tức!
+- [x] **Task 29.3: Giao Diện HUD & Flash Viền Màn Hình (`index.html` & `src/style.css`)**
+  - [x] HUD Warning Card glassmorphism với icon 🚨, nhãn "ĐÔ THỊ ĐUỔI THEO!", badge thời gian đếm ngược và progress bar.
+  - [x] Hiệu ứng flash viền màn hình Đỏ - Cyan dồn dập và toast thông báo chiến thắng/thất bại.
+- [x] **Task 29.4: Tích Hợp Vòng Lập Game Loop (`Game.js`)**
+  - [x] Khởi tạo và cập nhật `pursuitManager` trong game loop `_animate()`.
+  - [x] Tự động kích hoạt Rượt Đuổi khi đạt mốc 1500m hoặc khi vừa vỡ Giáp Nón Lá.
+  - [x] Reset trạng thái rượt đuổi khi ngắt/chơi lại game.
+
+---
+
+## Phase 30: Gara Nâng Cấp Vật Phẩm 5 Cấp & Bộ 4 Vệt Tốc Độ Đuôi Xe 3D (`PowerUpUpgradeManager.js` & `SpeedTrailManager.js`)
+**Mục tiêu:** Xây dựng tính năng Gara Nâng Cấp 5 Cấp (+1s/Lv) cho 4 loại vật phẩm và Mở Khóa / Trang Bị 4 Vệt Đuôi Tốc Độ 3D bằng Cà phê.
+
+### Checklist công việc chi tiết
+- [x] **Task 30.1: Quản Lý Nâng Cấp Vật Phẩm 5 Cấp (`PowerUpUpgradeManager.js`)**
+  - [x] Quản lý 5 Cấp độ (Lv 1 - Lv 5) cho **Giáp Nón Lá**, **Bánh Mì X2**, **Xe Ôm Boost**, **Giày Nhảy Cao**.
+  - [x] Mỗi cấp độ nâng cấp cộng thêm **+1 giây hiệu lực** vào thời gian tối đa của vật phẩm.
+  - [x] Bảng chi phí nâng cấp tăng dần bằng **Cà phê (Coins)** và lưu trữ dữ liệu vào `localStorage`.
+- [x] **Task 30.2: Hệ Thống 4 Vệt Tốc Độ Đuôi Xe 3D (`SpeedTrailManager.js`)**
+  - [x] Vệt Sét Cyan (`CYAN_LIGHTNING`): Hạt điện nổ lách tách xanh cyan lấp lánh (300 Cà phê).
+  - [x] Vệt Mưa Sao Băng (`METEOR_SHOWER`): Bụi sao vàng kim tỏa sáng rực rỡ (500 Cà phê).
+  - [x] Vệt Hoa Sữa (`MILK_FLOWER`): Cánh hoa trắng kem & hạt phấn ngát hương (700 Cà phê).
+  - [x] Vệt Bụi Khói Cyberpunk (`CYBER_SMOKE`): Làn khói neon tím/magenta bốc dồn dập (1000 Cà phê).
+  - [x] Render particle 3D mượt mà bám sát sau đuôi xe/nhân vật khi di chuyển hoặc Boost.
+- [x] **Task 30.3: Giao Diện Garage Modal HTML/CSS (`index.html` & `src/style.css`)**
+  - [x] Gara Modal 2 Tab (`#garage-modal`) phong cách Glassmorphism Cyberpunk.
+  - [x] Thanh tiến trình 5 nấc Level cho từng vật phẩm và danh sách ô card Vệt Tốc Độ.
+- [x] **Task 30.4: Tích Hợp Game Loop & Giao Dịch (`Game.js`)**
+  - [x] Tải thời gian hiệu lực nâng cấp khi ăn vật phẩm trong trận đấu.
+  - [x] Render animation hạt particle `speedTrailManager.update()` trong `_animate()`.
+
+
 
 
 

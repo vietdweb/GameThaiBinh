@@ -1,4 +1,4 @@
-﻿/**
+/**
  * CurrencyManager - Quản lý Tài Nguyên (Meat Energy, Gold Coins, Gems) & LocalStorage
  */
 const CURRENCY_KEY = 'tb_rush_currency';
@@ -124,10 +124,13 @@ export class CurrencyManager {
     const elMeat = document.getElementById('val-meat');
     const elCoins = document.getElementById('val-coins');
     const elGems = document.getElementById('val-gems');
+    const elCoffee = document.getElementById('val-coffee');
 
     if (elMeat) elMeat.textContent = this.formatNumber(this.data.meat);
     if (elCoins) elCoins.textContent = this.formatNumber(this.data.coins);
     if (elGems) elGems.textContent = this.formatNumber(this.data.gems);
+    if (elCoffee) elCoffee.textContent = this.formatNumber(this.data.coins);
+
 
     // Kích hoạt hiệu ứng pop-scale nếu có thay đổi
     if (changedElementId) {

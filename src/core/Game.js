@@ -36,6 +36,11 @@ import {
   OBSTACLE_TYPES
 } from '../entities/Obstacle.js';
 import { ObstacleManager } from '../managers/ObstacleManager.js';
+import { PursuitManager } from '../managers/PursuitManager.js';
+import { PowerUpUpgradeManager, POWERUP_UPGRADE_CONFIG } from '../managers/PowerUpUpgradeManager.js';
+import { SpeedTrailManager, SPEED_TRAIL_TYPES } from '../managers/SpeedTrailManager.js';
+
+
 
 export class Game {
   constructor() {
@@ -54,10 +59,15 @@ export class Game {
     this.shopManager = new ShopManager(this.currencyManager);
     this.shop3DScene = new Shop3DScene(this.sceneManager.renderer, this);
 
-    // 4. Hệ thống State Machine, Va chạm & Âm thanh
+    // 4. Hệ thống State Machine, Va chạm, Âm thanh, Rượt đuổi & Gara Nâng Cấp
     this.stateMachine = new StateMachine();
     this.collisionManager = new CollisionManager();
     this.audioManager = new AudioManager();
+    this.pursuitManager = new PursuitManager(this);
+    this.powerUpUpgradeManager = new PowerUpUpgradeManager(this.currencyManager);
+    this.speedTrailManager = new SpeedTrailManager(this.sceneManager.scene, this.currencyManager);
+
+
 
     // 5. Trạng thái chọn nhân vật
     this.skinKeys = Object.keys(CHARACTERS);
@@ -125,8 +135,8 @@ export class Game {
       overHighScore: document.getElementById('over-high-score'),
       btnStart: document.getElementById('btn-start'),
       btnView360: document.getElementById('btn-view-360'),
-      btnViewLamborghini: document.getElementById('btn-view-lamborghini'),
       btnCloseViewer: document.getElementById('btn-close-viewer'),
+
       btnToggleAutoRotate: document.getElementById('btn-toggle-auto-rotate'),
       btnResetViewerCam: document.getElementById('btn-reset-viewer-cam'),
       btnRestart: document.getElementById('btn-restart'),
@@ -205,8 +215,10 @@ export class Game {
     // 6. Gắn điều khiển vuốt cảm ứng (Swipe)
     this._setupSwipeControls();
 
-    // 7. Khởi tạo Audio Control Panel
+    // 7. Khởi tạo Audio Control Panel & Gara Nâng Cấp
     this._setupAudioControlPanel();
+    this._setupGarageEvents();
+
 
     // Resize listener cho phòng xem 360°
     window.addEventListener('resize', () => {
@@ -232,8 +244,12 @@ export class Game {
     sm.onEnter(GAME_STATES.MENU, () => {
       this._showScreen('menu');
       this._updateHighScoreDisplay();
+      if (this.pursuitManager) {
+        this.pursuitManager.reset();
+      }
       // Khôi phục volume từ ducking (khi từ GAMEOVER về MENU)
       this.audioManager.restoreVolume(600);
+
       // Nếu BGM chưa phát, bắt đầu phát track đang chọn
       if (!this.audioManager.isBgmPlaying) {
         this.audioManager.startBGM();
@@ -351,18 +367,6 @@ export class Game {
       });
     }
 
-    if (this.domElements.btnViewLamborghini) {
-      this.domElements.btnViewLamborghini.addEventListener('click', () => {
-        this.audioManager._ensureContext();
-        // Đặt override model Lamborghini trước khi chuyển state
-        this.pendingViewerOverride = {
-          id: 'lamborghini',
-          name: '🏎️ Lamborghini',
-          desc: 'Siêu xe thể thao đỉnh cao | Kéo chuột / Vuốt để xoay 360°'
-        };
-        this.stateMachine.transition(GAME_STATES.VIEWER);
-      });
-    }
 
     if (this.domElements.btnCloseViewer) {
       this.domElements.btnCloseViewer.addEventListener('click', () => {
@@ -1279,10 +1283,14 @@ export class Game {
     this.obstacleSpawnTimer = 1.5;
     this.collectibleSpawnTimer = 2.0;
 
-    // Dọn dẹp chướng ngại vật & vật phẩm cũ
+    // Dọn dẹp chướng ngại vật & vật phẩm cũ & Rượt đuổi
     this._clearObstacles();
     this._clearCollectibles();
     this._destroyFeverParticles();
+    if (this.pursuitManager) {
+      this.pursuitManager.reset();
+    }
+
 
     // Căn chỉnh nhân vật về lại làn giữa chuẩn
     if (this.player) {
@@ -1476,19 +1484,24 @@ export class Game {
   _onPowerUpCollected(type) {
     this.audioManager?.playPowerUp?.();
 
+    const upgradedDurationMs = this.powerUpUpgradeManager
+      ? this.powerUpUpgradeManager.getDurationMs(type)
+      : (POWERUP_CONFIG[`${type}_DURATION`] || 6000);
+
     if (type === POWERUP_TYPES.SHIELD) {
-      if (this.player) this.player.enableShield(); // Khiên 3D sẽ hiện lên chuẩn 100%!
+      if (this.player) this.player.enableShield();
     } else if (type === POWERUP_TYPES.DOUBLE_SCORE) {
-      this.doubleScoreTimer = POWERUP_CONFIG.DOUBLE_SCORE_DURATION;
+      this.doubleScoreTimer = upgradedDurationMs;
     } else if (type === POWERUP_TYPES.BOOST) {
-      this.boostTimer = POWERUP_CONFIG.BOOST_DURATION;
+      this.boostTimer = upgradedDurationMs;
       this._activateFeverMode();
     } else if (type === POWERUP_TYPES.HIGH_JUMP) {
-      this.highJumpTimer = POWERUP_CONFIG.HIGH_JUMP_DURATION;
+      this.highJumpTimer = upgradedDurationMs;
       if (this.player) this.player.enableHighJump();
     }
     this._updateHUDDisplay();
   }
+
 
   _simulateCoffeeCollect() {
     this._onCoffeeCollected(1);
@@ -1841,6 +1854,9 @@ export class Game {
             this.score += 300 * scoreMult;
           },
           onGameOver: (obs) => {
+            if (this.pursuitManager && this.pursuitManager.state === 'PURSUING') {
+              this.pursuitManager.onPlayerHitObstacle();
+            }
             this._triggerGameOver();
           }
         }
@@ -1848,8 +1864,23 @@ export class Game {
 
       if (hadShieldBefore && this.player && !this.player.hasShield) {
         this._updateHUDDisplay();
+        // Kích hoạt Xe Cẩu Đô Thị rượt đuổi khi vừa vỡ giáp!
+        if (this.pursuitManager) {
+          this.pursuitManager.triggerPursuit();
+        }
       }
     }
+
+    // --- 8.5 Cập nhật Hệ thống Rượt Đuổi Đô Thị (PursuitManager) ---
+    if (this.pursuitManager) {
+      this.pursuitManager.update(deltaTime);
+
+      // Tự động kích hoạt Rượt Đuổi ở mốc điểm 1,500 m (nếu chưa bị đuổi)
+      if (this.score > 1500 && this.pursuitManager.state === 'IDLE') {
+        this.pursuitManager.triggerPursuit();
+      }
+    }
+
 
     // --- 9. Cập nhật Collectibles ---
     for (let i = this.collectibles.length - 1; i >= 0; i--) {
@@ -1880,6 +1911,201 @@ export class Game {
       this.exhaustFlameEffect.triggerSpeedBoost(isBoosting);
       this.exhaustFlameEffect.update(deltaTime, playerPos);
     }
+
+    // --- 11. Cập nhật Vệt Tốc Độ Đuôi Xe 3D (SpeedTrailManager) ---
+    if (this.speedTrailManager) {
+      this.speedTrailManager.update(deltaTime, playerPos, isBoosting);
+    }
+  }
+
+  // =========================================================
+  // GARA NÂNG CẤP VẬT PHẨM 5 CẤP & VỆT TỐC ĐỘ 3D
+  // =========================================================
+  _setupGarageEvents() {
+    const btnOpenGarage = document.getElementById('btn-open-garage');
+    const btnCloseGarage = document.getElementById('btn-close-garage');
+
+    const btnAddCoffee = document.getElementById('btn-add-coffee');
+    if (btnAddCoffee) {
+      btnAddCoffee.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.currencyManager.addCoins(200);
+        this.audioManager?.playCoin?.();
+      });
+    }
+
+    if (btnOpenGarage) {
+      btnOpenGarage.addEventListener('click', () => {
+        this._setGarageModalOpen(true);
+      });
+    }
+
+    if (btnCloseGarage) {
+      btnCloseGarage.addEventListener('click', () => {
+        this._setGarageModalOpen(false);
+      });
+    }
+
+    // Tabs switching
+    const tabPowerups = document.getElementById('tab-powerup-upgrades');
+    const tabTrails = document.getElementById('tab-speed-trails');
+    const contentPowerups = document.getElementById('garage-tab-content-powerups');
+    const contentTrails = document.getElementById('garage-tab-content-trails');
+
+    if (tabPowerups && tabTrails && contentPowerups && contentTrails) {
+      tabPowerups.addEventListener('click', () => {
+        tabPowerups.classList.add('active');
+        tabTrails.classList.remove('active');
+        contentPowerups.classList.add('active');
+        contentPowerups.classList.remove('hidden');
+        contentTrails.classList.remove('active');
+        contentTrails.classList.add('hidden');
+      });
+
+      tabTrails.addEventListener('click', () => {
+        tabTrails.classList.add('active');
+        tabPowerups.classList.remove('active');
+        contentTrails.classList.add('active');
+        contentTrails.classList.remove('hidden');
+        contentPowerups.classList.remove('active');
+        contentPowerups.classList.add('hidden');
+      });
+    }
+  }
+
+  _setGarageModalOpen(isOpen) {
+    const garageModal = document.getElementById('garage-modal');
+    if (garageModal) {
+      if (isOpen) {
+        garageModal.classList.remove('hidden');
+        this._renderGarageModal();
+      } else {
+        garageModal.classList.add('hidden');
+      }
+    }
+  }
+
+  _renderGarageModal() {
+    // 1. Render Power-up 5-Level Upgrades Grid
+    const powerupGrid = document.getElementById('powerup-upgrade-grid');
+    if (powerupGrid && this.powerUpUpgradeManager) {
+      powerupGrid.innerHTML = '';
+      Object.keys(POWERUP_UPGRADE_CONFIG).forEach(type => {
+        const config = POWERUP_UPGRADE_CONFIG[type];
+        const currentLv = this.powerUpUpgradeManager.getLevel(type);
+        const durationSec = this.powerUpUpgradeManager.getDurationSec(type);
+        const cost = this.powerUpUpgradeManager.getNextUpgradeCost(type);
+        const isMax = currentLv >= 5;
+
+        // Render 5 step progress bars
+        let stepsHTML = '';
+        for (let i = 1; i <= 5; i++) {
+          stepsHTML += `<div class="level-step ${i <= currentLv ? 'filled' : ''}"></div>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'powerup-item-card';
+        card.innerHTML = `
+          <div class="powerup-card-header">
+            <span class="powerup-item-icon">${config.icon}</span>
+            <div>
+              <div class="powerup-item-name">${config.name}</div>
+              <div class="powerup-item-desc">${config.baseDesc}</div>
+            </div>
+          </div>
+          <div class="level-steps-wrap">
+            ${stepsHTML}
+          </div>
+          <div class="powerup-card-footer">
+            <span class="level-badge-text">LV ${currentLv}/5 (${durationSec}s)</span>
+            <button class="btn-upgrade-action" ${isMax ? 'disabled style="opacity:0.6; cursor:not-allowed;"' : ''}>
+              ${isMax ? 'TỐI ĐA (MAX)' : `NÂNG CẤP ${cost} ☕`}
+            </button>
+          </div>
+        `;
+
+        if (!isMax) {
+          const btnUpgrade = card.querySelector('.btn-upgrade-action');
+          if (btnUpgrade) {
+            btnUpgrade.addEventListener('click', () => {
+              const res = this.powerUpUpgradeManager.upgrade(type);
+              if (res.success) {
+                this.audioManager?.playPowerUp?.();
+                this._renderGarageModal();
+                this._updateHUDDisplay();
+              } else if (res.reason === 'NOT_ENOUGH_COFFEE') {
+                alert('Không đủ Cà phê! Hãy chạy ăn thêm Cà phê trên đường phố nhé.');
+              }
+            });
+          }
+        }
+
+        powerupGrid.appendChild(card);
+      });
+    }
+
+    // 2. Render Speed Trails Grid
+    const trailGrid = document.getElementById('trail-grid');
+    if (trailGrid && this.speedTrailManager) {
+      trailGrid.innerHTML = '';
+      Object.keys(SPEED_TRAIL_TYPES).forEach(trailId => {
+        const config = SPEED_TRAIL_TYPES[trailId];
+        const isOwned = this.speedTrailManager.isOwned(trailId);
+        const isEquipped = this.speedTrailManager.equippedTrail === trailId;
+
+        let btnLabel = '';
+        let btnClass = 'btn-trail-action';
+        if (isEquipped) {
+          btnLabel = 'ĐANG DÙNG';
+          btnClass += ' equipped';
+        } else if (isOwned) {
+          btnLabel = 'SỬ DỤNG';
+        } else {
+          btnLabel = `MUA ${config.price} ☕`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'trail-item-card';
+        card.innerHTML = `
+          <div class="trail-card-header">
+            <span class="trail-item-icon">${config.icon}</span>
+            <div>
+              <div class="trail-item-name">${config.name}</div>
+              <div class="trail-item-desc">${config.desc}</div>
+            </div>
+          </div>
+          <div class="trail-card-footer">
+            <span class="level-badge-text" style="color: ${isOwned ? '#00f5d4' : '#9ca3af'};">
+              ${isOwned ? 'Đã sở hữu' : `${config.price} ☕`}
+            </span>
+            <button class="${btnClass}">${btnLabel}</button>
+          </div>
+        `;
+
+        if (!isEquipped) {
+          const btnAction = card.querySelector('.btn-trail-action');
+          if (btnAction) {
+            btnAction.addEventListener('click', () => {
+              if (isOwned) {
+                this.speedTrailManager.equipTrail(trailId);
+                this.audioManager?.playCoin?.();
+                this._renderGarageModal();
+              } else {
+                const res = this.speedTrailManager.buyTrail(trailId);
+                if (res.success) {
+                  this.audioManager?.playPowerUp?.();
+                  this._renderGarageModal();
+                } else if (res.reason === 'NOT_ENOUGH_COFFEE') {
+                  alert('Không đủ Cà phê để mở khóa vệt tốc độ này!');
+                }
+              }
+            });
+          }
+        }
+
+        trailGrid.appendChild(card);
+      });
+    }
   }
 
   _render() {
@@ -1902,3 +2128,4 @@ export class Game {
     this.sceneManager.render();
   }
 }
+

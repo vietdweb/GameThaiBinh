@@ -88,7 +88,7 @@ export class Shop3DScene {
         this.nimbusFlightHeight = 0.8;
         this.nimbusMaxHeight = 35.0;
 
-        // 🏙️ CYBERPUNK RAMEN SHOP & INTERACTIVE SIGNPOST STATIONS (JESSE ZHOU STYLE)
+        // 🏙️ CYBERPUNK RAMEN SHOP & INTERACTIVE SIGNPOST STATIONS (ANH ZHOU STYLE)
         this.signpostArrowMeshes = [];
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
@@ -4327,7 +4327,7 @@ export class Shop3DScene {
         return currentTargetGroundY;
     }
 
-    /* 🎬 HÀM TẠO VIDEO TEXTURE & CANVAS LIVE STREAM 60FPS (JESSE ZHOU STYLE) */
+    /* 🎬 HÀM TẠO VIDEO TEXTURE & CANVAS LIVE STREAM 60FPS (ANH ZHOU STYLE) */
     _createCyberVideoTexture() {
         if (this.cyberLiveCanvas) return this.cyberLiveTexture;
 
@@ -4498,7 +4498,7 @@ export class Shop3DScene {
         this.cyberLiveTexture.needsUpdate = true;
     }
 
-    /* 🏙️ CYBERPUNK RAMEN SHOP & STATIONS (JESSE ZHOU STYLE 100% CHUẨN ẢNH MẪU) */
+    /* 🏙️ CYBERPUNK RAMEN SHOP & STATIONS (ANH ZHOU STYLE 100% CHUẨN ẢNH MẪU) */
     _initCyberpunkRamenShop() {
         const shopGroup = new THREE.Group();
         shopGroup.position.set(36.0, 0, 36.0);
@@ -4513,7 +4513,7 @@ export class Shop3DScene {
         bar.receiveShadow = true;
         shopGroup.add(bar);
 
-        // Mặt Bàn Ấm Vàng Chuẩn 100% Ảnh Mẫu Jesse Zhou
+        // Mặt Bàn Ấm Vàng Chuẩn 100% Ảnh Mẫu ANH Zhou
         const topGeo = new THREE.BoxGeometry(6.8, 0.12, 2.1);
         const topMat = new THREE.MeshStandardMaterial({
             color: 0xfff2cc,
@@ -4534,7 +4534,7 @@ export class Shop3DScene {
         roof.castShadow = true;
         shopGroup.add(roof);
 
-        // 3. BIỂN HIỆU CHÍNH "JESSE'S RAMEN" VỚI VIỀN NEON CYAN & HỒNG
+        // 3. BIỂN HIỆU CHÍNH "ANH'S RAMEN" VỚI VIỀN NEON CYAN & HỒNG
         const signCanvas = document.createElement('canvas');
         signCanvas.width = 1024;
         signCanvas.height = 256;
@@ -4556,7 +4556,7 @@ export class Shop3DScene {
         sCtx.font = '900 82px "Space Grotesk", sans-serif';
         sCtx.textAlign = 'center';
         sCtx.textBaseline = 'middle';
-        sCtx.fillText("JESSE'S RAMEN", 512, 128);
+        sCtx.fillText("ANH'S RAMEN", 512, 128);
 
         const signTexture = new THREE.CanvasTexture(signCanvas);
 
@@ -4981,53 +4981,49 @@ export class Shop3DScene {
             `;
 
             modal.innerHTML = `
-                <div style="width: 900px; max-width: 95vw; height: 600px; background: #008080; border: 4px solid #c0c0c0; border-radius: 6px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; overflow: hidden; position: relative;">
+                <div id="pc-modal-frame" style="width: 900px; max-width: 95vw; height: 600px; background: #008080; border: 4px solid #c0c0c0; border-radius: 6px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; overflow: hidden; position: relative; transition: all 0.2s ease;">
                     <!-- Windows Title Bar -->
-                    <div style="background: linear-gradient(90deg, #000080, #1084d0); color: white; padding: 8px 14px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; font-family: 'Space Grotesk', sans-serif;">
-                        <span>🪟 RETRO WINDOWS 98 OS - VIET ANH WORKSTATION</span>
-                        <button id="btn-close-pc-modal" style="background: #c0c0c0; border: 2px outset #ffffff; color: black; font-weight: 900; width: 28px; height: 24px; cursor: pointer; line-height: 18px;">✕</button>
+                    <div style="background: linear-gradient(90deg, #000080, #1084d0); color: white; padding: 6px 10px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; font-family: 'Space Grotesk', sans-serif;">
+                        <span style="font-size: 13px;">🪟 RETRO WINDOWS 98 OS - VIET ANH WORKSTATION</span>
+                        <div class="win98-btn-group">
+                            <button id="btn-min-pc-modal" class="win98-btn-ctrl" title="Minimize">_</button>
+                            <button id="btn-max-pc-modal" class="win98-btn-ctrl" title="Maximize">🗖</button>
+                            <button id="btn-close-pc-modal" class="win98-btn-ctrl" title="Close">✕</button>
+                        </div>
                     </div>
 
-                    <!-- Desktop Workspace -->
-                    <div style="flex: 1; padding: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 20px; align-content: start; position: relative;">
+                    <!-- Desktop Workspace (Vertical Alignment & Multi-Window Support) -->
+                    <div id="pc-desktop-workspace" style="flex: 1; padding: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; position: relative; width: 100%; box-sizing: border-box; overflow: hidden;">
                         
-                        <!-- Desktop Icons -->
-                        <div class="pc-app-icon" data-app="gallery" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: white; text-align: center; font-weight: 700; text-shadow: 1px 1px 2px black;">
-                            <div style="font-size: 48px;">🖼️</div>
-                            <span style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-size: 13px; margin-top: 4px;">Thư Viện Ảnh</span>
+                        <!-- Desktop Icons (Stacked Vertically) -->
+                        <div class="pc-app-icon" data-app="gallery">
+                            <div style="font-size: 38px; margin-bottom: 4px;">🖼️</div>
+                            <span class="pc-app-label">Thư Viện Ảnh</span>
                         </div>
 
-                        <div class="pc-app-icon" data-app="diary" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: white; text-align: center; font-weight: 700; text-shadow: 1px 1px 2px black;">
-                            <div style="font-size: 48px;">📖</div>
-                            <span style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-size: 13px; margin-top: 4px;">Nhật Ký</span>
+                        <div class="pc-app-icon" data-app="diary">
+                            <div style="font-size: 38px; margin-bottom: 4px;">📖</div>
+                            <span class="pc-app-label">Nhật Ký</span>
                         </div>
 
-                        <div class="pc-app-icon" data-app="video" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: white; text-align: center; font-weight: 700; text-shadow: 1px 1px 2px black;">
-                            <div style="font-size: 48px;">🎬</div>
-                            <span style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-size: 13px; margin-top: 4px;">Xem Video</span>
+                        <div class="pc-app-icon" data-app="video">
+                            <div style="font-size: 38px; margin-bottom: 4px;">🎬</div>
+                            <span class="pc-app-label">Xem Video</span>
                         </div>
 
-                        <div class="pc-app-icon" data-app="snake" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: white; text-align: center; font-weight: 700; text-shadow: 1px 1px 2px black;">
-                            <div style="font-size: 48px;">🐍</div>
-                            <span style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-size: 13px; margin-top: 4px;">Rắn Săn Mồi</span>
-                        </div>
-
-                        <!-- Active Window Area -->
-                        <div id="pc-window-area" style="position: absolute; inset: 16px; display: none; background: #c0c0c0; border: 3px outset #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-direction: column; z-index: 10;">
-                            <div style="background: #000080; color: white; padding: 6px 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
-                                <span id="pc-window-title">App Window</span>
-                                <button id="btn-close-app-win" style="background: #c0c0c0; border: 1px solid black; cursor: pointer; width: 22px; height: 20px; font-weight: bold;">✕</button>
-                            </div>
-                            <div id="pc-window-body" style="flex: 1; padding: 16px; background: #ffffff; overflow-y: auto; color: #111111;">
-                                Content
-                            </div>
+                        <div class="pc-app-icon" data-app="snake">
+                            <div style="font-size: 38px; margin-bottom: 4px;">🐍</div>
+                            <span class="pc-app-label">Rắn Săn Mồi</span>
                         </div>
 
                     </div>
 
                     <!-- Taskbar -->
                     <div style="height: 36px; background: #c0c0c0; border-top: 2px solid #ffffff; display: flex; align-items: center; padding: 0 8px; justify-content: space-between;">
-                        <button style="background: #c0c0c0; border: 2px outset #ffffff; font-weight: 900; padding: 4px 12px; cursor: pointer;">Start 🪟</button>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button style="background: #c0c0c0; border: 2px outset #ffffff; font-weight: 900; padding: 4px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 12px;">Start 🪟</button>
+                            <div id="pc-taskbar-apps-container" style="display: flex; align-items: center; gap: 4px; overflow-x: auto;"></div>
+                        </div>
                         <span style="font-weight: bold; font-family: monospace; border: 1px inset #808080; padding: 2px 8px; background: #dfdfdf;">${new Date().toLocaleTimeString()}</span>
                     </div>
                 </div>
@@ -5035,87 +5031,262 @@ export class Shop3DScene {
 
             document.body.appendChild(modal);
 
-            // Bind Event Listeners
+            // Initialize Z-Index tracker for multi-window focus
+            this.pcTopZIndex = 10;
+
+            // Bind Main Modal Titlebar Controls
+            const modalFrame = document.getElementById('pc-modal-frame');
             document.getElementById('btn-close-pc-modal').onclick = () => {
                 modal.style.display = 'none';
             };
-
-            document.getElementById('btn-close-app-win').onclick = () => {
-                document.getElementById('pc-window-area').style.display = 'none';
+            document.getElementById('btn-min-pc-modal').onclick = () => {
+                modal.style.display = 'none';
+            };
+            document.getElementById('btn-max-pc-modal').onclick = () => {
+                if (!modalFrame) return;
+                if (modalFrame.dataset.maximized === 'true') {
+                    modalFrame.dataset.maximized = 'false';
+                    modalFrame.style.width = '900px';
+                    modalFrame.style.height = '600px';
+                    modalFrame.style.maxWidth = '95vw';
+                    modalFrame.style.maxHeight = '95vh';
+                } else {
+                    modalFrame.dataset.maximized = 'true';
+                    modalFrame.style.width = '100vw';
+                    modalFrame.style.height = '100vh';
+                    modalFrame.style.maxWidth = '100vw';
+                    modalFrame.style.maxHeight = '100vh';
+                }
             };
 
             const appIcons = modal.querySelectorAll('.pc-app-icon');
             appIcons.forEach(icon => {
-                icon.onclick = () => {
+                icon.onclick = (e) => {
+                    e.stopPropagation();
+                    appIcons.forEach(i => i.classList.remove('selected'));
+                    icon.classList.add('selected');
                     const appType = icon.getAttribute('data-app');
                     this._launchPCApp(appType);
                 };
             });
+
+            const desktopWorkspace = document.getElementById('pc-desktop-workspace');
+            if (desktopWorkspace) {
+                desktopWorkspace.onclick = (e) => {
+                    if (!e.target.closest('.pc-app-icon') && !e.target.closest('.pc-window-frame')) {
+                        appIcons.forEach(i => i.classList.remove('selected'));
+                    }
+                };
+            }
         }
 
         modal.style.display = 'flex';
     }
 
-    /* 🚀 KHỞI CHẠY CÁC ỨNG DỤNG RETRO (ẢNH, NHẬT KÝ, VIDEO, RẮN SĂN MỒI) */
-    _launchPCApp(appType) {
-        const winArea = document.getElementById('pc-window-area');
-        const winTitle = document.getElementById('pc-window-title');
-        const winBody = document.getElementById('pc-window-body');
-        winArea.style.display = 'flex';
+    /* 🖥️ QUẢN LÝ TẬP TRUNG NHIỀU CỬA SỔ & THANH TASKBAR */
+    _focusPCAppWindow(appType) {
+        const workspace = document.getElementById('pc-desktop-workspace');
+        if (!workspace) return;
 
-        if (appType === 'gallery') {
-            winTitle.innerText = '🖼️ Thư Viện Ảnh - Photo Showcase';
-            winBody.innerHTML = `
-                <h3 style="margin-top:0; color:#000080;">BỘ BỘ ANH CHỌN LỌC DỰ ÁN 3D</h3>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-                    <div style="border:2px solid #ccc; padding:6px; background:#f8fafc; text-align:center;">
-                        <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400" style="width:100%; height:110px; object-fit:cover; border-radius:4px;" />
-                        <p style="margin:4px 0 0; font-size:12px; font-weight:bold;">Biển Đảo Cyberpunk</p>
-                    </div>
-                    <div style="border:2px solid #ccc; padding:6px; background:#f8fafc; text-align:center;">
-                        <img src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=400" style="width:100%; height:110px; object-fit:cover; border-radius:4px;" />
-                        <p style="margin:4px 0 0; font-size:12px; font-weight:bold;">Đêm Neon Vancouver</p>
-                    </div>
-                    <div style="border:2px solid #ccc; padding:6px; background:#f8fafc; text-align:center;">
-                        <img src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=400" style="width:100%; height:110px; object-fit:cover; border-radius:4px;" />
-                        <p style="margin:4px 0 0; font-size:12px; font-weight:bold;">Siêu Xe Lamborghini</p>
-                    </div>
-                </div>
-            `;
-        } else if (appType === 'diary') {
-            winTitle.innerText = '📖 Nhật Ký Phát Triển - Developer Log';
-            winBody.innerHTML = `
-                <div style="font-family: monospace; background:#fffae6; padding:16px; border:1px solid #d97706; border-radius:4px; line-height:1.6;">
-                    <h3 style="margin-top:0; color:#b45309;">📝 NHẬT KÝ DỰ ÁN VIỆT ANH 3D</h3>
-                    <p><strong>[2026-07-23]</strong> Hoàn thiện góc quầy Ramen Cyberpunk Jesse Zhou Style 100%.</p>
-                    <p><strong>[Features]</strong> Đã thiết kế 4 tô mì Ramen siêu thật, 4 ghế Bar Cyberpunk, Màn hình TV phát video Live 4K, Cột LED Billboard "Hi, I'm Viet Anh." bên phải.</p>
-                    <p><strong>[Character]</strong> Nhân vật Chú Đậu Anime đeo tai nghe DJ uốn vòm Parabol cực mịn với nét miệng cười nụ chữ U siêu đáng yêu.</p>
-                    <p><strong>[Workstation]</strong> Nâng cấp trạm máy tính bàn Retro CRT với ghế xoay làm việc bọc da nâu chuẩn 100% ảnh mẫu!</p>
-                </div>
-            `;
-        } else if (appType === 'video') {
-            winTitle.innerText = '🎬 Retro Media Player - Trailer Video';
-            winBody.innerHTML = `
-                <div style="text-align:center;">
-                    <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" controls autoplay style="width:100%; max-height:300px; border:3px solid #000; border-radius:6px;"></video>
-                    <p style="font-weight:bold; color:#000080; margin-top:8px;">Live Stream Showreel Cyberpunk Demo</p>
-                </div>
-            `;
-        } else if (appType === 'snake') {
-            winTitle.innerText = '🐍 Game Rắn Săn Mồi - Classic Retro Snake Game';
-            winBody.innerHTML = `
-                <div style="text-align:center; display:flex; flex-direction:column; align-items:center;">
-                    <div style="display:flex; justify-content:space-between; width:360px; margin-bottom:8px; font-weight:bold; font-size:16px; color:#000080;">
-                        <span>Điểm: <span id="snake-score">0</span></span>
-                        <span>Kỷ Lục: <span id="snake-highscore">0</span></span>
-                    </div>
-                    <canvas id="snake-canvas" width="360" height="280" style="background:#050508; border:3px solid #00f5d4; border-radius:4px;"></canvas>
-                    <p style="font-size:12px; color:#64748b; margin-top:6px;">Dùng phím Mũi tên / WASD để điều khiển Rắn ăn táo 🍎</p>
-                </div>
-            `;
+        this.pcTopZIndex = (this.pcTopZIndex || 10) + 1;
 
-            setTimeout(() => this._initSnakeGame(), 50);
+        // Reset titlebar headers to inactive gray
+        workspace.querySelectorAll('.pc-window-frame').forEach(win => {
+            const header = win.querySelector('.pc-window-header');
+            if (header) header.style.background = '#808080';
+        });
+
+        // Set focused window titlebar to active navy blue
+        const focusedWin = document.getElementById(`pc-app-window-${appType}`);
+        if (focusedWin) {
+            focusedWin.style.display = 'flex';
+            focusedWin.style.zIndex = this.pcTopZIndex;
+            const header = focusedWin.querySelector('.pc-window-header');
+            if (header) header.style.background = '#000080';
         }
+
+        // Set active taskbar button state
+        const taskbarContainer = document.getElementById('pc-taskbar-apps-container');
+        if (taskbarContainer) {
+            taskbarContainer.querySelectorAll('.win98-taskbar-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`taskbar-app-btn-${appType}`);
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+    }
+
+    _minimizePCAppWindow(appType) {
+        const win = document.getElementById(`pc-app-window-${appType}`);
+        if (win) win.style.display = 'none';
+
+        const btn = document.getElementById(`taskbar-app-btn-${appType}`);
+        if (btn) btn.classList.remove('active');
+    }
+
+    _closePCAppWindow(appType) {
+        const win = document.getElementById(`pc-app-window-${appType}`);
+        if (win) win.remove();
+
+        const btn = document.getElementById(`taskbar-app-btn-${appType}`);
+        if (btn) btn.remove();
+    }
+
+    /* 🚀 KHỞI CHẠY CÁC ỨNG DỤNG RETRO MULTI-WINDOW (ẢNH, NHẬT KÝ, VIDEO, RẮN SĂN MỒI) */
+    _launchPCApp(appType) {
+        const workspace = document.getElementById('pc-desktop-workspace');
+        const taskbarContainer = document.getElementById('pc-taskbar-apps-container');
+        if (!workspace || !taskbarContainer) return;
+
+        const appMeta = {
+            gallery: { title: '🖼️ Thư Viện Ảnh - Photo Showcase', name: 'Thư Viện Ảnh', icon: '🖼️', top: 20, left: 120 },
+            diary: { title: '📖 Nhật Ký Phát Triển - Developer Log', name: 'Nhật Ký', icon: '📖', top: 50, left: 170 },
+            video: { title: '🎬 Retro Media Player - Trailer Video', name: 'Xem Video', icon: '🎬', top: 80, left: 220 },
+            snake: { title: '🐍 Game Rắn Săn Mồi - Classic Retro Snake Game', name: 'Rắn Săn Mồi', icon: '🐍', top: 110, left: 270 }
+        };
+
+        const meta = appMeta[appType];
+        if (!meta) return;
+
+        // 1. Check or Create Taskbar Button
+        let taskbarBtn = document.getElementById(`taskbar-app-btn-${appType}`);
+        if (!taskbarBtn) {
+            taskbarBtn = document.createElement('button');
+            taskbarBtn.id = `taskbar-app-btn-${appType}`;
+            taskbarBtn.className = 'win98-taskbar-btn active';
+            taskbarBtn.setAttribute('data-app', appType);
+            taskbarBtn.innerHTML = `<span>${meta.icon}</span><span>${meta.name}</span>`;
+
+            taskbarBtn.onclick = (e) => {
+                e.stopPropagation();
+                const win = document.getElementById(`pc-app-window-${appType}`);
+                if (win && win.style.display !== 'none' && taskbarBtn.classList.contains('active')) {
+                    this._minimizePCAppWindow(appType);
+                } else {
+                    this._focusPCAppWindow(appType);
+                }
+            };
+            taskbarContainer.appendChild(taskbarBtn);
+        }
+
+        // 2. Check or Create App Window
+        let win = document.getElementById(`pc-app-window-${appType}`);
+        if (!win) {
+            win = document.createElement('div');
+            win.id = `pc-app-window-${appType}`;
+            win.className = 'pc-window-frame';
+            win.setAttribute('data-app', appType);
+            win.style.cssText = `
+                position: absolute; top: ${meta.top}px; left: ${meta.left}px;
+                width: 560px; height: 380px; max-width: 90%; max-height: 85%;
+                background: #c0c0c0; border: 3px outset #ffffff;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+            `;
+
+            let contentHtml = '';
+            if (appType === 'gallery') {
+                contentHtml = `
+                    <h3 style="margin-top:0; color:#000080;">BỘ BỘ ANH CHỌN LỌC DỰ ÁN 3D</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                        <div style="border:2px solid #ccc; padding:6px; background:#f8fafc; text-align:center;">
+                            <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400" style="width:100%; height:110px; object-fit:cover; border-radius:4px;" />
+                            <p style="margin:4px 0 0; font-size:12px; font-weight:bold;">Biển Đảo Cyberpunk</p>
+                        </div>
+                        <div style="border:2px solid #ccc; padding:6px; background:#f8fafc; text-align:center;">
+                            <img src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=400" style="width:100%; height:110px; object-fit:cover; border-radius:4px;" />
+                            <p style="margin:4px 0 0; font-size:12px; font-weight:bold;">Đêm Neon Vancouver</p>
+                        </div>
+                        <div style="border:2px solid #ccc; padding:6px; background:#f8fafc; text-align:center;">
+                            <img src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=400" style="width:100%; height:110px; object-fit:cover; border-radius:4px;" />
+                            <p style="margin:4px 0 0; font-size:12px; font-weight:bold;">Siêu Xe Lamborghini</p>
+                        </div>
+                    </div>
+                `;
+            } else if (appType === 'diary') {
+                contentHtml = `
+                    <div style="font-family: monospace; background:#fffae6; padding:16px; border:1px solid #d97706; border-radius:4px; line-height:1.6;">
+                        <h3 style="margin-top:0; color:#b45309;">📝 NHẬT KÝ DỰ ÁN VIỆT ANH 3D</h3>
+                        <p><strong>[2026-07-23]</strong> Hoàn thiện góc quầy Ramen Cyberpunk ANH Zhou Style 100%.</p>
+                        <p><strong>[Features]</strong> Đã thiết kế 4 tô mì Ramen siêu thật, 4 ghế Bar Cyberpunk, Màn hình TV phát video Live 4K, Cột LED Billboard "Hi, I'm Viet Anh." bên phải.</p>
+                        <p><strong>[Character]</strong> Nhân vật Chú Đậu Anime đeo tai nghe DJ uốn vòm Parabol cực mịn với nét miệng cười nụ chữ U siêu đáng yêu.</p>
+                        <p><strong>[Workstation]</strong> Nâng cấp trạm máy tính bàn Retro CRT với hệ điều hành Retro Windows 98 Multi-Window & Multi-Taskbar chuẩn 100% ảnh mẫu!</p>
+                    </div>
+                `;
+            } else if (appType === 'video') {
+                contentHtml = `
+                    <div style="text-align:center;">
+                        <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" controls autoplay style="width:100%; max-height:280px; border:3px solid #000; border-radius:6px;"></video>
+                        <p style="font-weight:bold; color:#000080; margin-top:8px;">Live Stream Showreel Cyberpunk Demo</p>
+                    </div>
+                `;
+            } else if (appType === 'snake') {
+                contentHtml = `
+                    <div style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+                        <div style="display:flex; justify-content:space-between; width:360px; margin-bottom:8px; font-weight:bold; font-size:16px; color:#000080;">
+                            <span>Điểm: <span id="snake-score">0</span></span>
+                            <span>Kỷ Lục: <span id="snake-highscore">0</span></span>
+                        </div>
+                        <canvas id="snake-canvas" width="360" height="260" style="background:#050508; border:3px solid #00f5d4; border-radius:4px;"></canvas>
+                        <p style="font-size:12px; color:#64748b; margin-top:6px;">Dùng phím Mũi tên / WASD để điều khiển Rắn ăn táo 🍎</p>
+                    </div>
+                `;
+            }
+
+            win.innerHTML = `
+                <div class="pc-window-header" style="background: #000080; color: white; padding: 4px 8px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 13px; user-select: none;">
+                    <span>${meta.title}</span>
+                    <div class="win98-btn-group">
+                        <button class="win98-btn-ctrl btn-min-app" title="Minimize">_</button>
+                        <button class="win98-btn-ctrl btn-max-app" title="Maximize">🗖</button>
+                        <button class="win98-btn-ctrl btn-close-app" title="Close">✕</button>
+                    </div>
+                </div>
+                <div class="pc-window-body" style="flex: 1; padding: 16px; background: #ffffff; overflow-y: auto; color: #111111;">
+                    ${contentHtml}
+                </div>
+            `;
+
+            // Bind Window Focus & Control Buttons
+            win.onmousedown = () => this._focusPCAppWindow(appType);
+
+            win.querySelector('.btn-min-app').onclick = (e) => {
+                e.stopPropagation();
+                this._minimizePCAppWindow(appType);
+            };
+
+            win.querySelector('.btn-max-app').onclick = (e) => {
+                e.stopPropagation();
+                if (win.dataset.maximized === 'true') {
+                    win.dataset.maximized = 'false';
+                    win.style.top = `${meta.top}px`;
+                    win.style.left = `${meta.left}px`;
+                    win.style.width = '560px';
+                    win.style.height = '380px';
+                    win.style.maxWidth = '90%';
+                    win.style.maxHeight = '85%';
+                } else {
+                    win.dataset.maximized = 'true';
+                    win.style.top = '0';
+                    win.style.left = '0';
+                    win.style.width = '100%';
+                    win.style.height = '100%';
+                    win.style.maxWidth = '100%';
+                    win.style.maxHeight = '100%';
+                }
+            };
+
+            win.querySelector('.btn-close-app').onclick = (e) => {
+                e.stopPropagation();
+                this._closePCAppWindow(appType);
+            };
+
+            workspace.appendChild(win);
+
+            if (appType === 'snake') {
+                setTimeout(() => this._initSnakeGame(), 50);
+            }
+        }
+
+        // Focus and bring window to front
+        this._focusPCAppWindow(appType);
     }
 
     /* 🐍 GAME RẮN SĂN MỒI RETRO 60FPS THUẬT TOÁN CANVASCORRECT */
@@ -5521,7 +5692,7 @@ export class Shop3DScene {
         return stoolGroup;
     }
 
-    /* 📺 GIANT CYBERPUNK OUTDOOR LED TV BILLBOARD (JESSE ZHOU PORTFOLIO STYLE) */
+    /* 📺 GIANT CYBERPUNK OUTDOOR LED TV BILLBOARD (ANH ZHOU PORTFOLIO STYLE) */
     _buildCyberpunkLedTv(parentGroup) {
         const tvGroup = new THREE.Group();
         tvGroup.position.set(8.5, 0, 0.5);
@@ -5540,7 +5711,7 @@ export class Shop3DScene {
         baseRing.castShadow = true;
         tvGroup.add(baseRing);
 
-        // Sub Platform Cylinder Grid (Jesse Zhou Metallic Stand)
+        // Sub Platform Cylinder Grid (ANH Zhou Metallic Stand)
         const gridPedestalGeo = new THREE.CylinderGeometry(0.7, 0.75, 0.35, 32);
         const gridPedestalMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.4, metalness: 0.7 });
         const gridPedestal = new THREE.Mesh(gridPedestalGeo, gridPedestalMat);
@@ -5628,7 +5799,7 @@ export class Shop3DScene {
         ctx.lineWidth = 8;
         ctx.strokeRect(10, 10, w - 20, h - 20);
 
-        // 2. Top Header Navigation Bar (Jesse Zhou Style)
+        // 2. Top Header Navigation Bar (ANH Zhou Style)
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(18, 18, w - 36, 60);
 
@@ -6052,7 +6223,7 @@ export class Shop3DScene {
         // Cập nhật NPC Đi Lại Trên Phố
         this._updateNPCs(deltaTime);
 
-        // 📺 Cập nhật Animation Màn Hình TV LED Cyberpunk (Jesse Zhou Style)
+        // 📺 Cập nhật Animation Màn Hình TV LED Cyberpunk (ANH Zhou Style)
         this._updateLedTvDisplay(deltaTime);
 
         // Cập nhật Prompts Tương Tác Cửa Hàng Trang Bị, Cửa Nhà, Siêu Xe & Cân Đẩu Vân

@@ -57,6 +57,15 @@ export const POWERUP_CONFIG = {
   HIGH_JUMP_DURATION: 8000      // 8 giây
 };
 
+export const PURSUIT_CONFIG = {
+  DURATION: 15,          // Thời gian cắt đuôi (giây)
+  REWARD_COINS: 500,     // Thưởng Cà phê/Xu khi cắt đuôi thành công
+  REWARD_EXP: 200,       // Thưởng EXP khi cắt đuôi thành công
+  FOLLOW_DISTANCE: 5.5,  // Khoảng cách duy trì phía sau xe người chơi (m)
+  WARN_DURATION: 2.0    // Thời gian xuất hiện cảnh báo ban đầu (s)
+};
+
+
 // Danh sách Nhân vật & Siêu xe (Tập trung dữ liệu 1 nơi duy nhất)
 export const CHARACTERS = {
   SHIPPER: {
