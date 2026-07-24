@@ -42,7 +42,8 @@ gametulam/
     │   ├── SceneManager.js     # Khởi tạo camera, renderer, ánh sáng
     │   ├── City3DScene.js      # Bối cảnh 3D thành phố & tương tác
     │   ├── ComputerOfficeScene.js # Bối cảnh 3D Góc làm việc Retro CRT & Zoom PC Tương tác
-    │   ├── Shop3DScene.js      # Bối cảnh 3D Cyberpunk Ramen Shop, Showroom Siêu xe & Trạm Tương tác Signpost (ANH Zhou Style)
+    │   ├── RoguelikeArenaScene.js # Bản đồ Chiến đấu 3D Roguelike (Lấy cảm hứng từ DISORDER)
+    │   ├── Shop3DScene.js      # Bối cảnh 3D Cyberpunk Ramen Shop, Showroom Siêu xe, Palace & Cổng Hologram
     ├── effects/                # Hiệu ứng hình ảnh & kỹ xảo 3D
     │   └── ExhaustFlameBoostEffect.js # Hiệu ứng lửa ống xả & tăng tốc
     ├── entities/               # Các đối tượng 3D trong game
@@ -50,6 +51,7 @@ gametulam/
     │   ├── Obstacle.js         # Lớp chướng ngại vật (xe máy, lô cốt, chướng ngại)
     │   ├── Collectible.js      # Vật phẩm thu thập (xu, kim cương, thịt, power-up)
     │   ├── Environment.js      # Đường chạy vô tận, công trình phố xá
+    │   ├── HolographicPortal.js # Cổng Dịch Chuyển 3D Hologram Trụ Đứng (Palace Portal Station)
     │   ├── NPCManager.js       # Quản lý NPC giao thông & người đi bộ
     │   └── StylizedTree.js     # Đối tượng cây cối Low-poly
     ├── managers/               # Các lớp quản lý logic phụ trợ

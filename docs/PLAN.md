@@ -494,6 +494,29 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
   - [x] Tải thời gian hiệu lực nâng cấp khi ăn vật phẩm trong trận đấu.
   - [x] Render animation hạt particle `speedTrailManager.update()` trong `_animate()`.
 
+---
+
+## Phase 31: Cổng Dịch Chuyển 3D Hologram & Map Chiến Đấu Roguelike 3D (`HolographicPortal.js` & `RoguelikeArenaScene.js`)
+**Mục tiêu:** Xây dựng hệ thống Cổng Dịch Chuyển 3D (Holographic Portal) đặt tại Cung Điện dẫn sang Thế Giới Map Chiến Đấu Roguelike 3D phong cách Dark Cyberpunk / DISORDER với hiệu ứng sấm sét VFX, AI wave quái vật, tâm ngắm động, và floating damage numbers.
+
+### Checklist công việc chi tiết
+- [x] **Task 31.1: Cấu hình `Constants.js` & `StateMachine.js`**
+  - [x] Định nghĩa `ROGUELIKE_ARENA` state và hằng số `ROGUELIKE_CONFIG`.
+  - [x] Cập nhật các chuyển trạng thái hợp lệ trong StateMachine.
+- [x] **Task 31.2: Mô Hình Cổng Dịch Chuyển 3D Hologram (`HolographicPortal.js`)**
+  - [x] Dựng trụ Cylinder gồm nhiều vòng Neon Rings đồng tâm (`emissive: 0x00f5d4`) xoay quanh trục Y.
+  - [x] Hạt lốc xoáy `THREE.Points` bay ngược lên trên (+Y).
+  - [x] Kiểm tra khoảng cách va chạm $<1.6\text{m}$ và UI prompt `[E] Bước vào Cổng Dịch Chuyển Không Gian`.
+- [x] **Task 31.3: Map Chiến Đấu Roguelike 3D DISORDER Style (`RoguelikeArenaScene.js`)**
+  - [x] Môi trường Dark Cyber-Dungeon: sương mù `FogExp2(0x0b0d17, 0.03)`, sàn bê tông loang lổ vết dầu, hàng rào lưới thép B40.
+  - [x] Hiệu ứng sấm sét điện `Lightning Arcs VFX` nhấp nháy xẹt qua arena ngẫu nhiên.
+  - [x] AI Quái vật cận chiến Cyber-Beast tự động sinh ra theo các đợt Waves tràn về phía người chơi.
+  - [x] Súng Plasma bắn đạn, nổ tia lửa & mảnh vỡ, hiển thị số sát thương bay (`Floating Damage Numbers`).
+- [x] **Task 31.4: Tích Hợp Combat HUD & Flash Màn Hình (`index.html`, `style.css` & `Game.js`)**
+  - [x] UI Combat HUD với tâm ngắm động, thanh HP/Shield gradient, wave banner.
+  - [x] Hiệu ứng chớp sáng trắng/xanh Flash (0.5s) khi dịch chuyển.
+  - [x] Tuân thủ 100% UI HUD Visibility Rules (ẩn Top Currency Bar & Audio Control Panel khi chiến đấu).
+
 
 
 

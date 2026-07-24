@@ -3965,14 +3965,14 @@ export class Shop3DScene {
                 border: 1.5px solid rgba(0, 245, 255, 0.7);
                 border-radius: 12px;
                 padding: 6px 14px;
-                color: #00f5ff;
+                color: #00f5d4;
                 font-family: 'Outfit', 'Inter', monospace;
                 font-size: 13px;
                 font-weight: 700;
                 z-index: 1000;
                 pointer-events: auto !important;
                 box-shadow: 0 4px 16px rgba(0, 245, 255, 0.25);
-                display: flex;
+                display: none; /* Mặc định ẩn */
                 align-items: center;
                 gap: 8px;
                 user-select: none;
@@ -4274,6 +4274,17 @@ export class Shop3DScene {
         this.isActive = false;
         this._showDriveHUD(false);
         this._showNimbusHUD(false);
+
+        // 🎯 1. Ẩn Bảng Tọa độ Pos HUD
+        const posHud = document.getElementById('position-hud-panel');
+        if (posHud) posHud.style.display = 'none';
+
+        // 🎯 2. FIX DỨT ĐIỂM: Ẩn Prompt Cổng Dịch Chuyển Không Gian khi thoát/chuyển map
+        const portalPrompt = document.getElementById('portal-teleport-prompt');
+        if (portalPrompt) {
+            portalPrompt.classList.remove('show');
+            portalPrompt.style.display = 'none';
+        }
 
         const enterPrompt = document.getElementById('enter-car-prompt');
         if (enterPrompt) enterPrompt.style.display = 'none';
@@ -6644,12 +6655,17 @@ export class Shop3DScene {
             if (promptEl) {
                 if (isNear) {
                     promptEl.classList.add('show');
+                    promptEl.style.display = 'flex'; // Đảm bảo hiện lại nếu trước đó bị ẩn
                 } else {
                     promptEl.classList.remove('show');
                 }
             }
 
             if (isNear && this.activeKeys.has('KeyE')) {
+                if (promptEl) {
+                    promptEl.classList.remove('show');
+                    promptEl.style.display = 'none';
+                }
                 this.holographicPortal.triggerTeleport();
             }
         }
