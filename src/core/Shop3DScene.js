@@ -3027,7 +3027,7 @@ export class Shop3DScene {
 
     _loadBabyGokuModel() {
         const md2Char = new MD2Character();
-        md2Char.scale = 0.03;
+        md2Char.scale = 0.06;
 
         const config = {
             baseUrl: '/models/md2/ratamahatta/',
@@ -3037,14 +3037,9 @@ export class Shop3DScene {
         };
 
         md2Char.onLoadComplete = () => {
-            md2Char.setAnimation('stand');
+            md2Char.root.position.y = 1.4;
             this.babyGokuMd2Root = md2Char.root;
             this.md2CharacterInstance = md2Char;
-
-            // 🛑 XÓA BỎ LỆNH TỰ GÁN GOKU VÀO MÀN HÌNH Ở ĐÂY ĐỂ TRÁNH BỊ ĐÈN LÊN CYBER MẶC ĐỊNH
-            // if (this.selectedCharacterSkin === 'baby_goku') {
-            //     this._switchPlayerSkin('baby_goku');
-            // }
         };
 
         md2Char.loadParts(config);
@@ -6342,7 +6337,7 @@ export class Shop3DScene {
 
             const adjustedPlayerPos = this.playerPos.clone();
             if (this.selectedCharacterSkin === 'baby_goku') {
-                adjustedPlayerPos.y += 0.5; // Đẩy cao MD2 lên tránh lún đất
+                adjustedPlayerPos.y += 1.4; // Đẩy cao MD2 lên tránh lún đất
             }
             this.playerMesh.position.copy(adjustedPlayerPos);
         }
