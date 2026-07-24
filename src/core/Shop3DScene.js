@@ -3027,7 +3027,7 @@ export class Shop3DScene {
     _loadBabyGokuModel() {
         const loader = new GLTFLoader();
         loader.load(
-            '/models/baby_goku.glb',
+            '/models/goku-4.glb',
             (gltf) => {
                 this.babyGokuGltf = gltf;
                 if (this.selectedCharacterSkin === 'baby_goku') {
