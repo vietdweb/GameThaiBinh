@@ -149,6 +149,11 @@ export class ComputerOfficeScene {
     leftWall.receiveShadow = true;
     this.scene.add(leftWall);
 
+    // Kệ Cúp 3D (Trophy Hall Shelf in Office Scene)
+    if (this.game && this.game.trophyHallManager) {
+      this.game.trophyHallManager.create3DTrophyShelf(this.scene, new THREE.Vector3(-1.8, 1.85, -2.9));
+    }
+
     // Wall Frame / Poster (Saigon Rush Retro Poster)
     const posterGeo = new THREE.PlaneGeometry(1.4, 2.0);
     const posterMat = new THREE.MeshStandardMaterial({
@@ -650,7 +655,12 @@ export class ComputerOfficeScene {
       });
     }
 
-    // 3. Proximity Detection (< 2.5m) to show UI Prompt when standing
+    // 3. Update 3D Trophies rotation
+    if (this.game && this.game.trophyHallManager) {
+      this.game.trophyHallManager.update(0.016);
+    }
+
+    // 4. Proximity Detection (< 2.5m) to show UI Prompt when standing
     if (!this.isSeatedAtPC && !this.isZooming) {
       const distToPC = this.camera.position.distanceTo(this.pcCenterPos);
       if (distToPC < 4.2) {

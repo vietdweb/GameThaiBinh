@@ -107,6 +107,9 @@ export class Shop3DScene {
 
         // Khởi tạo toàn bộ thế giới mở kết hợp Cung Điện La Mã, Cổ Đền Nhật Bản & Vườn Sougen
         this._initSanctuaryEnvironment();
+        if (this.game && this.game.trophyHallManager) {
+            this.game.trophyHallManager.create3DTrophyShelf(this.scene, new THREE.Vector3(2.5, 1.2, -3.5));
+        }
         this._initSanctuaryLighting();
         this._initProceduralSkyAndClouds();
         this._initExpandedIslandGround();
@@ -6625,6 +6628,11 @@ export class Shop3DScene {
             if (this.beanNPC.userData.bubbleGroup) {
                 this.beanNPC.userData.bubbleGroup.position.y = 1.7 + Math.sin(time * 3.5) * 0.025;
             }
+        }
+
+        // 🏆 Cập nhật hoạt họa 3D Trophies xoay nhẹ
+        if (this.game && this.game.trophyHallManager) {
+            this.game.trophyHallManager.update(0.016);
         }
 
         // 📍 CẬP NHẬT REALTIME TỌA ĐỘ X, Y, Z TRÊN HUD GÓC PHẢI MÀN HÌNH

@@ -521,6 +521,9 @@ export class ComputerOfficeManager {
   startSnake() {
     this.resetSnake();
     this.snakeState.running = true;
+    if (this.game && this.game.dailyQuestsManager) {
+      this.game.dailyQuestsManager.onWin98GamePlayed();
+    }
     if (this.snakeState.timer) clearInterval(this.snakeState.timer);
     this.snakeState.timer = setInterval(() => this._tickSnake(), 140);
 
@@ -739,6 +742,9 @@ export class ComputerOfficeManager {
   startTetris() {
     this.resetTetris();
     this.tetrisState.running = true;
+    if (this.game && this.game.dailyQuestsManager) {
+      this.game.dailyQuestsManager.onWin98GamePlayed();
+    }
     this._spawnTetrisPiece();
     if (this.tetrisState.timer) clearInterval(this.tetrisState.timer);
     this.tetrisState.timer = setInterval(() => this._dropTetrisPiece(), 500);

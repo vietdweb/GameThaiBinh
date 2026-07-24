@@ -170,6 +170,13 @@ export class ObstacleManager {
 
         // Nếu chân nhân vật cao hơn hoặc ngang đỉnh ô tô (với dung sai 0.35m)
         if (isOverVehicleRoof && playerPos.y >= vehicleRoofY - 0.35) {
+          if (!obs.userData) obs.userData = {};
+          if (!obs.userData.hasTriggeredRoofQuest) {
+            obs.userData.hasTriggeredRoofQuest = true;
+            if (window.gameInstance && window.gameInstance.dailyQuestsManager) {
+              window.gameInstance.dailyQuestsManager.onVinBusRoofJump();
+            }
+          }
           standingOnVehicleRoof = true;
           // Ép vị trí mặt đất tạm thời của nhân vật bằng đỉnh ô tô
           player.currentPlatformY = vehicleRoofY;

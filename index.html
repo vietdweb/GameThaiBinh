@@ -240,6 +240,28 @@
       </div>
 
     </div>
+
+    <!-- Thanh Nút Icon Tiện Ích Tròn Bên Trái Màn Hình (Left Floating Circle Icon Bar - Giống nút Âm thanh/Lịch sử) -->
+    <div class="left-icon-control-bar">
+      <!-- 1. Nút Icon Nhiệm Vụ Hằng Ngày -->
+      <div class="circle-btn-wrapper">
+        <button id="btn-open-daily-quests" class="side-circle-btn side-btn-cyan sub-daily-quests" title="Nhiệm Vụ Hằng Ngày">
+          <span class="side-circle-emoji">📋</span>
+          <span id="daily-quests-badge" class="side-circle-badge">!</span>
+        </button>
+        <span class="circle-btn-tooltip">Nhiệm Vụ Hằng Ngày</span>
+      </div>
+
+      <!-- 2. Nút Icon Tủ Cúp / Phòng Truyền Thống 3D -->
+      <div class="circle-btn-wrapper">
+        <button id="btn-open-trophy-hall" class="side-circle-btn side-btn-gold sub-trophy-hall" title="Phòng Truyền Thống 3D">
+          <span class="side-circle-emoji">🏆</span>
+        </button>
+        <span class="circle-btn-tooltip">Phòng Truyền Thống 3D</span>
+      </div>
+    </div>
+
+    </div>
   </div>
 
   <!-- Nút thoát Map Thành Phố 3D -->
@@ -1323,6 +1345,44 @@ Ghi chú: Nhấn phím ESC (hoặc nút góc trên) bất cứ lúc nào để �
         <button id="btn-accept-clear" class="btn-confirm btn-danger">
           <span>XÓA HẾT</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL BẢNG NHIỆM VỤ HẰNG NGÀY (DAILY QUESTS) -->
+  <div id="daily-quests-modal" style="position: fixed; inset: 0; z-index: 9999; background: rgba(10, 14, 23, 0.88); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif;">
+    <div style="width: 520px; max-width: 92vw; background: #0f172a; border: 2px solid #00f5d4; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,245,212,0.25); display: flex; flex-direction: column; overflow: hidden;">
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(90deg, #00f5d4, #7928ca); padding: 14px 20px; color: #ffffff; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+          <span>📋</span>
+          <span>NHIỆM VỤ HẰNG NGÀY</span>
+        </div>
+        <button id="btn-close-daily-quests" style="background: rgba(0,0,0,0.3); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold;">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+        <div id="daily-quests-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PHÒNG TRUYỀN THỐNG 3D (TROPHY HALL) -->
+  <div id="trophy-hall-modal" style="position: fixed; inset: 0; z-index: 9999; background: rgba(10, 14, 23, 0.88); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif;">
+    <div style="width: 560px; max-width: 92vw; background: #0f172a; border: 2px solid #ffd600; border-radius: 16px; box-shadow: 0 20px 50px rgba(255,214,0,0.25); display: flex; flex-direction: column; overflow: hidden;">
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(90deg, #ffd600, #ff9100); padding: 14px 20px; color: #0f172a; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 900; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+          <span>🏆</span>
+          <span>PHÒNG TRUYỀN THỐNG 3D - TỦ CÚP DANH HIỆU</span>
+        </div>
+        <button id="btn-close-trophy-hall" style="background: rgba(0,0,0,0.2); border: none; color: #0f172a; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold;">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+        <div id="trophy-hall-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
       </div>
     </div>
   </div>

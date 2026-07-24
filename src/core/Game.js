@@ -26,6 +26,8 @@ import { AssetManager } from '../managers/AssetManager.js';
 import { MatchHistoryManager } from '../managers/MatchHistoryManager.js';
 import { CurrencyManager } from '../managers/CurrencyManager.js';
 import { PlayerManager } from '../managers/PlayerManager.js';
+import { DailyQuestsManager } from '../managers/DailyQuestsManager.js';
+import { TrophyHallManager } from '../managers/TrophyHallManager.js';
 import { UIManager } from '../ui/UIManager.js';
 import { Collectible } from '../entities/Collectible.js';
 import {
@@ -201,6 +203,10 @@ export class Game {
     this.cityManager = new CityManager(this, this.city3DScene);
     this.computerOfficeScene = new ComputerOfficeScene(this.sceneManager.renderer, this);
     this.officeManager = new ComputerOfficeManager(this, this.computerOfficeScene);
+    this.dailyQuestsManager = new DailyQuestsManager(this);
+    this.dailyQuestsManager.init();
+    this.trophyHallManager = new TrophyHallManager(this);
+    this.trophyHallManager.init();
 
     // 3. Gắn sự kiện các nút bấm UI & Cửa hàng
     this._setupUIEvents();
@@ -1279,6 +1285,9 @@ export class Game {
     this.score = 0;
     this.coffees = 0;
     this.gameTimer = 0;
+    if (this.dailyQuestsManager) {
+      this.dailyQuestsManager.onStartRun();
+    }
     this.feverEnergy = 0;
     this.isFeverActive = false;
     this.feverTimer = 0;
@@ -1461,6 +1470,15 @@ export class Game {
 
     this.coffees += count;
     this.score += Math.floor(150 * count * coffeeBonus * scoreMult);
+
+    // Lưu tổng Cà phê sự nghiệp để mở khóa Cúp Vua Cà Phê 3D
+    const currentTotal = parseInt(localStorage.getItem('sgr_total_coffees_collected') || '0', 10);
+    localStorage.setItem('sgr_total_coffees_collected', (currentTotal + count).toString());
+
+    // Cập nhật Tiến độ Nhiệm vụ Hằng Ngày
+    if (this.dailyQuestsManager) {
+      this.dailyQuestsManager.onCoffeeCollected(count);
+    }
 
     // Tăng EXP cho người chơi khi ăn Cà phê (Mỗi cốc cà phê cho 25 EXP)
     if (this.playerManager) {
