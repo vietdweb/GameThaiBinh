@@ -460,21 +460,19 @@ export class ComputerOfficeScene {
   }
 
   _setupWin98OSAppHandlers() {
+    if (this.game && this.game.officeManager) {
+      this.game.officeManager.init();
+    }
+
     window.openWin98App = (appId) => {
-      const appEl = document.getElementById(`win98-app-${appId}`);
-      if (appEl) {
-        appEl.classList.remove('hidden');
-        if (appId === 'mines' && !appEl.dataset.initialized) {
-          appEl.dataset.initialized = 'true';
-          window.resetMinesweeper();
-        }
+      if (this.game && this.game.officeManager) {
+        this.game.officeManager.openApp(appId);
       }
     };
 
     window.closeWin98App = (appId) => {
-      const appEl = document.getElementById(`win98-app-${appId}`);
-      if (appEl) {
-        appEl.classList.add('hidden');
+      if (this.game && this.game.officeManager) {
+        this.game.officeManager.closeApp(appId);
       }
     };
 

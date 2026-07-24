@@ -5418,6 +5418,8 @@ body {
   border-color: #ffffff #808080 #808080 #ffffff;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
   z-index: 10;
+  user-select: none;
+  transition: width 0.15s ease, height 0.15s ease;
 }
 
 .win98-titlebar {
@@ -5429,9 +5431,17 @@ body {
   color: #ffffff;
   font-weight: bold;
   font-size: 12px;
+  cursor: move;
+  font-family: 'Space Grotesk', 'Tahoma', sans-serif;
 }
 
-.win98-close-btn {
+.win98-btn-group {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.win98-btn-ctrl, .win98-close-btn {
   background: #c0c0c0;
   border: 1px solid;
   border-color: #ffffff #808080 #808080 #ffffff;
@@ -5444,6 +5454,13 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0;
+  color: #000000;
+  line-height: 1;
+}
+
+.win98-btn-ctrl:active, .win98-close-btn:active {
+  border-color: #808080 #ffffff #ffffff #808080;
+  background: #dfdfdf;
 }
 
 .win98-window-body {
@@ -5480,6 +5497,14 @@ body {
   padding: 2px 4px;
   gap: 8px;
   z-index: 20;
+}
+
+.win98-task-items {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  flex: 1;
 }
 
 .win98-start-btn {

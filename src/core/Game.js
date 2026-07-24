@@ -4,7 +4,7 @@ import { Shop3DScene } from './Shop3DScene.js';
 import { City3DScene } from './City3DScene.js';
 import { CityManager } from '../managers/CityManager.js';
 import { ComputerOfficeScene } from './ComputerOfficeScene.js';
-import { OfficeManager } from '../managers/OfficeManager.js';
+import { ComputerOfficeManager } from '../managers/ComputerOfficeManager.js';
 import { SceneManager } from './SceneManager.js';
 import { StateMachine } from '../managers/StateMachine.js';
 import { CollisionManager } from '../managers/CollisionManager.js';
@@ -200,7 +200,7 @@ export class Game {
     this.city3DScene = new City3DScene(this.sceneManager.renderer, this);
     this.cityManager = new CityManager(this, this.city3DScene);
     this.computerOfficeScene = new ComputerOfficeScene(this.sceneManager.renderer, this);
-    this.officeManager = new OfficeManager(this, this.computerOfficeScene);
+    this.officeManager = new ComputerOfficeManager(this, this.computerOfficeScene);
 
     // 3. Gắn sự kiện các nút bấm UI & Cửa hàng
     this._setupUIEvents();
@@ -247,6 +247,9 @@ export class Game {
       if (this.pursuitManager) {
         this.pursuitManager.reset();
       }
+      if (this.speedTrailManager) {
+        this.speedTrailManager.reset();
+      }
       // Khôi phục volume từ ducking (khi từ GAMEOVER về MENU)
       this.audioManager.restoreVolume(600);
 
@@ -264,6 +267,9 @@ export class Game {
     // Khi vào VIEWER (Phòng xem 360°)
     sm.onEnter(GAME_STATES.VIEWER, () => {
       this._showScreen('viewer');
+      if (this.speedTrailManager) {
+        this.speedTrailManager.reset();
+      }
       // Ẩn panel audio khi ở phòng xem 360° (chỉ hiện ở Menu chính)
       this._setAudioPanelVisible(false);
       // Ưu tiên override nếu có (VD: Lamborghini viewer)
@@ -1290,6 +1296,9 @@ export class Game {
     if (this.pursuitManager) {
       this.pursuitManager.reset();
     }
+    if (this.speedTrailManager) {
+      this.speedTrailManager.reset();
+    }
 
 
     // Căn chỉnh nhân vật về lại làn giữa chuẩn
@@ -1523,6 +1532,9 @@ export class Game {
     // Không để chướng ngại vật và vật phẩm còn trên màn hình sau khi nhân vật thua
     this._clearObstacles();
     this._clearCollectibles();
+    if (this.speedTrailManager) {
+      this.speedTrailManager.reset();
+    }
 
     this.stateMachine.transition(GAME_STATES.GAMEOVER);
   }
@@ -1705,6 +1717,9 @@ export class Game {
       if (this.player) {
         this.player.update(deltaTime);
       }
+      if (this.speedTrailManager) {
+        this.speedTrailManager.reset();
+      }
       return;
     }
 
@@ -1715,6 +1730,9 @@ export class Game {
       }
       if (this.player) {
         this.player.update(0);
+      }
+      if (this.speedTrailManager) {
+        this.speedTrailManager.reset();
       }
       return;
     }

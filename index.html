@@ -403,6 +403,21 @@
           <div class="win98-icon-img">🌐</div>
           <span class="win98-icon-label">Internet.exe</span>
         </div>
+
+        <div class="win98-icon" onclick="window.openWin98App && window.openWin98App('snake')">
+          <div class="win98-icon-img">🐍</div>
+          <span class="win98-icon-label">RanSanMoi.exe</span>
+        </div>
+
+        <div class="win98-icon" onclick="window.openWin98App && window.openWin98App('tetris')">
+          <div class="win98-icon-img">🧩</div>
+          <span class="win98-icon-label">XepHinh98.exe</span>
+        </div>
+
+        <div class="win98-icon" onclick="window.openWin98App && window.openWin98App('paint')">
+          <div class="win98-icon-img">🎨</div>
+          <span class="win98-icon-label">MSPaint.exe</span>
+        </div>
       </div>
 
       <!-- Win98 Window: Notepad Docs -->
@@ -441,6 +456,102 @@ Ghi chú: Nhấn phím ESC (hoặc nút góc trên) bất cứ lúc nào để �
             <span id="mines-timer">⏱️ 000</span>
           </div>
           <div id="win98-mines-grid" class="win98-mines-grid"></div>
+        </div>
+      </div>
+
+      <!-- Win98 Window: Rắn Săn Mồi 98 (Snake) -->
+      <div id="win98-app-snake" class="win98-window hidden" style="width: 380px;">
+        <div class="win98-titlebar">
+          <div class="win98-title-text">🐍 Rắn Săn Mồi 98 - Thưởng 💎 Kim Cương</div>
+          <button class="win98-close-btn" onclick="window.closeWin98App && window.closeWin98App('snake')">✕</button>
+        </div>
+        <div class="win98-window-body" style="padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: #c0c0c0;">
+          <div style="width: 100%; display: flex; justify-content: space-between; font-weight: 800; font-size: 13px; background: #000; color: #00ffcc; padding: 6px 10px; box-sizing: border-box; border: 2px inset #808080;">
+            <span>Điểm: <span id="snake-score">0</span></span>
+            <span>Cao nhất: <span id="snake-highscore">0</span></span>
+            <span>💎 Nhận: <span id="snake-gems-earned">0</span></span>
+          </div>
+
+          <canvas id="snake-canvas" width="300" height="300" style="border: 3px inset #ffffff; background: #0a0f1d; width: 300px; height: 300px;"></canvas>
+
+          <div id="snake-status-text" style="font-weight: 800; font-size: 12px; color: #000080;">Sẵn sàng! Săn mồi nhận Kim Cương</div>
+
+          <div style="display: flex; gap: 8px; width: 100%; justify-content: center;">
+            <button id="btn-snake-start" class="win98-start-btn" style="height: auto; padding: 4px 16px; font-weight: bold;">▶ CHƠI NGAY</button>
+            <button id="btn-snake-reset" class="win98-start-btn" style="height: auto; padding: 4px 16px; font-weight: bold;">🔄 CHOI LAI</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Win98 Window: Xếp Hình 98 (Tetris) -->
+      <div id="win98-app-tetris" class="win98-window hidden" style="width: 360px;">
+        <div class="win98-titlebar">
+          <div class="win98-title-text">🧩 Xếp Hình 98 - Thưởng 💎 Kim Cương</div>
+          <button class="win98-close-btn" onclick="window.closeWin98App && window.closeWin98App('tetris')">✕</button>
+        </div>
+        <div class="win98-window-body" style="padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: #c0c0c0;">
+          <div style="width: 100%; display: flex; justify-content: space-between; font-weight: 800; font-size: 12px; background: #000; color: #ffaa00; padding: 6px 10px; box-sizing: border-box; border: 2px inset #808080;">
+            <span>Điểm: <span id="tetris-score">0</span></span>
+            <span>Hàng: <span id="tetris-lines">0</span></span>
+            <span>💎 Nhận: <span id="tetris-gems-earned">0</span></span>
+          </div>
+
+          <canvas id="tetris-canvas" width="200" height="400" style="border: 3px inset #ffffff; background: #0f172a; width: 200px; height: 400px;"></canvas>
+
+          <div id="tetris-status-text" style="font-weight: 800; font-size: 12px; color: #000080;">Sẵn sàng! Xếp gạch nhận Kim Cương</div>
+
+          <div style="display: flex; gap: 6px; width: 100%; justify-content: center; flex-wrap: wrap;">
+            <button id="btn-tetris-start" class="win98-start-btn" style="height: auto; padding: 4px 12px; font-weight: bold;">▶ BẮT ĐẦU</button>
+            <button id="btn-tetris-reset" class="win98-start-btn" style="height: auto; padding: 4px 12px; font-weight: bold;">🔄 CHƠI LẠI</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Win98 Window: Paint 98 (MSPaint.exe - Độ Tem Xe / Khẩu Hiệu 3D) -->
+      <div id="win98-app-paint" class="win98-window hidden" style="width: 540px;">
+        <div class="win98-titlebar">
+          <div class="win98-title-text">🎨 Paint 98 - Độ Tem Xe & Khẩu Hiệu 3D</div>
+          <button class="win98-close-btn" onclick="window.closeWin98App && window.closeWin98App('paint')">✕</button>
+        </div>
+        <div class="win98-window-body" style="padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #c0c0c0;">
+          <!-- Canvas Vẽ Tem Xe -->
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <span style="font-weight: 800; font-size: 12px; margin-bottom: 4px; color: #000080;">🎨 KHUNG VẼ TEM & BIỂN SỐ XE 3D (512x128)</span>
+            <canvas id="paint-canvas" width="512" height="128" style="border: 3px inset #ffffff; background: #0f172a; width: 100%; height: 110px; cursor: crosshair;"></canvas>
+          </div>
+
+          <!-- Color Palette Palette -->
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #dfdfdf; padding: 6px; border: 2px inset #ffffff;">
+            <span style="font-size: 11px; font-weight: bold;">Cọ vẽ:</span>
+            <div style="display: flex; gap: 4px;">
+              <div class="paint-color-swatch selected" data-color="#00ffff" style="width: 20px; height: 20px; background: #00ffff; border: 2px outset #ffffff; cursor: pointer;"></div>
+              <div class="paint-color-swatch" data-color="#ff0055" style="width: 20px; height: 20px; background: #ff0055; border: 2px outset #ffffff; cursor: pointer;"></div>
+              <div class="paint-color-swatch" data-color="#ffd600" style="width: 20px; height: 20px; background: #ffd600; border: 2px outset #ffffff; cursor: pointer;"></div>
+              <div class="paint-color-swatch" data-color="#00ff66" style="width: 20px; height: 20px; background: #00ff66; border: 2px outset #ffffff; cursor: pointer;"></div>
+              <div class="paint-color-swatch" data-color="#ffffff" style="width: 20px; height: 20px; background: #ffffff; border: 2px outset #ffffff; cursor: pointer;"></div>
+              <div class="paint-color-swatch" data-color="#aa00ff" style="width: 20px; height: 20px; background: #aa00ff; border: 2px outset #ffffff; cursor: pointer;"></div>
+            </div>
+            <button id="btn-paint-clear" class="win98-start-btn" style="height: auto; padding: 2px 8px; font-size: 11px;">🧹 Xóa Canvas</button>
+          </div>
+
+          <!-- Nhập Khẩu Hiệu -->
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 12px; font-weight: bold; color: #000;">✍️ Nhập Chữ Khẩu Hiệu Xe:</label>
+            <input id="paint-slogan-input" type="text" value="THÁI BÌNH LỠ BƯỚC" style="padding: 6px; font-family: 'Space Grotesk', sans-serif; font-weight: 800; border: 2px inset #808080; background: #fff;" />
+          </div>
+
+          <!-- Mẫu Khẩu Hiệu Có Sẵn -->
+          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+            <button class="paint-preset-btn" data-text="THÁI BÌNH LỠ BƯỚC" style="font-size: 10px; padding: 3px 6px; background: #dfdfdf; border: 1px outset #fff; cursor: pointer;">🔥 Thái Bình Lỡ Bước</button>
+            <button class="paint-preset-btn" data-text="SÀI GÒN ĐÊM LẠNH" style="font-size: 10px; padding: 3px 6px; background: #dfdfdf; border: 1px outset #fff; cursor: pointer;">🌃 Sài Gòn Đêm Lạnh</button>
+            <button class="paint-preset-btn" data-text="NAM ĐỊNH QUÊ TÔI" style="font-size: 10px; padding: 3px 6px; background: #dfdfdf; border: 1px outset #fff; cursor: pointer;">🌾 Nam Định Quê Tôi</button>
+            <button class="paint-preset-btn" data-text="CYBERPUNK 17" style="font-size: 10px; padding: 3px 6px; background: #dfdfdf; border: 1px outset #fff; cursor: pointer;">⚡ Cyberpunk 17</button>
+          </div>
+
+          <!-- Nút Dán Lên Xe 3D -->
+          <button id="btn-paint-apply" class="win98-start-btn" style="height: 38px; font-weight: 900; background: linear-gradient(90deg, #000080, #1084d0); color: #ffffff; border: 2px outset #ffffff; cursor: pointer; font-size: 13px; margin-top: 4px;">
+            📌 DÁN KHẨU HIỆU LÊN XE 3D NGAY
+          </button>
         </div>
       </div>
 

@@ -329,6 +329,14 @@ export class SpeedTrailManager {
     });
   }
 
+  clear() {
+    this._hideAllParticles();
+  }
+
+  reset() {
+    this._hideAllParticles();
+  }
+
   dispose() {
     if (this.particleGroup) {
       this.scene.remove(this.particleGroup);

@@ -5140,11 +5140,17 @@ export class Shop3DScene {
             gallery: { title: '🖼️ Thư Viện Ảnh - Photo Showcase', name: 'Thư Viện Ảnh', icon: '🖼️', top: 20, left: 120 },
             diary: { title: '📖 Nhật Ký Phát Triển - Developer Log', name: 'Nhật Ký', icon: '📖', top: 50, left: 170 },
             video: { title: '🎬 Retro Media Player - Trailer Video', name: 'Xem Video', icon: '🎬', top: 80, left: 220 },
-            snake: { title: '🐍 Game Rắn Săn Mồi - Classic Retro Snake Game', name: 'Rắn Săn Mồi', icon: '🐍', top: 110, left: 270 }
+            snake: { title: '🐍 Game Rắn Săn Mồi - Classic Retro Snake Game', name: 'Rắn Săn Mồi', icon: '🐍', top: 110, left: 270 },
+            tetris: { title: '🧩 Xếp Hình 98 - Tetris Game', name: 'Xếp Hình 98', icon: '🧩', top: 140, left: 310 },
+            paint: { title: '🎨 Paint 98 - Độ Tem Xe & Khẩu Hiệu 3D', name: 'Paint 98', icon: '🎨', top: 160, left: 350 }
         };
 
         const meta = appMeta[appType];
         if (!meta) return;
+
+        if (typeof window.openWin98App === 'function') {
+            window.openWin98App(appType);
+        }
 
         // 1. Check or Create Taskbar Button
         let taskbarBtn = document.getElementById(`taskbar-app-btn-${appType}`);
@@ -6623,6 +6629,31 @@ export class Shop3DScene {
 
         // 📍 CẬP NHẬT REALTIME TỌA ĐỘ X, Y, Z TRÊN HUD GÓC PHẢI MÀN HÌNH
         this._updatePositionHUD();
+    }
+
+    updateCustomCarDecal(dataUrl) {
+        if (!dataUrl || !this.scene) return;
+        const loader = new THREE.TextureLoader();
+        loader.load(dataUrl, (texture) => {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            if (!this.shopDecalMesh) {
+                const geo = new THREE.PlaneGeometry(1.2, 0.3);
+                const mat = new THREE.MeshStandardMaterial({
+                    map: texture,
+                    transparent: true,
+                    roughness: 0.2,
+                    metalness: 0.1,
+                    side: THREE.DoubleSide
+                });
+                this.shopDecalMesh = new THREE.Mesh(geo, mat);
+                this.shopDecalMesh.position.set(0, 1.2, -4.5);
+                this.scene.add(this.shopDecalMesh);
+            } else {
+                if (this.shopDecalMesh.material.map) this.shopDecalMesh.material.map.dispose();
+                this.shopDecalMesh.material.map = texture;
+                this.shopDecalMesh.material.needsUpdate = true;
+            }
+        });
     }
 
     render() {

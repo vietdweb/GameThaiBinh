@@ -58,6 +58,12 @@ export class Player {
 
     // Cập nhật bounding box ban đầu
     this.updateBoundingBox();
+
+    // Nạp tem/khẩu hiệu độ xe custom nếu đã dán từ Paint 98
+    const savedDecal = localStorage.getItem('sgr_custom_car_decal');
+    if (savedDecal) {
+      this.updateCustomDecalTexture(savedDecal);
+    }
   }
 
   setSkin(skinId) {
@@ -947,6 +953,36 @@ export class Player {
 
     // 5. Cập nhật Hộp bao va chạm ở vị trí mới
     this.updateBoundingBox();
+  }
+
+  updateCustomDecalTexture(dataUrl) {
+    if (!dataUrl) return;
+
+    const loader = new THREE.TextureLoader();
+    loader.load(dataUrl, (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+
+      if (!this.decalBannerMesh) {
+        // Tạo Biển số / Tem xe custom 3D ở phía sau đuôi xe/nhân vật
+        const geo = new THREE.PlaneGeometry(1.0, 0.25);
+        const mat = new THREE.MeshStandardMaterial({
+          map: texture,
+          transparent: true,
+          roughness: 0.2,
+          metalness: 0.1,
+          side: THREE.DoubleSide
+        });
+        this.decalBannerMesh = new THREE.Mesh(geo, mat);
+        this.decalBannerMesh.position.set(0, 0.75, 0.85); // Phía sau xe/nhân vật
+        this.visualGroup.add(this.decalBannerMesh);
+      } else {
+        if (this.decalBannerMesh.material.map) {
+          this.decalBannerMesh.material.map.dispose();
+        }
+        this.decalBannerMesh.material.map = texture;
+        this.decalBannerMesh.material.needsUpdate = true;
+      }
+    });
   }
 
   dispose() {
