@@ -161,14 +161,15 @@ export class UIManager {
       overlay.id = 'profile-modal-overlay';
       overlay.className = 'profile-modal-overlay';
       overlay.innerHTML = `
-        <div class="profile-modal-card" id="profile-modal-card">
+        <div class="modal-backdrop-blur" id="profile-backdrop-blur"></div>
+        <div class="profile-modal-card" id="profile-modal-card" style="position: relative; z-index: 10000;">
           <!-- Header -->
           <div class="profile-modal-header">
             <div class="profile-modal-title-group">
               <div class="profile-modal-title"><span>👤</span> BẢNG THÔNG TIN NHÂN VẬT</div>
               <div class="profile-modal-subtitle">THÁI BÌNH RUSH • CYBERPUNK RUNNER</div>
             </div>
-            <button class="profile-modal-close" id="btn-close-profile-modal">&times;</button>
+            <button class="modal-close-btn profile-modal-close" id="btn-close-profile-modal" title="Đóng">✕</button>
           </div>
 
           <!-- Body 2 Cột -->
@@ -267,7 +268,7 @@ export class UIManager {
       if (confirmBtn) confirmBtn.onclick = () => this.closeProfileModal();
 
       overlay.onclick = (e) => {
-        if (e.target === overlay) this.closeProfileModal();
+        if (e.target === overlay || e.target.classList.contains('modal-backdrop-blur')) this.closeProfileModal();
       };
 
       // Gắn sự kiện Đổi Ảnh Đại Diện trong Modal

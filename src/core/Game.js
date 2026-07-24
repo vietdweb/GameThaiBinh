@@ -533,16 +533,16 @@ export class Game {
       }
     });
 
-    const btnCloseHistoryEl = this.domElements.btnCloseHistory || document.getElementById('btn-close-history');
-    if (btnCloseHistoryEl) {
-      btnCloseHistoryEl.addEventListener('click', () => this._setHistoryOpen(false));
-    }
-    const historyModalEl = this.domElements.historyModal || document.getElementById('history-modal');
-    if (historyModalEl) {
-      historyModalEl.querySelector('.history-backdrop')?.addEventListener('click', () => {
-        this._setHistoryOpen(false);
-      });
-    }
+    // --- 6. Unified Global Modal Close Delegation ---
+    document.addEventListener('click', (e) => {
+      const closeBtn = e.target.closest('.modal-close-btn, [id^="btn-close-"], .garage-close-btn, .profile-modal-close, .station-close-btn');
+      const backdrop = e.target.closest('.modal-backdrop-blur, .history-backdrop, .jukebox-backdrop');
+
+      if (closeBtn || (backdrop && e.target === backdrop)) {
+        e.stopPropagation();
+        this.closeAnyActiveModal(closeBtn || backdrop);
+      }
+    });
 
     // Nút Xóa Lịch Sử - Sử dụng Game Box Confirm tùy chỉnh
     const btnClearHistoryEl = this.domElements.btnClearHistory || document.getElementById('btn-clear-history');
@@ -792,6 +792,24 @@ export class Game {
   /**
    * Mở / đóng Match History Modal
    */
+  /**
+   * TÁI SỬ DỤNG DUY NHẤT 1 HÀM ĐÓNG MODAL TOÀN CỤC (UNIFIED REUSABLE MODAL CLOSER)
+   * Tự động đóng tất cả các loại Modal khi bấm nút X hoặc bấm ra nền mờ
+   */
+  closeAnyActiveModal(target) {
+    if (this.dailyQuestsManager) this.dailyQuestsManager.closeModal();
+    if (this.trophyHallManager) this.trophyHallManager.closeModal();
+    if (this.uiManager) this.uiManager.closeProfileModal();
+    this._setHistoryOpen(false);
+    this._setJukeboxOpen(false);
+    
+    const garageModal = document.getElementById('garage-modal');
+    if (garageModal) garageModal.classList.add('hidden');
+
+    const stationOverlay = document.getElementById('cyber-station-overlay');
+    if (stationOverlay) stationOverlay.classList.add('hidden');
+  }
+
   _setHistoryOpen(open) {
     const modal = this.domElements.historyModal || document.getElementById('history-modal');
     if (!modal) return;
