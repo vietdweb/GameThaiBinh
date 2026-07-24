@@ -1,11 +1,11 @@
-# Tài liệu Yêu cầu Sản phẩm (PRD) - Sài Gòn Rush
+# Tài liệu Yêu cầu Sản phẩm (PRD) - Thái Bình Rush
 
 ## 1. Tổng quan về Game
-**Sài Gòn Rush** là một trò chơi web 3D thuộc thể loại endless runner lấy bối cảnh đường phố Sài Gòn (Thành phố Hồ Chí Minh) nhộn nhịp và tràn đầy sức sống. Người chơi sẽ điều khiển nhân vật chạy qua các con phố đặc trưng, né tránh chướng ngại vật và phương tiện giao thông quen thuộc của Việt Nam, đồng thời thu thập những ly cà phê sữa đá truyền thống để ghi điểm và tăng tốc độ.
+**Thái Bình Rush** là một trò chơi web 3D thuộc thể loại endless runner lấy bối cảnh đường phố Thái Bình (Thành phố Hồ Chí Minh) nhộn nhịp và tràn đầy sức sống. Người chơi sẽ điều khiển nhân vật chạy qua các con phố đặc trưng, né tránh chướng ngại vật và phương tiện giao thông quen thuộc của Việt Nam, đồng thời thu thập những ly cà phê sữa đá truyền thống để ghi điểm và tăng tốc độ.
 
 ### Ý tưởng cốt lõi (Core Premise):
 *   **Thể loại:** 3D Endless Runner (tương tự như Subway Surfers / Temple Run).
-*   **Chủ đề:** Văn hóa đường phố Sài Gòn hiện đại.
+*   **Chủ đề:** Văn hóa đường phố Thái Bình hiện đại.
 *   **Phong cách nghệ thuật (Art Style):** Thiết kế Low-poly hoạt hình, màu sắc tươi sáng, rực rỡ mang lại cảm giác vui tươi, năng động.
 *   **Nền tảng:** Web (Trình duyệt trên Máy tính & Thiết bị di động).
 *   **Cơ chế cốt lõi:** Di chuyển trên 3 làn đường (lane switching), nhảy (jumping), trượt (sliding), thu thập vật phẩm và cơ chế tăng tốc độ theo từng mốc (tier-based) kết hợp trạng thái "Fever Mode".
@@ -46,10 +46,10 @@
 ## 3. Bản sắc Văn hóa Việt Nam & Tài nguyên 3D (Assets)
 
 ### 3.1 Hình ảnh & Môi trường
-Để tái hiện chân thực không khí Sài Gòn, môi trường game sẽ bao gồm:
+Để tái hiện chân thực không khí Thái Bình, môi trường game sẽ bao gồm:
 *   **Bối cảnh kiến trúc:** Các công trình biểu tượng (Nhà thờ Đức Bà, Chợ Bến Thành), đan xen với nhà ống đặc trưng, chung cư cũ, quán cà phê cóc với ghế nhựa vỉa hè.
 *   **Chi tiết đường phố:** Cột điện chằng chịt dây cáp, biển hiệu quảng cáo tiếng Việt rực rỡ, hàng quán vỉa hè.
-*   **Ánh sáng:** Tông màu hoàng hôn ấm áp (golden hour) hoặc phố đêm Sài Gòn rực rỡ ánh đèn neon.
+*   **Ánh sáng:** Tông màu hoàng hôn ấm áp (golden hour) hoặc phố đêm Thái Bình rực rỡ ánh đèn neon.
 
 ### 3.2 Nhân vật (Skins)
 *   **Anh shipper (Mặc định):** Trang phục áo khoác công nghệ màu xanh, chở thùng hàng phía sau lưng.
@@ -67,7 +67,7 @@
 ---
 
 ## 4. Giao diện Người dùng (UI/UX)
-*   **Màn hình chính (Start Screen):** Tiêu đề chữ nghệ thuật "Sài Gòn Rush", nút "Chơi ngay", khu vực chọn nhân vật và bảng xếp hạng điểm cao.
+*   **Màn hình chính (Start Screen):** Tiêu đề chữ nghệ thuật "Thái Bình Rush", nút "Chơi ngay", khu vực chọn nhân vật và bảng xếp hạng điểm cao.
 *   **HUD trong màn chơi:**
     *   Điểm hiện tại (Góc trên bên phải).
     *   Số ly cà phê đã thu thập (Góc trên bên trái, đi kèm icon ly cafe).

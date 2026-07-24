@@ -1,6 +1,6 @@
-# Kế hoạch Phát triển chi tiết - Sài Gòn Rush
+# Kế hoạch Phát triển chi tiết - Thái Bình Rush
 
-Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước cho dự án game **Sài Gòn Rush**. Kế hoạch được chia thành 6 giai đoạn (Phases) tuần tự, từ khâu thiết lập ban đầu cho đến khi hoàn thiện sản phẩm sẵn sàng ra mắt, đi kèm checklist công việc cụ thể cho lập trình viên.
+Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước cho dự án game **Thái Bình Rush**. Kế hoạch được chia thành 6 giai đoạn (Phases) tuần tự, từ khâu thiết lập ban đầu cho đến khi hoàn thiện sản phẩm sẵn sàng ra mắt, đi kèm checklist công việc cụ thể cho lập trình viên.
 
 ---
 
@@ -80,7 +80,7 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
 ---
 
 ## Phase 4: Tích hợp Tài nguyên Đồ họa Low-Poly
-**Mục tiêu:** Import các mô hình 3D thực tế và gán hoạt ảnh (animations) để tạo không khí đường phố Sài Gòn sinh động.
+**Mục tiêu:** Import các mô hình 3D thực tế và gán hoạt ảnh (animations) để tạo không khí đường phố Thái Bình sinh động.
 
 ### Checklist công việc chi tiết
 - [x] **Task 4.1: Hệ thống Quản lý Tải Tài nguyên & Pipeline Model 3D (Asset Loader)**
@@ -94,7 +94,7 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
 - [x] **Task 4.3: Tích hợp & Gán hoạt ảnh cho Nhân vật**
   - [x] Nạp mô hình nhân vật GLB đã load vào lớp `Player.js` thay thế cho hình hộp tạm thời của Phase 2 (có fallback procedural).
   - [x] Khởi tạo AssetManager với GLTFLoader hỗ trợ tải GLTF/GLB async.
-- [x] **Task 4.4: Trang trí Cảnh quan Đường phố Sài Gòn**
+- [x] **Task 4.4: Trang trí Cảnh quan Đường phố Thái Bình**
   - [x] Đặt ngẫu nhiên các mô hình nhà ống cổ kính, cột đèn đường lên lề đường hai bên của từng đoạn đường tile chạy vô tận.
   - [x] Nạp và rải 100% mô hình Cây Phong 3D GLB thực tế (`maple_tree.glb`) hai bên vỉa hè (`X = ±6.2m`), tự động căn chỉnh tỷ lệ 4.2m thoáng mát tầm nhìn camera và tối ưu 60 FPS.
 
@@ -177,14 +177,14 @@ Tài liệu này vạch ra lộ trình phát triển chi tiết từng bước c
 
 ---
 
-## Phase 9: Khôi Phục Nhân Vật Sau Boost & Ổ Bánh Mì Sài Gòn X2 3D Chân Thực
-**Mục tiêu:** Khôi phục 100% trang phục/mô hình mặc định của người chơi sau khi hết thời gian tăng tốc và thiết kế lại vật phẩm X2 thành Mô hình 3D Ổ Bánh Mì Sài Gòn chân thực.
+## Phase 9: Khôi Phục Nhân Vật Sau Boost & Ổ Bánh Mì Thái Bình X2 3D Chân Thực
+**Mục tiêu:** Khôi phục 100% trang phục/mô hình mặc định của người chơi sau khi hết thời gian tăng tốc và thiết kế lại vật phẩm X2 thành Mô hình 3D Ổ Bánh Mì Thái Bình chân thực.
 
 ### Checklist công việc chi tiết
 - [x] **Task 9.1: Khôi Phục Trang Phục & Màu Sắc Nhân Vật (`restoreOriginalSkin`)**
   - [x] Tự động lưu `originalColor`, `originalEmissive`, `originalScale` trên từng Mesh khi khởi tạo Skin trong `Player.js`.
   - [x] Viết hàm `restoreOriginalSkin()` trả lại màu sắc và trang phục ban đầu cho người chơi ngay khi hết 8 giây Boost / Fever Mode.
-- [x] **Task 9.2: Mô Hình 3D Ổ Bánh Mì Sài Gòn X2 Chân Thực (`createDoubleScoreItem`)**
+- [x] **Task 9.2: Mô Hình 3D Ổ Bánh Mì Thái Bình X2 Chân Thực (`createDoubleScoreItem`)**
   - [x] Vỏ bánh mì 3D nướng vàng ươm (`0xffa726`) với 3 rãnh rạch bánh mì giòn rụm.
   - [x] Nhân bánh 3D đầy đặn: giò lụa hồng nhạt (`0xf48fb1`), thịt nguội đỏ (`0xef5350`), dưa leo & hành ngò xanh tươi (`0x66bb6a`), lát ớt đỏ rực tươi giòn (`0xff1744`).
   - [x] Huy hiệu "X2" hồng/tím neon (`0xff00ff`, `emissiveIntensity: 0.85`) lơ lửng xoay 360° phía trên.

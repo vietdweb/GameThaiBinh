@@ -1,7 +1,7 @@
-# Walkthrough - Sài Gòn Rush: Hoàn thành Phase 1 đến Phase 6
+# Walkthrough - Thái Bình Rush: Hoàn thành Phase 1 đến Phase 6
 
 ## Tổng quan
-Game **Sài Gòn Rush** đã được implement đầy đủ từ Phase 1 đến Phase 6. Dưới đây là tóm tắt tất cả các thay đổi.
+Game **Thái Bình Rush** đã được implement đầy đủ từ Phase 1 đến Phase 6. Dưới đây là tóm tắt tất cả các thay đổi.
 
 ---
 

@@ -132,7 +132,7 @@ export class WeatherManager {
 
     this._updateDayNightCycle(normTime, dt);
 
-    // 2. Cập nhật Cơn Mưa Rào Sài Gòn (Mưa ngẫu nhiên)
+    // 2. Cập nhật Cơn Mưa Rào Thái Bình (Mưa ngẫu nhiên)
     this._updateRainstormSystem(dt, playerPosition, camera);
 
     // 3. Cập nhật Độ Ướt Mặt Đường PBR & Đèn Đường
@@ -216,7 +216,7 @@ export class WeatherManager {
   }
 
   /**
-   * Quản lý Cơn Mưa Rào Sài Gòn & Hạt Mưa 3D
+   * Quản lý Cơn Mưa Rào Thái Bình & Hạt Mưa 3D
    */
   _updateRainstormSystem(dt, playerPosition, camera) {
     // Ngẫu nhiên kích hoạt mưa rào rầm rộ
@@ -226,7 +226,7 @@ export class WeatherManager {
         this.isRaining = true;
         this.rainDurationLeft = WEATHER_CONFIG.RAIN_DURATION_SECONDS;
         if (this.game._showStreamToast) {
-          this.game._showStreamToast('🌧️ Cơn Mưa Rào Sài Gòn ập đến! Đường sũng nước!');
+          this.game._showStreamToast('🌧️ Cơn Mưa Rào Thái Bình ập đến! Đường sũng nước!');
         }
       }
     } else {
@@ -276,7 +276,7 @@ export class WeatherManager {
 
     // Cập nhật Badge HUD khi đang mưa
     if (this.badgeEl && this.isRaining) {
-      this.badgeEl.innerHTML = `<span style="color: #60a5fa;">🌧️ MƯA RÀO SÀI GÒN</span>`;
+      this.badgeEl.innerHTML = `<span style="color: #60a5fa;">🌧️ MƯA RÀO Thái Bình</span>`;
     }
   }
 

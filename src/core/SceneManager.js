@@ -29,7 +29,7 @@ export class SceneManager {
 
     // Thêm sương mù (fog) nhẹ để che giấu điểm kết thúc đường chạy ở phía xa
     this.scene.fog = new THREE.FogExp2(0x1a1a24, 0.015);
-    this.scene.background = new THREE.Color(0x1a1a24); // Phông nền tối huyền ảo đêm Sài Gòn
+    this.scene.background = new THREE.Color(0x1a1a24); // Phông nền tối huyền ảo đêm Thái Bình
 
     // 2. Khởi tạo Camera
     const aspect = window.innerWidth / window.innerHeight;

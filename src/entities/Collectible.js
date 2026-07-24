@@ -399,11 +399,11 @@ export class Collectible {
       // dz < 0 nghĩa là vật phẩm ở PHÍA TRƯỚC (âm Z là phía trước camera)
       // Chỉ hút khi vật phẩm ở trong khoảng 12m phía trước người chơi
       const aheadDist = -dz; // khoảng cách theo chiều di chuyển (dương = vật phẩm đang đến gần)
-      
+
       if (aheadDist > -2 && aheadDist < 12) {
         // Tỉ lệ hút: càng gần 0 thì hút càng mạnh (đường cong tự nhiên)
         const attractRatio = Math.max(0, 1.0 - aheadDist / 12.0); // 0 khi xa, 1 khi đến nơi
-        
+
         // Kéo X về đúng làn của người chơi (lerp theo tỉ lệ khoảng cách)
         const lerpX = Math.min(1.0, deltaTime * 10 * attractRatio);
         const lerpY = Math.min(1.0, deltaTime * 8 * attractRatio);
@@ -474,8 +474,8 @@ export class Collectible {
 }
 
 /**
- * Tạo Mô hình 3D Ổ Bánh Mì Sài Gòn X2 Chân Thực (Item Double Score)
- * - Vỏ bánh mì 3D nướng giòn vàng ươm với 3 rãnh rạch bánh mì Sài Gòn truyền thống
+ * Tạo Mô hình 3D Ổ Bánh Mì Thái Bình X2 Chân Thực (Item Double Score)
+ * - Vỏ bánh mì 3D nướng giòn vàng ươm với 3 rãnh rạch bánh mì Thái Bình truyền thống
  * - Nhân bánh mì đầy đặn: giò lụa hồng nhạt, thịt nguội đỏ tươi, dưa leo & ngò xanh tươi, lát ớt đỏ rực
  * - Huy hiệu chữ "X2" 3D màu hồng/tím neon rực rỡ lơ lửng phát sáng phía trên
  * - Hào quang lấp lánh mờ ấm áp (opacity 0.25, AdditiveBlending)
@@ -485,7 +485,7 @@ export function createDoubleScoreItem() {
   const group = new THREE.Group();
   const breadGroup = new THREE.Group();
 
-  // 1. Vỏ Bánh Mì Sài Gòn Nóng Giòn Vàng Ươm 3D (Golden Crisp Bánh Mì Crust)
+  // 1. Vỏ Bánh Mì Thái Bình Nóng Giòn Vàng Ươm 3D (Golden Crisp Bánh Mì Crust)
   const crustGeo = new THREE.CylinderGeometry(0.18, 0.22, 0.78, 16);
   const crustMat = new THREE.MeshStandardMaterial({
     color: 0xffa726,       // Vàng ươm bánh mì nướng giòn
@@ -508,7 +508,7 @@ export function createDoubleScoreItem() {
   tipR.position.x = 0.36;
   breadGroup.add(tipR);
 
-  // 3 Đường rạch rãnh bánh mì truyền thống Sài Gòn (Score slits)
+  // 3 Đường rạch rãnh bánh mì truyền thống Thái Bình (Score slits)
   const slitMat = new THREE.MeshStandardMaterial({
     color: 0xfff8e1,
     emissive: 0xffe082,

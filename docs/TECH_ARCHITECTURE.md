@@ -1,6 +1,6 @@
-# Tài liệu Kiến trúc Kỹ thuật - Sài Gòn Rush
+# Tài liệu Kiến trúc Kỹ thuật - Thái Bình Rush
 
-Tài liệu này trình bày chi tiết về thiết kế kỹ thuật, cấu trúc thư mục và các cơ chế lập trình cốt lõi của trò chơi 3D Web **Sài Gòn Rush**.
+Tài liệu này trình bày chi tiết về thiết kế kỹ thuật, cấu trúc thư mục và các cơ chế lập trình cốt lõi của trò chơi 3D Web **Thái Bình Rush**.
 
 ---
 

@@ -121,16 +121,16 @@ export class Environment {
     sidewalkRight.position.set(6.5, sidewalkHeight / 2, -this.segmentLength / 2);
     segment.add(sidewalkRight);
 
-    // 4. Các tòa nhà phố Sài Gòn chân thực (Nhà ống, ban công, mái hiên & biển hiệu)
+    // 4. Các tòa nhà phố Thái Bình chân thực (Nhà ống, ban công, mái hiên & biển hiệu)
     this.buildBuildingsForSegment(segment);
 
     // 5. Cột đèn đường chiếu sáng (Streetlamps)
     this.buildStreetlampsForSegment(segment);
 
-    // 6. Hàng cây xanh vỉa hè rậm rạp phong cách Sài Gòn (Street Trees)
+    // 6. Hàng cây xanh vỉa hè rậm rạp phong cách Thái Bình (Street Trees)
     this.buildTreesForSegment(segment);
 
-    // 7. Người dân Sài Gòn ngồi cà phê vỉa hè ghế nhựa, hút thuốc & tán chuyện (Sidewalk Pedestrians)
+    // 7. Người dân Thái Bình ngồi cà phê vỉa hè ghế nhựa, hút thuốc & tán chuyện (Sidewalk Pedestrians)
     this.buildPedestriansForSegment(segment);
 
     return segment;
@@ -203,7 +203,7 @@ export class Environment {
     ctx.lineWidth = 8;
     ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
 
-    // Chữ thương hiệu Sài Gòn in hoa phát sáng LED
+    // Chữ thương hiệu Thái Bình in hoa phát sáng LED
     ctx.fillStyle = textColor;
     ctx.font = 'bold 38px "Segoe UI", Arial, sans-serif';
     ctx.textAlign = 'center';
@@ -249,7 +249,7 @@ export class Environment {
     awning.rotation.z = isRightSide ? 0.2 : -0.2;
     group.add(awning);
 
-    // 4. Biển hiệu cửa hàng mặt tiền có chữ thương hiệu Sài Gòn (Storefront Signboard)
+    // 4. Biển hiệu cửa hàng mặt tiền có chữ thương hiệu Thái Bình (Storefront Signboard)
     if (brandInfo) {
       const signTex = this._createBuildingTextTexture(brandInfo.text, brandInfo.bg, brandInfo.textCol);
       const signMat = new THREE.MeshBasicMaterial({ map: signTex, side: THREE.DoubleSide });
@@ -387,9 +387,9 @@ export class Environment {
     // Luân phiên ngẫu nhiên giữa Cây Phong (Maple) và Cây Thông (Pine) đan xen 2 bên đường phố
     segment.treeConfigs = [
       { type: 'maple', localX: -5.2, localZ: -10, scale: 0.9 + Math.random() * 0.15, rotY: Math.random() * Math.PI * 2 },
-      { type: 'pine',  localX: 5.2,  localZ: -10, scale: 0.9 + Math.random() * 0.15, rotY: Math.random() * Math.PI * 2 },
-      { type: 'pine',  localX: -5.2, localZ: -28, scale: 0.9 + Math.random() * 0.15, rotY: Math.random() * Math.PI * 2 },
-      { type: 'maple', localX: 5.2,  localZ: -28, scale: 0.9 + Math.random() * 0.15, rotY: Math.random() * Math.PI * 2 }
+      { type: 'pine', localX: 5.2, localZ: -10, scale: 0.9 + Math.random() * 0.15, rotY: Math.random() * Math.PI * 2 },
+      { type: 'pine', localX: -5.2, localZ: -28, scale: 0.9 + Math.random() * 0.15, rotY: Math.random() * Math.PI * 2 },
+      { type: 'maple', localX: 5.2, localZ: -28, scale: 0.9 + Math.random() * 0.15, rotY: Math.random() * Math.PI * 2 }
     ];
   }
 
