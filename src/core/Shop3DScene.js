@@ -3027,17 +3027,31 @@ export class Shop3DScene {
 
     _loadBabyGokuModel() {
         const md2Char = new MD2Character();
-        md2Char.scale = 0.06;
+        md2Char.scale = 0.06; // Tự chỉnh độ to nhỏ theo ý muốn
 
+        // 🔫 CẤU HÌNH VŨ KHÍ CHO MD2
         const config = {
             baseUrl: '/models/md2/ratamahatta/',
             body: 'ratamahatta.md2',
             skins: ['ratamahatta.png'],
-            weapons: []
+            weapons: [
+                ['w_bfg.md2', 'w_bfg.png'] // Thêm khẩu súng khủng BFG vào tay nhân vật
+            ]
         };
 
         md2Char.onLoadComplete = () => {
+            md2Char.setAnimation('stand');
+
+            // 🛡️ GỌI LỆNH TRANG BỊ VŨ KHÍ ĐẦU TIÊN (Index 0)
+            try {
+                md2Char.setWeapon(0);
+            } catch (e) {
+                console.warn('Không thể trang bị vũ khí:', e);
+            }
+
+            // Tự chỉnh chiều cao trục Y để tránh lún chân xuống đất
             md2Char.root.position.y = 1.4;
+
             this.babyGokuMd2Root = md2Char.root;
             this.md2CharacterInstance = md2Char;
         };
@@ -6257,25 +6271,44 @@ export class Shop3DScene {
                 while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
 
                 this.playerMesh.rotation.y += angleDiff * Math.min(1.0, deltaTime * 14.0);
+            }
 
-                // 🎯 PHÂN TÁCH: NẾU ĐANG DÙNG SKIN BABY GOKU (MD2) THÌ CHẠY ANIMATION MD2
-                if (this.selectedCharacterSkin === 'baby_goku' && this.md2CharacterInstance) {
-                    try {
+            // 🎯 PHÂN TÁCH XỬ LÝ ANIMATION: BABY GOKU (MD2) VÀ CÁC SKIN KHÁC
+            if (this.selectedCharacterSkin === 'baby_goku' && this.md2CharacterInstance) {
+                try {
+                    // Nếu đang trên không trung -> Chạy animation jump
+                    if (!this.isGrounded) {
+                        if (this.currentMd2Anim !== 'jump') {
+                            this.md2CharacterInstance.setAnimation('jump');
+                            this.currentMd2Anim = 'jump';
+                        }
+                    }
+                    // Nếu đang di chuyển trên mặt đất -> Chạy animation run
+                    else if (moveVector.lengthSq() > 0) {
                         if (this.currentMd2Anim !== 'run') {
                             this.md2CharacterInstance.setAnimation('run');
                             this.currentMd2Anim = 'run';
                         }
-                    } catch (e) { }
-                } else {
-                    // 🎬 CÁC SKIN CYBER / SHADOW KHÁC DÙNG MIXER HOẶC PROCEDURAL SWAY
+                    }
+                    // Nếu đứng yên trên mặt đất -> Chạy animation stand
+                    else {
+                        if (this.currentMd2Anim !== 'stand') {
+                            this.md2CharacterInstance.setAnimation('stand');
+                            this.currentMd2Anim = 'stand';
+                        }
+                    }
+                } catch (e) { }
+
+                // Cập nhật khung hình cho MD2
+                this.md2CharacterInstance.update(deltaTime);
+            } else {
+                // 🎬 XỬ LÝ CHO CÁC SKIN KHÁC (CYBER / SHADOW)
+                if (moveVector.lengthSq() > 0) {
                     if (this.playerMixer) {
                         this.playerMixer.update(deltaTime);
                     }
-                }
 
-                // Hoạt ảnh bước đi Procedural cho các skin thường
-                this.playerWalkTimer += deltaTime * 13.5;
-                if (this.selectedCharacterSkin !== 'baby_goku') {
+                    this.playerWalkTimer += deltaTime * 13.5;
                     if (this.leftLegGroup && this.rightLegGroup) {
                         this.leftLegGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.55;
                         this.rightLegGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.55;
@@ -6284,19 +6317,7 @@ export class Shop3DScene {
                         this.leftArmGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.78;
                         this.rightArmGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.78;
                     }
-                }
-            } else {
-                // 🧍 KHI ĐỨNG YÊN
-                if (this.selectedCharacterSkin === 'baby_goku' && this.md2CharacterInstance) {
-                    try {
-                        if (this.currentMd2Anim !== 'stand') {
-                            this.md2CharacterInstance.setAnimation('stand');
-                            this.currentMd2Anim = 'stand';
-                        }
-                    } catch (e) { }
-                }
-
-                if (this.selectedCharacterSkin !== 'baby_goku') {
+                } else {
                     if (this.leftLegGroup && this.rightLegGroup) {
                         this.leftLegGroup.rotation.x = THREE.MathUtils.lerp(this.leftLegGroup.rotation.x, 0, deltaTime * 10.0);
                         this.rightLegGroup.rotation.x = THREE.MathUtils.lerp(this.rightLegGroup.rotation.x, 0, deltaTime * 10.0);
@@ -6308,15 +6329,17 @@ export class Shop3DScene {
                 }
             }
 
-            // 🔄 CẬP NHẬT TICK CHO MD2 NẾU ĐANG CHỌN BABY GOKU
-            if (this.selectedCharacterSkin === 'baby_goku' && this.md2CharacterInstance) {
-                this.md2CharacterInstance.update(deltaTime);
-            }
-
-            // Space Jump
+            // 🦘 SPACE JUMP (BẤM PHÍM SPACE ĐỂ NHẢY)
             if (this.activeKeys.has('Space') && this.isGrounded) {
                 this.velocityY = this.jumpForce;
                 this.isGrounded = false;
+
+                if (this.selectedCharacterSkin === 'baby_goku' && this.md2CharacterInstance) {
+                    try {
+                        this.md2CharacterInstance.setAnimation('jump');
+                        this.currentMd2Anim = 'jump';
+                    } catch (e) { }
+                }
             }
 
             const targetGroundY = this._calculateGroundY(this.playerPos.x, this.playerPos.z);
@@ -6332,13 +6355,30 @@ export class Shop3DScene {
                     this.playerPos.y = this.groundY;
                     this.velocityY = 0;
                     this.isGrounded = true;
+
+                    // Khi vừa đáp đất, tự động trả về animation chạy hoặc đứng
+                    if (this.selectedCharacterSkin === 'baby_goku' && this.md2CharacterInstance) {
+                        try {
+                            const landAnim = moveVector.lengthSq() > 0 ? 'run' : 'stand';
+                            this.md2CharacterInstance.setAnimation(landAnim);
+                            this.currentMd2Anim = landAnim;
+                        } catch (e) { }
+                    }
                 }
             }
 
             const adjustedPlayerPos = this.playerPos.clone();
+
             if (this.selectedCharacterSkin === 'baby_goku') {
-                adjustedPlayerPos.y += 1.4; // Đẩy cao MD2 lên tránh lún đất
+                if (this.isGrounded) {
+                    // Khi đứng trên mặt đất: Đẩy cao lên +1.4m để khớp bệ chân, không bị lún
+                    adjustedPlayerPos.y += 1.4;
+                } else {
+                    // Khi đang nhảy / bay trên không: Chỉ bù một chút offset nhỏ hoặc giữ nguyên để khớp với quỹ đạo nhảy
+                    adjustedPlayerPos.y -= 0.1;
+                }
             }
+
             this.playerMesh.position.copy(adjustedPlayerPos);
         }
 
