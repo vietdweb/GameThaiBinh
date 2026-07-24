@@ -25,6 +25,42 @@
   <!-- Lop phu do nhoe chuyen dong khi tang toc (Motion Blur Overlay) -->
   <div id="speed-motion-blur" class="speed-motion-blur"></div>
 
+  <!-- 🌀 Hiệu ứng Chớp Flash Dịch Chuyển Không Gian (0.5s) -->
+  <div id="teleport-flash-overlay" class="teleport-flash-overlay"></div>
+
+  <!-- 🌀 Prompt UI Cổng Dịch Chuyển Hologram tại Cung Điện -->
+  <div id="portal-teleport-prompt" class="portal-teleport-prompt">
+    <div class="portal-prompt-content">
+      <span class="portal-prompt-key">E</span>
+      <span class="portal-prompt-text">Bước vào Cổng Dịch Chuyển Không Gian</span>
+    </div>
+  </div>
+
+  <!-- ⚔️ Roguelike Arena Combat HUD Overlay -->
+  <div id="roguelike-hud" class="roguelike-hud">
+    <!-- Crosshair Tâm Ngắm Động -->
+    <div class="roguelike-crosshair"></div>
+
+    <!-- Floating Damage Numbers Container -->
+    <div id="floating-damage-container"></div>
+
+    <!-- Wave Counter & Mission Banner -->
+    <div id="roguelike-wave-info" class="roguelike-wave-info">WAVE 1/5 - QUÁI CÒN LẠI: 0</div>
+    <div id="roguelike-wave-banner" class="roguelike-wave-banner">WAVE 1 / 5</div>
+
+    <!-- Player HP & Shield Bar (Bottom Center) -->
+    <div class="roguelike-vitals">
+      <div class="vital-bar-wrap shield-wrap">
+        <span class="vital-label">KHIÊN NEON</span>
+        <div class="vital-track"><div id="roguelike-shield-fill" class="vital-fill shield-fill"></div></div>
+      </div>
+      <div class="vital-bar-wrap hp-wrap">
+        <span class="vital-label">MÁU SINH MỆNH</span>
+        <div class="vital-track"><div id="roguelike-hp-fill" class="vital-fill hp-fill"></div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ============================================================ -->
   <!-- TOP BAR CURRENCY HUD - Thanh Quản lý Tài Nguyên Mobile AAA -->
   <!-- ============================================================ -->
@@ -220,7 +256,7 @@
               <span class="sub-btn-icon">🗺️</span>
             </div>
             <div class="sub-btn-content">
-              <span class="sub-btn-title">CHỌN BẢN ĐỒ 3D</span>
+              <span class="sub-btn-title">CHỌN MAP</span>
               <span class="sub-btn-desc">Đường Phố & Thời Tiết Động</span>
             </div>
           </button>
@@ -1363,7 +1399,7 @@ Ghi chú: Nhấn phím ESC (hoặc nút góc trên) bất cứ lúc nào để �
   </div>
 
   <!-- ============================================================ -->
-  <!-- MODAL BẢNG CHỌN BẢN ĐỒ THI ĐẤU 3D (MAP SELECTOR MODAL)       -->
+  <!-- MODAL BẢNG CHỌN MAP 3D (MAP SELECTOR MODAL)       -->
   <!-- ============================================================ -->
   <div id="map-select-modal"
     style="position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif;">
@@ -1378,7 +1414,7 @@ Ghi chú: Nhấn phím ESC (hoặc nút góc trên) bất cứ lúc nào để �
         <div
           style="font-weight: 900; font-size: 17px; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 12px rgba(0, 245, 212, 0.5);">
           <span>🗺️</span>
-          <span>CHỌN BẢN ĐỒ THI ĐẤU 3D</span>
+          <span>CHỌN MAP 3D</span>
         </div>
       </div>
 

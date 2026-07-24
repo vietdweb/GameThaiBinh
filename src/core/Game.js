@@ -5,6 +5,7 @@ import { City3DScene } from './City3DScene.js';
 import { CityManager } from '../managers/CityManager.js';
 import { ComputerOfficeScene } from './ComputerOfficeScene.js';
 import { ComputerOfficeManager } from '../managers/ComputerOfficeManager.js';
+import { RoguelikeArenaScene } from './RoguelikeArenaScene.js';
 import { SceneManager } from './SceneManager.js';
 import { StateMachine } from '../managers/StateMachine.js';
 import { CollisionManager } from '../managers/CollisionManager.js';
@@ -206,6 +207,7 @@ export class Game {
     this.cityManager = new CityManager(this, this.city3DScene);
     this.computerOfficeScene = new ComputerOfficeScene(this.sceneManager.renderer, this);
     this.officeManager = new ComputerOfficeManager(this, this.computerOfficeScene);
+    this.roguelikeArenaScene = new RoguelikeArenaScene(this.sceneManager.renderer, this);
     this.dailyQuestsManager = new DailyQuestsManager(this);
     this.dailyQuestsManager.init();
     this.trophyHallManager = new TrophyHallManager(this);
@@ -326,6 +328,24 @@ export class Game {
       this.feverTimer = GAME_CONFIG.FEVER_DURATION;
       this.audioManager?.startFeverBGM?.();
       this._setAudioPanelVisible(false);
+    });
+
+    // Khi vào ROGUELIKE_ARENA
+    sm.onEnter(GAME_STATES.ROGUELIKE_ARENA, () => {
+      this._showScreen('none');
+      const hudEl = document.getElementById('roguelike-hud');
+      if (hudEl) hudEl.classList.add('active');
+
+      if (this.roguelikeArenaScene) {
+        this.roguelikeArenaScene.startArena();
+      }
+
+      this._setAudioPanelVisible(false);
+    });
+
+    sm.onExit(GAME_STATES.ROGUELIKE_ARENA, () => {
+      const hudEl = document.getElementById('roguelike-hud');
+      if (hudEl) hudEl.classList.remove('active');
     });
 
     // Khi vào GAMEOVER
@@ -1798,6 +1818,13 @@ export class Game {
       return;
     }
 
+    if (this.stateMachine.is(GAME_STATES.ROGUELIKE_ARENA)) {
+      if (this.roguelikeArenaScene && this.roguelikeArenaScene.isActive) {
+        this.roguelikeArenaScene.update(deltaTime);
+      }
+      return;
+    }
+
     if (this.stateMachine.is(GAME_STATES.VIEWER)) {
       if (this.characterViewerManager) {
         this.characterViewerManager.update();
@@ -2286,6 +2313,22 @@ export class Game {
 
 
 
+  triggerTeleportToRoguelike() {
+    const flashEl = document.getElementById('teleport-flash-overlay');
+    if (flashEl) flashEl.classList.add('active');
+
+    setTimeout(() => {
+      if (this.shop3DScene) {
+        this.shop3DScene.closeShowroom();
+      }
+      this.stateMachine.transition(GAME_STATES.ROGUELIKE_ARENA);
+    }, 250);
+
+    setTimeout(() => {
+      if (flashEl) flashEl.classList.remove('active');
+    }, 500);
+  }
+
   _render() {
     if (this.computerOfficeScene && this.computerOfficeScene.isActive) {
       this.computerOfficeScene.render();
@@ -2294,6 +2337,11 @@ export class Game {
 
     if (this.city3DScene && this.city3DScene.isActive) {
       this.city3DScene.render();
+      return;
+    }
+
+    if (this.roguelikeArenaScene && this.roguelikeArenaScene.isActive) {
+      this.roguelikeArenaScene.render();
       return;
     }
 

@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { CAR_MODELS } from '../managers/ShopManager.js';
 import { MobileControls } from '../utils/mobile.js'; // 📱 MOBILE CONTROLS: Import bộ điều khiển di động
+import { HolographicPortal } from '../entities/HolographicPortal.js';
 
 export class Shop3DScene {
     constructor(renderer, game) {
@@ -121,6 +122,7 @@ export class Shop3DScene {
         this._initInteractiveSignpost();
         this._setupSignpostRaycaster();
         this._initGreekMarblePalace(); // Cung Điện Cột Đá Trắng Thiết Kế Nâng Cấp Tuyệt Đẹp z = 30
+        this._initHolographicPortal(); // 🌀 CỔNG DỊCH CHUYỂN HOLOGRAPHIC PORTAL 3D TRỤ ĐỨNG z = 24
         this._initSougenGardenAndFloatingText(); // Vườn Sougen & Chữ "Viet Anh Nguyen" Sau Nhà z = -34
         this._initSakuraAndCoastalTrees();
         this._initGiantBoulders();
@@ -6635,8 +6637,35 @@ export class Shop3DScene {
             this.game.trophyHallManager.update(0.016);
         }
 
+        // 🌀 CẬP NHẬT REALTIME CỔNG DỊCH CHUYỂN HOLOGRAPHIC PORTAL 3D AT PALACE
+        if (this.holographicPortal) {
+            const isNear = this.holographicPortal.update(deltaTime, this.playerPos);
+            const promptEl = document.getElementById('portal-teleport-prompt');
+            if (promptEl) {
+                if (isNear) {
+                    promptEl.classList.add('show');
+                } else {
+                    promptEl.classList.remove('show');
+                }
+            }
+
+            if (isNear && this.activeKeys.has('KeyE')) {
+                this.holographicPortal.triggerTeleport();
+            }
+        }
+
         // 📍 CẬP NHẬT REALTIME TỌA ĐỘ X, Y, Z TRÊN HUD GÓC PHẢI MÀN HÌNH
         this._updatePositionHUD();
+    }
+
+    _initHolographicPortal() {
+        this.holographicPortal = new HolographicPortal(
+            this.scene,
+            new THREE.Vector3(0, 0, 24),
+            () => {
+                this.game?.triggerTeleportToRoguelike?.();
+            }
+        );
     }
 
     updateCustomCarDecal(dataUrl) {
