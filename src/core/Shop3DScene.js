@@ -2993,37 +2993,23 @@ export class Shop3DScene {
         if (!hud) {
             hud = document.createElement('div');
             hud.id = 'nimbus-hud-prompt';
-            hud.style.cssText = `
-                position: fixed;
-                bottom: 24px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(15, 23, 42, 0.92);
-                backdrop-filter: blur(12px);
-                border: 1.5px solid rgba(255, 215, 0, 0.85);
-                border-radius: 16px;
-                padding: 12px 24px;
-                color: #ffffff;
-                font-family: 'Outfit', sans-serif;
-                font-size: 15px;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                box-shadow: 0 10px 30px rgba(255, 215, 0, 0.35);
-                z-index: 1000;
-                pointer-events: auto !important;
-                transition: all 0.3s ease;
-            `;
+            hud.className = 'dbz-hud-container';
             document.body.appendChild(hud);
         }
 
         if (show) {
             hud.innerHTML = `
-                <span style="font-size: 24px;">☁️</span>
-                <div>
-                    <div style="color: #ffd700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Đang Cưỡi: Cân Đẩu Vân Hoàng Kim</div>
-                    <div style="font-size: 14px; color: #e2e8f0;">[WASD] Bay Lượn 360° &nbsp;|&nbsp; <b style="color: #ffd700;">[E]</b> Bay Lên ⬆️ &nbsp;|&nbsp; <b style="color: #00f5ff;">[C]</b> Bay Xuống ⬇️ &nbsp;|&nbsp; <b style="color: #ff3366;">[F]</b> Xuống Mây</div>
+                <div class="dbz-hud-row">
+                    <span class="dbz-key-badge">E</span>
+                    <span class="dbz-action-text">Bay Lên</span>
+                </div>
+                <div class="dbz-hud-row">
+                    <span class="dbz-key-badge">C</span>
+                    <span class="dbz-action-text">Bay Xuống</span>
+                </div>
+                <div class="dbz-hud-row">
+                    <span class="dbz-key-badge">F</span>
+                    <span class="dbz-action-text">Xuống Mây</span>
                 </div>
             `;
             hud.style.display = 'flex';
@@ -3604,11 +3590,9 @@ export class Shop3DScene {
                 const exhibitionDoorPos = new THREE.Vector3(37.0, this._calculateGroundY(37.0, 0), 0.0);
                 const distExhibitionDoor = this.playerPos.distanceTo(exhibitionDoorPos);
 
-                // 🏆 [F] hoặc [R]: Mở / Đóng cửa nhà Triển Lãm Goku 3D
-                if ((code === 'KeyF' || code === 'KeyR' || code === 'KeyE') && distExhibitionDoor < 4.5 && !this.isDrivingVehicle && !this.isRidingNimbus) {
+                // 🏆 [F]: Mở / Đóng cửa nhà Triển Lãm Goku 3D
+                if ((code === 'KeyF') && distExhibitionDoor < 4.5 && !this.isDrivingVehicle && !this.isRidingNimbus) {
                     this.isExhibitionDoorOpen = !this.isExhibitionDoorOpen;
-                    const statusText = this.isExhibitionDoorOpen ? '🚪 Đã mở cửa Nhà Triển Lãm Goku!' : '🚪 Đã đóng cửa Nhà Triển Lãm Goku!';
-                    this._showToastNotification(statusText);
                     return;
                 }
 
@@ -3823,40 +3807,8 @@ export class Shop3DScene {
     }
 
     _showToastNotification(msg) {
-        let toast = document.getElementById('armory-toast');
-        if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'armory-toast';
-            toast.style.cssText = `
-                position: fixed;
-                top: 24px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(15, 23, 42, 0.95);
-                backdrop-filter: blur(12px);
-                border: 1.5px solid #00f5ff;
-                border-radius: 14px;
-                padding: 12px 24px;
-                color: #ffffff;
-                font-family: 'Outfit', sans-serif;
-                font-size: 15px;
-                font-weight: 700;
-                z-index: 3000;
-                pointer-events: auto !important;
-                box-shadow: 0 8px 30px rgba(0, 245, 255, 0.4);
-                transition: opacity 0.3s ease;
-            `;
-            document.body.appendChild(toast);
-        }
-        toast.textContent = msg;
-        toast.style.display = 'block';
-        toast.style.opacity = '1';
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => { toast.style.display = 'none'; }, 300);
-        }, 2200);
+        return;
     }
-
     _updateArmoryShopPrompts() {
         let armoryPrompt = document.getElementById('enter-armory-prompt');
         if (!armoryPrompt) {
@@ -4045,37 +3997,15 @@ export class Shop3DScene {
         if (!hud) {
             hud = document.createElement('div');
             hud.id = 'driving-hud-prompt';
-            hud.style.cssText = `
-                position: fixed;
-                bottom: 24px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(15, 23, 42, 0.90);
-                backdrop-filter: blur(12px);
-                border: 1.5px solid rgba(0, 245, 255, 0.6);
-                border-radius: 16px;
-                padding: 12px 24px;
-                color: #ffffff;
-                font-family: 'Outfit', 'Segoe UI', sans-serif;
-                font-size: 15px;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                box-shadow: 0 10px 30px rgba(0, 245, 255, 0.3);
-                z-index: 1000;
-                pointer-events: auto !important;
-                transition: all 0.3s ease;
-            `;
+            hud.className = 'dbz-hud-container';
             document.body.appendChild(hud);
         }
 
         if (show) {
             hud.innerHTML = `
-                <span style="font-size: 24px;">🏎️</span>
-                <div>
-                    <div style="color: #00f5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Đang Lái: ${carName}</div>
-                    <div style="font-size: 14px; color: #e2e8f0;">[W/S] Tăng Tốc / Lùi &nbsp;|&nbsp; [A/D] Bẻ Lái &nbsp;|&nbsp; <b style="color: #ff3366;">[F]</b> Xuống Xe</div>
+                <div class="dbz-hud-row">
+                    <span class="dbz-key-badge">F</span>
+                    <span class="dbz-action-text">Rời khỏi ${carName || 'xe'}</span>
                 </div>
             `;
             hud.style.display = 'flex';
@@ -4235,24 +4165,42 @@ export class Shop3DScene {
         this.isPointerDown = false;
     }
 
-    openShowroom() {
+    openShowroom(spawnPos = null) {
         this.isActive = true;
-        this.playerPos.set(0, this.groundY, 6);
-        this.velocityY = 0;
-        this.isGrounded = true;
 
+        // 🎯 Đảm bảo ẩn sạch sẽ HUD Roguelike Arena khi mở lại Shop
+        const roguelikeHud = document.getElementById('roguelike-hud');
+        if (roguelikeHud) {
+            roguelikeHud.classList.remove('active');
+            roguelikeHud.style.display = 'none';
+        }
+
+        // Nếu có truyền tọa độ chỉ định (từ Roguelike trở về Cổng Cung Điện)
+        if (spawnPos) {
+            this.playerPos.copy(spawnPos);
+        } else {
+            this.playerPos.set(0, this.groundY, 6);
+        }
+
+        this.velocityY = 0;
+        this.isGrounded = true
         this.isDrivingVehicle = false;
         this.currentVehicle = null;
 
-        this.cameraYaw = 0;
+        // Căn góc nhìn Camera hướng thẳng vào Cổng Cung Điện khi xuất hiện
+        if (spawnPos) {
+            this.cameraYaw = Math.PI; // Look backward/forward tùy góc cổng
+        } else {
+            this.cameraYaw = 0;
+        }
+
         this.cameraPitch = 0.42;
         this.cameraDistance = 9.5;
         this.isPointerDown = false;
         this.playerWalkTimer = 0;
-
         this._resetKeys();
 
-        // 📱 MOBILE CONTROLS: Hiển thị giao diện Virtual Joystick & Action Buttons khi người chơi vào Shop 3D
+        // 📱 MOBILE CONTROLS: Hiển thị giao diện điều khiển mobile
         if (this.mobileControls) {
             this.mobileControls.show();
         }
@@ -5992,24 +5940,26 @@ export class Shop3DScene {
     }
 
     /* 🚦 INTERACTIVE NEON SIGNPOST POLE */
+    /* 🚦 INTERACTIVE NEON SIGNPOST POLE (DỊCH SANG PHẢI KHÔNG CHE MẶT TIỀN QUẦY RAMEN) */
     _initInteractiveSignpost() {
         const signpostGroup = new THREE.Group();
-        signpostGroup.position.set(29.0, 0, 36.0);
+        // 🎯 Dịch Z từ 36.0 sang 40.5 để đẩy cây cột sang bên phải!
+        signpostGroup.position.set(29.0, 0, 40.5);
 
-        // Main Cyber Pole
-        const poleGeo = new THREE.CylinderGeometry(0.08, 0.1, 4.4, 16);
+        // Cột sắt Metallic Support Pole
+        const poleGeo = new THREE.CylinderGeometry(0.08, 0.1, 4.6, 16);
         const poleMat = new THREE.MeshStandardMaterial({ color: 0x3f3f46, roughness: 0.3, metalness: 0.8 });
         const pole = new THREE.Mesh(poleGeo, poleMat);
-        pole.position.y = 2.2;
+        pole.position.y = 2.3;
         pole.castShadow = true;
         signpostGroup.add(pole);
 
-        // 4 Directional Neon Arrow Signboards with Text CanvasTextures
+        // 4 Biển Hiệu Neon cùng chiều quầy Ramen
         const signsConfig = [
-            { type: 'projects', label: '[PROJECTS]', color: 0x00f5d4, y: 3.6, rotY: -0.4 },
-            { type: 'articles', label: '[ARTICLES]', color: 0xff007f, y: 3.0, rotY: 0.4 },
-            { type: 'about', label: '[ABOUT ME]', color: 0xffd700, y: 2.4, rotY: -0.2 },
-            { type: 'credits', label: '[CREDITS]', color: 0x00e5ff, y: 1.8, rotY: 0.3 }
+            { type: 'projects', label: '[PROJECTS]', color: 0x00f5d4, y: 3.8, rotY: Math.PI / 2 },
+            { type: 'articles', label: '[SHOPFOOD]', color: 0xff007f, y: 3.1, rotY: Math.PI / 2 },
+            { type: 'about', label: '[ABOUT ME]', color: 0xffd700, y: 2.4, rotY: Math.PI / 2 },
+            { type: 'credits', label: '[CREDITS]', color: 0x00e5ff, y: 1.7, rotY: Math.PI / 2 }
         ];
 
         signsConfig.forEach((cfg) => {
@@ -6017,7 +5967,7 @@ export class Shop3DScene {
             arrowGroup.position.set(0, cfg.y, 0);
             arrowGroup.rotation.y = cfg.rotY;
 
-            // Generate High-Res 2D Canvas Texture for Glowing Neon Text
+            // Tạo Canvas Texture cho Chữ Neon
             const canvas = document.createElement('canvas');
             canvas.width = 512;
             canvas.height = 128;
@@ -6025,27 +5975,22 @@ export class Shop3DScene {
 
             const hexColor = '#' + cfg.color.toString(16).padStart(6, '0');
 
-            // Dark Cyberpunk Board Background
             ctx.fillStyle = '#090d16';
             ctx.fillRect(0, 0, 512, 128);
 
-            // Neon Glowing Border
             ctx.strokeStyle = hexColor;
             ctx.lineWidth = 10;
             ctx.strokeRect(8, 8, 496, 112);
 
-            // Neon Text Styling
-            ctx.font = '900 42px "Outfit", "Space Grotesk", sans-serif';
+            ctx.font = '900 44px "Outfit", "Space Grotesk", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
-            // Outer Glow
             ctx.shadowColor = hexColor;
             ctx.shadowBlur = 24;
             ctx.fillStyle = '#ffffff';
             ctx.fillText(cfg.label, 256, 64);
 
-            // Inner Vibrant Color Text
             ctx.shadowColor = hexColor;
             ctx.shadowBlur = 12;
             ctx.fillStyle = hexColor;
@@ -6053,8 +5998,7 @@ export class Shop3DScene {
 
             const texture = new THREE.CanvasTexture(canvas);
 
-            // Arrow Board Base Box
-            const boardGeo = new THREE.BoxGeometry(1.6, 0.38, 0.08);
+            const boardGeo = new THREE.BoxGeometry(2.2, 0.48, 0.08);
             const boardMat = new THREE.MeshStandardMaterial({
                 color: 0x090d16,
                 roughness: 0.3,
@@ -6065,7 +6009,6 @@ export class Shop3DScene {
             const board = new THREE.Mesh(boardGeo, boardMat);
             board.castShadow = true;
 
-            // Text Plane Front
             const textMat = new THREE.MeshStandardMaterial({
                 map: texture,
                 emissiveMap: texture,
@@ -6074,17 +6017,15 @@ export class Shop3DScene {
                 roughness: 0.2
             });
 
-            const textPlaneF = new THREE.Mesh(new THREE.PlaneGeometry(1.56, 0.36), textMat);
+            const textPlaneF = new THREE.Mesh(new THREE.PlaneGeometry(2.14, 0.45), textMat);
             textPlaneF.position.set(0, 0, 0.042);
             board.add(textPlaneF);
 
-            // Text Plane Back
-            const textPlaneB = new THREE.Mesh(new THREE.PlaneGeometry(1.56, 0.36), textMat);
+            const textPlaneB = new THREE.Mesh(new THREE.PlaneGeometry(2.14, 0.45), textMat);
             textPlaneB.position.set(0, 0, -0.042);
             textPlaneB.rotation.y = Math.PI;
             board.add(textPlaneB);
 
-            // Store metadata & raycaster target
             board.userData = {
                 isSignpostArrow: true,
                 signType: cfg.type,
@@ -6100,7 +6041,6 @@ export class Shop3DScene {
 
         this.scene.add(signpostGroup);
     }
-
     /* 🖱️ RAYCASTER HOVER & CLICK LOGIC */
     _setupSignpostRaycaster() {
         const exitBtn = document.getElementById('btn-exit-station');

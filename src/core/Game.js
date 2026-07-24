@@ -436,10 +436,37 @@ export class Game {
     });
   }
 
-  /* 🛒 QUẢN LÝ CHUYỂN CẢNH MAP SHOWROOM 3D */
+  /* 🛒 QUẢN LÝ CHUYỂN CẢNH MAP SHOWROOM 3D & ROGUELIKE ARENA */
   _setupShopEvents() {
     const mainMenuPanel = document.querySelector('.main-menu-panel') || document.getElementById('main-menu');
     const btnExit3D = document.getElementById('btn-exit-shop-3d');
+
+    // Hàm đổi nhãn và màu sắc nút góc trên tùy theo map
+    const updateExitButtonMode = (isRoguelike) => {
+      if (!btnExit3D) return;
+      const span = btnExit3D.querySelector('span');
+      if (isRoguelike) {
+        if (span) span.textContent = '⬅️ QUAY VỀ SHOP';
+        else btnExit3D.textContent = '⬅️ QUAY VỀ SHOP';
+        btnExit3D.style.borderColor = '#00f5d4';
+      } else {
+        if (span) span.textContent = '✕ THOÁT CỬA HÀNG';
+        else btnExit3D.textContent = '✕ THOÁT CỬA HÀNG';
+        btnExit3D.style.borderColor = '#ff4655';
+      }
+    };
+
+    // Theo dõi chuyển state sang Roguelike Arena
+    const originalTransition = this.stateMachine.transition.bind(this.stateMachine);
+    this.stateMachine.transition = (newState, data) => {
+      originalTransition(newState, data);
+      if (newState === GAME_STATES.ROGUELIKE_ARENA) {
+        updateExitButtonMode(true);
+        if (btnExit3D) btnExit3D.classList.remove('hidden');
+      } else if (newState === GAME_STATES.MENU) {
+        if (btnExit3D) btnExit3D.classList.add('hidden');
+      }
+    };
 
     document.addEventListener('click', (e) => {
       // 1. Click nút "CỬA HÀNG" ở Menu chính -> Sang Map 3D
@@ -450,8 +477,8 @@ export class Game {
 
         if (mainMenuPanel) mainMenuPanel.style.display = 'none';
         if (btnExit3D) btnExit3D.classList.remove('hidden');
+        updateExitButtonMode(false);
 
-        // Ẩn Top Currency Bar & Audio Panel khi vào Showroom 3D theo đúng UI HUD Rules
         this._setAudioPanelVisible(false);
 
         if (this.shop3DScene) {
@@ -459,18 +486,54 @@ export class Game {
         }
       }
 
-      // 2. Click nút "THOÁT CỬA HÀNG" -> Quay lại Menu chính
+      // 2. Click nút góc trên
       const btnExit = e.target.closest('#btn-exit-shop-3d');
       if (btnExit) {
+        e.stopPropagation();
+
+        // 🎯 DỌN SẠCH CẢNH VÀ TRẠNG THÁI ROGUELIKE ARENA TRƯỚC KHI THOÁT
+        const roguelikeHud = document.getElementById('roguelike-hud');
+        if (roguelikeHud) {
+          roguelikeHud.classList.remove('active');
+          roguelikeHud.style.display = 'none';
+        }
+        if (this.roguelikeArenaScene) {
+          this.roguelikeArenaScene.isActive = false; // Tắt hoàn toàn vòng lặp render map quái
+          this.roguelikeArenaScene.closeScene?.();
+        }
+
+        // TRƯỜNG HỢP A: Đang trong Map Đánh Quái -> Bấm "QUAY VỀ SHOP"
+        if (this.stateMachine.is(GAME_STATES.ROGUELIKE_ARENA)) {
+          if (this.shop3DScene) {
+            this.shop3DScene.closeShowroom();
+          }
+
+          // Trở về Cổng Dịch Chuyển Shop 3D (Z = 20m)
+          const portalReturnPos = new THREE.Vector3(0, 0.70, 20.0);
+          if (this.shop3DScene) {
+            this.shop3DScene.openShowroom(portalReturnPos);
+          }
+
+          if (btnExit3D) btnExit3D.classList.remove('hidden');
+          updateExitButtonMode(false);
+          this._setAudioPanelVisible(false);
+
+          // Chuyển state tạm thời về LOADING hoặc giữ nguyên trạng thái showroom an toàn
+          this.stateMachine.forceState(GAME_STATES.LOADING);
+          return;
+        }
+
+        // TRƯỜNG HỢP B: Bấm thoát khi đang ở Shop 3D hoặc từ màn hình quay về -> VỀ MENU CHÍNH CHUẨN XÁC
         if (this.shop3DScene) {
           this.shop3DScene.closeShowroom();
+          this.shop3DScene.isActive = false; // Tắt hoàn toàn cờ active của Shop 3D
         }
 
         if (btnExit3D) btnExit3D.classList.add('hidden');
         if (mainMenuPanel) mainMenuPanel.style.display = 'flex';
 
-        // Hiển thị lại Top Currency Bar & Audio Panel ở Menu chính
         this._setAudioPanelVisible(true);
+        this.stateMachine.transition(GAME_STATES.MENU); // Đưa state máy về MENU để kích hoạt lại map nhặt cà phê bình thường
       }
     });
   }
