@@ -9,11 +9,32 @@ export class Environment {
 
     // Mảng chứa các đoạn đường chạy (tiles)
     this.segments = [];
+    this.roadMaterials = [];
+    this.streetLights = [];
 
     this.segmentLength = GAME_CONFIG.ROAD_SEGMENT_LENGTH;
     this.totalSegments = GAME_CONFIG.VISIBLE_ROAD_SEGMENTS;
 
     this.init();
+  }
+
+  setRoadWetness(wetFactor) {
+    const roughness = THREE.MathUtils.lerp(0.8, 0.1, wetFactor);
+    const metalness = THREE.MathUtils.lerp(0.1, 0.45, wetFactor);
+    this.roadMaterials.forEach(mat => {
+      mat.roughness = roughness;
+      mat.metalness = metalness;
+    });
+  }
+
+  setStreetLightsState(turnOn, intensity = 1.0) {
+    this.streetLights.forEach(light => {
+      if (light.isPointLight || light.isLight) {
+        light.intensity = turnOn ? intensity : 0.0;
+      } else if (light.material) {
+        light.material.emissiveIntensity = turnOn ? 1.0 : 0.0;
+      }
+    });
   }
 
   init() {
@@ -55,6 +76,7 @@ export class Environment {
     road.position.z = -this.segmentLength / 2;
     road.receiveShadow = true;
     segment.add(road);
+    this.roadMaterials.push(roadMat);
 
     // 2. Vạch chia làn đường đứt quãng màu vàng ấm
     const stripeWidth = 0.15;

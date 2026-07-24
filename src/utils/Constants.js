@@ -27,6 +27,16 @@ export const PHYSICS = {
   PLAYER_GROUND_Y: 0    // Độ cao mặt đất mặc định của nhân vật
 };
 
+export const GAME_MODES = {
+  ENDLESS: 'ENDLESS',    // Chế độ Chạy Vô Tận (Mặc định)
+  DELIVERY: 'DELIVERY'   // Chế độ Shipper Giao Hàng Siêu Tốc (Time Attack)
+};
+
+export const MAP_TYPES = {
+  MAP1_THAIBINH: 'MAP1_THAIBINH', // Map 1: Đường Phố Thái Bình (Nắng ấm Mặc định)
+  MAP2_WEATHER: 'MAP2_WEATHER'    // Map 2: Đảo Biển & Thời Tiết Động (Ngày/Đêm & Mưa Rào)
+};
+
 export const GAME_CONFIG = {
   BASE_SPEED: 15,       // Tốc độ di chuyển ban đầu (m/s)
   SPEED_INCREMENT: 1.5, // Mỗi mốc tăng bao nhiêu tốc độ
@@ -48,13 +58,30 @@ export const POWERUP_TYPES = {
   SHIELD: 'SHIELD',          // Giáp Nón Lá (đỡ 1 va chạm)
   DOUBLE_SCORE: 'DOUBLE_SCORE', // Bánh Mì X2 Score (10s)
   BOOST: 'BOOST',             // Xe Ôm Boost Siêu Tốc (6s)
-  HIGH_JUMP: 'HIGH_JUMP'     // Giày Nhảy Cao Phản Lực Neon (8s)
+  HIGH_JUMP: 'HIGH_JUMP',    // Giày Nhảy Cao Phản Lực Neon (8s)
+  RAINCOAT: 'RAINCOAT'       // Áo Mưa Tiện Lợi (Chống trượt & X2 điểm trên đường ướt)
 };
 
 export const POWERUP_CONFIG = {
   DOUBLE_SCORE_DURATION: 10000, // 10 giây
   BOOST_DURATION: 6000,         // 6 giây
-  HIGH_JUMP_DURATION: 8000      // 8 giây
+  HIGH_JUMP_DURATION: 8000,     // 8 giây
+  RAINCOAT_DURATION: 12000      // 12 giây
+};
+
+export const WEATHER_TYPES = {
+  CLEAR_DAY: 'CLEAR_DAY',
+  SUNSET: 'SUNSET',
+  NEON_NIGHT: 'NEON_NIGHT',
+  RAINSTORM: 'RAINSTORM'
+};
+
+export const WEATHER_CONFIG = {
+  CYCLE_DURATION_SECONDS: 90,   // Một chu kỳ Ngày/Đêm dài 90s
+  RAIN_CHANCE_PERCENT: 35,      // 35% xác suất mưa rào mỗi mốc
+  RAIN_DURATION_SECONDS: 18,    // Thời gian mưa 18s
+  FOG_DENSITY: 0.003,
+  LIGHTNING_CHANCE: 0.08        // 8% chance mỗi frame khi đang mưa
 };
 
 export const PURSUIT_CONFIG = {

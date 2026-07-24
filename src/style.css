@@ -672,6 +672,151 @@ body {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+.btn-delivery-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Weather System Status Badge in HUD */
+.weather-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+/* ================================================================
+   MAP SELECTOR MODAL STYLES
+   ================================================================ */
+.map-modal-card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-modal-card:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #00f5d4;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 245, 212, 0.25);
+}
+
+.map-modal-card.active {
+  background: linear-gradient(135deg, rgba(0, 245, 212, 0.15), rgba(15, 23, 42, 0.9));
+  border-color: #00f5d4;
+  box-shadow: 0 0 30px rgba(0, 245, 212, 0.35);
+}
+
+.map-card-banner {
+  height: 90px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+}
+
+.map-banner-thaibinh {
+  background: linear-gradient(135deg, #f59e0b, #b45309);
+}
+
+.map-banner-weather {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+}
+
+.map-badge-tag {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.map-status-pill {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 20px;
+  transition: all 0.25s ease;
+}
+
+.map-status-pill.active {
+  background: #00f5d4;
+  color: #0f172a;
+  box-shadow: 0 0 14px rgba(0, 245, 212, 0.6);
+}
+
+.map-status-pill.unselected {
+  background: rgba(15, 23, 42, 0.75);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.map-modal-card:hover .map-status-pill.unselected {
+  background: #00f5d4;
+  color: #0f172a;
+  border-color: #00f5d4;
+}
+
+.map-card-body {
+  padding: 16px;
+}
+
+.map-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.map-card-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.map-difficulty-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.diff-easy {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.diff-pro {
+  background: rgba(244, 63, 94, 0.2);
+  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.4);
+}
+
+.map-card-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
 /* HUD (Heads-Up Display) */
 .ui-hud {
   position: absolute;
@@ -951,9 +1096,12 @@ body {
 }
 
 @media (max-width: 768px) {
-  .powerup-upgrade-grid, .trail-grid {
+
+  .powerup-upgrade-grid,
+  .trail-grid {
     grid-template-columns: 1fr;
   }
+
   .garage-card {
     height: auto;
     max-height: 90vh;
@@ -961,7 +1109,8 @@ body {
 }
 
 
-.powerup-item-card, .trail-item-card {
+.powerup-item-card,
+.trail-item-card {
   background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 167, 38, 0.2);
@@ -974,19 +1123,22 @@ body {
   transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.powerup-item-card:hover, .trail-item-card:hover {
+.powerup-item-card:hover,
+.trail-item-card:hover {
   transform: translateY(-3px);
   border-color: #ffa726;
   box-shadow: 0 6px 20px rgba(255, 167, 38, 0.25);
 }
 
-.powerup-card-header, .trail-card-header {
+.powerup-card-header,
+.trail-card-header {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-.powerup-item-icon, .trail-item-icon {
+.powerup-item-icon,
+.trail-item-icon {
   font-size: 2.2rem;
   background: linear-gradient(135deg, rgba(255, 167, 38, 0.15), rgba(255, 214, 0, 0.15));
   border: 1px solid rgba(255, 167, 38, 0.3);
@@ -998,7 +1150,8 @@ body {
   filter: drop-shadow(0 0 8px rgba(255, 167, 38, 0.3));
 }
 
-.powerup-item-name, .trail-item-name {
+.powerup-item-name,
+.trail-item-name {
   font-family: var(--font-heading);
   font-size: 1.1rem;
   font-weight: 800;
@@ -1006,7 +1159,8 @@ body {
   letter-spacing: 0.3px;
 }
 
-.powerup-item-desc, .trail-item-desc {
+.powerup-item-desc,
+.trail-item-desc {
   font-size: 0.78rem;
   color: #9ca3af;
   line-height: 1.3;
@@ -1014,6 +1168,14 @@ body {
 }
 
 /* 5-Step Level Progress Bar */
+.mode-select-container,
+.map-select-container {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
 .level-steps-wrap {
   display: flex;
   gap: 6px;
@@ -1034,7 +1196,8 @@ body {
   box-shadow: 0 0 10px rgba(255, 167, 38, 0.8);
 }
 
-.powerup-card-footer, .trail-card-footer {
+.powerup-card-footer,
+.trail-card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1047,7 +1210,8 @@ body {
   color: #ffd600;
 }
 
-.btn-upgrade-action, .btn-trail-action {
+.btn-upgrade-action,
+.btn-trail-action {
   background: linear-gradient(135deg, #ffa726, #ff6f00);
   border: none;
   color: #07070a;
@@ -1066,7 +1230,8 @@ body {
 }
 
 
-.btn-upgrade-action:hover, .btn-trail-action:hover {
+.btn-upgrade-action:hover,
+.btn-trail-action:hover {
   transform: scale(1.05);
   filter: brightness(1.15);
   box-shadow: 0 6px 18px rgba(255, 111, 0, 0.5);
@@ -5472,7 +5637,8 @@ body {
   align-items: center;
 }
 
-.win98-btn-ctrl, .win98-close-btn {
+.win98-btn-ctrl,
+.win98-close-btn {
   background: #c0c0c0;
   border: 1px solid;
   border-color: #ffffff #808080 #808080 #ffffff;
@@ -5489,7 +5655,8 @@ body {
   line-height: 1;
 }
 
-.win98-btn-ctrl:active, .win98-close-btn:active {
+.win98-btn-ctrl:active,
+.win98-close-btn:active {
   border-color: #808080 #ffffff #ffffff #808080;
   background: #dfdfdf;
 }
@@ -5908,6 +6075,16 @@ body {
   box-shadow: 0 0 25px rgba(255, 214, 0, 0.6) !important;
 }
 
+.side-btn-purple {
+  border-color: #a855f7 !important;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.35) !important;
+}
+
+.side-btn-purple:hover {
+  background: rgba(168, 85, 247, 0.25) !important;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.7) !important;
+}
+
 .side-circle-emoji {
   font-size: 22px;
   line-height: 1;
@@ -5933,8 +6110,13 @@ body {
 }
 
 @keyframes circleBadgePulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.25); }
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.25);
+  }
 }
 
 /* Tooltip trượt ra bên phải khi Hover */

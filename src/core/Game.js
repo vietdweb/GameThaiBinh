@@ -13,6 +13,8 @@ import { CharacterViewerManager } from '../managers/CharacterViewerManager.js';
 import {
   GAME_STATES,
   GAME_CONFIG,
+  GAME_MODES,
+  MAP_TYPES,
   LANE,
   PHYSICS,
   POWERUP_TYPES,
@@ -28,6 +30,7 @@ import { CurrencyManager } from '../managers/CurrencyManager.js';
 import { PlayerManager } from '../managers/PlayerManager.js';
 import { DailyQuestsManager } from '../managers/DailyQuestsManager.js';
 import { TrophyHallManager } from '../managers/TrophyHallManager.js';
+import { WeatherManager } from '../managers/WeatherManager.js';
 import { UIManager } from '../ui/UIManager.js';
 import { Collectible } from '../entities/Collectible.js';
 import {
@@ -207,6 +210,9 @@ export class Game {
     this.dailyQuestsManager.init();
     this.trophyHallManager = new TrophyHallManager(this);
     this.trophyHallManager.init();
+    this.weatherManager = new WeatherManager(this);
+    this.weatherManager.init();
+    this.selectedMap = MAP_TYPES.MAP1_THAIBINH;
 
     // 3. Gắn sự kiện các nút bấm UI & Cửa hàng
     this._setupUIEvents();
@@ -575,6 +581,62 @@ export class Game {
         this._showStreamToast('💎 Đã nhận +50 Kim Cương!');
       });
     }
+
+    // --- Map Selector Modal & Switcher Events ---
+    const btnOpenMapSelect = document.getElementById('btn-open-map-select');
+    const mapSelectModal = document.getElementById('map-select-modal');
+    const cardMapThaiBinh = document.getElementById('card-map-thaibinh');
+    const cardMapWeather = document.getElementById('card-map-weather');
+    const badgeStatusThaiBinh = document.getElementById('badge-status-thaibinh');
+    const badgeStatusWeather = document.getElementById('badge-status-weather');
+
+    if (btnOpenMapSelect) {
+      btnOpenMapSelect.addEventListener('click', () => {
+        if (mapSelectModal) mapSelectModal.style.display = 'flex';
+      });
+    }
+
+    const updateMapSelectionUI = (selectedMapKey) => {
+      this.selectedMap = selectedMapKey;
+      if (selectedMapKey === MAP_TYPES.MAP1_THAIBINH) {
+        if (cardMapThaiBinh) cardMapThaiBinh.classList.add('active');
+        if (cardMapWeather) cardMapWeather.classList.remove('active');
+        if (badgeStatusThaiBinh) {
+          badgeStatusThaiBinh.textContent = 'ĐANG CHỌN';
+          badgeStatusThaiBinh.className = 'map-status-pill active';
+        }
+        if (badgeStatusWeather) {
+          badgeStatusWeather.textContent = 'CHỌN BẢN ĐỒ';
+          badgeStatusWeather.className = 'map-status-pill unselected';
+        }
+        this._showStreamToast('🏞️ Đã chọn Map 1: Đường Phố Thái Bình (Nắng ấm mặc định)');
+      } else {
+        if (cardMapWeather) cardMapWeather.classList.add('active');
+        if (cardMapThaiBinh) cardMapThaiBinh.classList.remove('active');
+        if (badgeStatusWeather) {
+          badgeStatusWeather.textContent = 'ĐANG CHỌN';
+          badgeStatusWeather.className = 'map-status-pill active';
+        }
+        if (badgeStatusThaiBinh) {
+          badgeStatusThaiBinh.textContent = 'CHỌN BẢN ĐỒ';
+          badgeStatusThaiBinh.className = 'map-status-pill unselected';
+        }
+        this._showStreamToast('🌦️ Đã chọn Map 2: Đảo Biển & Thời Tiết Động (Ngày/Đêm & Mưa Rào 3D)');
+      }
+
+      // Tự động đóng cửa sổ Chọn Map sau khi người chơi chọn xong
+      setTimeout(() => {
+        if (mapSelectModal) mapSelectModal.style.display = 'none';
+      }, 180);
+    };
+
+    if (cardMapThaiBinh) {
+      cardMapThaiBinh.addEventListener('click', () => updateMapSelectionUI(MAP_TYPES.MAP1_THAIBINH));
+    }
+
+    if (cardMapWeather) {
+      cardMapWeather.addEventListener('click', () => updateMapSelectionUI(MAP_TYPES.MAP2_WEATHER));
+    }
     if (dom.btnQuickFillMeat) {
       dom.btnQuickFillMeat.addEventListener('click', () => {
         this.currencyManager.addMeat(100);
@@ -802,7 +864,7 @@ export class Game {
     if (this.uiManager) this.uiManager.closeProfileModal();
     this._setHistoryOpen(false);
     this._setJukeboxOpen(false);
-    
+
     const garageModal = document.getElementById('garage-modal');
     if (garageModal) garageModal.classList.add('hidden');
 
@@ -1820,6 +1882,11 @@ export class Game {
     }
 
     this._updateHUDDisplay();
+
+    // Cập nhật Hệ Thống Thời Tiết & Chu Kỳ Ngày/Đêm Động (Dynamic Weather System)
+    if (this.weatherManager && this.player) {
+      this.weatherManager.update(deltaTime, this.player.position, this.sceneManager.camera);
+    }
 
     // --- 3. Xử lý FOV camera, Motion Blur, Camera Shake & Audio Shift khi Tăng tốc ---
     const speedBlurElem = document.getElementById('speed-motion-blur');
