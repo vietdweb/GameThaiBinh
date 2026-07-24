@@ -8,6 +8,7 @@
  */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MD2Character } from 'three/examples/jsm/misc/MD2Character.js';
 import { CAR_MODELS } from '../managers/ShopManager.js';
 import { MobileControls } from '../utils/mobile.js'; // 📱 MOBILE CONTROLS: Import bộ điều khiển di động
 import { HolographicPortal } from '../entities/HolographicPortal.js';
@@ -3025,20 +3026,28 @@ export class Shop3DScene {
     }
 
     _loadBabyGokuModel() {
-        const loader = new GLTFLoader();
-        loader.load(
-            '/models/goku-4.glb',
-            (gltf) => {
-                this.babyGokuGltf = gltf;
-                if (this.selectedCharacterSkin === 'baby_goku') {
-                    this._switchPlayerSkin('baby_goku');
-                }
-            },
-            undefined,
-            (error) => {
-                console.warn('⚠️ Could not load baby_goku.glb, fallback to 3D Goku model:', error);
-            }
-        );
+        const md2Char = new MD2Character();
+        md2Char.scale = 0.03;
+
+        const config = {
+            baseUrl: '/models/md2/ratamahatta/',
+            body: 'ratamahatta.md2',
+            skins: ['ratamahatta.png'],
+            weapons: []
+        };
+
+        md2Char.onLoadComplete = () => {
+            md2Char.setAnimation('stand');
+            this.babyGokuMd2Root = md2Char.root;
+            this.md2CharacterInstance = md2Char;
+
+            // 🛑 XÓA BỎ LỆNH TỰ GÁN GOKU VÀO MÀN HÌNH Ở ĐÂY ĐỂ TRÁNH BỊ ĐÈN LÊN CYBER MẶC ĐỊNH
+            // if (this.selectedCharacterSkin === 'baby_goku') {
+            //     this._switchPlayerSkin('baby_goku');
+            // }
+        };
+
+        md2Char.loadParts(config);
     }
 
     createPlayerMesh(skinId) {
@@ -3186,181 +3195,14 @@ export class Shop3DScene {
 
     /* 👑 SKIN 2: BABY GOKU 3D MODEL (MODEL BABY GOKU GLTF & PROCEDURAL ANIMATION CONTROLLER) */
     _createBabyGokuMesh() {
-        if (this.babyGokuGltf) {
-            const containerGroup = new THREE.Group();
-            const model = this.babyGokuGltf.scene.clone(true);
-
-            // Tự động căn chỉnh Bounding Box & Scale về chiều cao 1.5m
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            const targetHeight = 1.5;
-            const scaleFactor = targetHeight / (size.y || 1);
-            model.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-            const scaledBox = new THREE.Box3().setFromObject(model);
-            model.position.y = -scaledBox.min.y;
-
-            model.traverse(child => {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                }
-            });
-
-            containerGroup.add(model);
-
-            // Quản lý THREE.AnimationMixer cho GLTF Animation Clips (Idle, Walk, Run, Jump)
-            let mixer = null;
-            let actions = {};
-            if (this.babyGokuGltf.animations && this.babyGokuGltf.animations.length > 0) {
-                mixer = new THREE.AnimationMixer(model);
-                this.babyGokuGltf.animations.forEach(clip => {
-                    const action = mixer.clipAction(clip);
-                    const name = clip.name.toLowerCase();
-                    if (name.includes('walk')) actions['walk'] = action;
-                    else if (name.includes('run')) actions['run'] = action;
-                    else if (name.includes('jump')) actions['jump'] = action;
-                    else if (name.includes('idle')) actions['idle'] = action;
-                    else actions[clip.name] = action;
-                });
-
-                const clips = this.babyGokuGltf.animations;
-                if (!actions['idle'] && clips[0]) actions['idle'] = mixer.clipAction(clips[0]);
-                if (!actions['walk'] && clips[1]) actions['walk'] = mixer.clipAction(clips[1]);
-                else if (!actions['walk']) actions['walk'] = actions['idle'];
-                if (!actions['run']) actions['run'] = actions['walk'];
-                if (!actions['jump']) actions['jump'] = actions['walk'];
-
-                if (actions['idle']) actions['idle'].play();
-            }
-
-            let leftLegGroup = null, rightLegGroup = null, leftArmGroup = null, rightArmGroup = null;
-            model.traverse(c => {
-                const n = c.name.toLowerCase();
-                if (n.includes('leg') && (n.includes('l') || n.includes('left'))) leftLegGroup = c;
-                else if (n.includes('leg') && (n.includes('r') || n.includes('right'))) rightLegGroup = c;
-                else if (n.includes('arm') && (n.includes('l') || n.includes('left'))) leftArmGroup = c;
-                else if (n.includes('arm') && (n.includes('r') || n.includes('right'))) rightArmGroup = c;
-            });
-
-            const shadowCircle = new THREE.Mesh(
-                new THREE.CircleGeometry(0.42, 32),
-                new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
-            );
-            shadowCircle.rotation.x = -Math.PI / 2;
-            shadowCircle.position.y = 0.01;
-            containerGroup.add(shadowCircle);
-
-            containerGroup.userData = {
-                mixer,
-                actions,
-                currentActionName: 'idle',
-                leftLegGroup,
-                rightLegGroup,
-                leftArmGroup,
-                rightArmGroup,
-                cloakTailMesh: null
-            };
-            return containerGroup;
+        // 🎯 ƯU TIÊN TRẢ VỀ MODEL MD2 RATAMAHATTA NẾU ĐÃ LOAD XONG
+        if (this.babyGokuMd2Root) {
+            return this.babyGokuMd2Root;
         }
 
-        // Procedural Fallback 3D Goku Model (Khỉ con Goku Võ phục Cam/Xanh & Tóc nhọn Goku)
-        const gohan = new THREE.Group();
-        const orangeGiMat = new THREE.MeshToonMaterial({ color: 0xea580c });
-        const blueInnerMat = new THREE.MeshToonMaterial({ color: 0x1d4ed8 });
-        const skinMat = new THREE.MeshToonMaterial({ color: 0xfde047 });
-        const hairBlackMat = new THREE.MeshToonMaterial({ color: 0x0f172a });
-        const bootsMat = new THREE.MeshToonMaterial({ color: 0x1e293b });
-
-        const leftLegGroup = new THREE.Group();
-        leftLegGroup.position.set(-0.16, 0.66, 0);
-        const legL = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.50, 8, 12), orangeGiMat);
-        legL.position.set(0, -0.22, 0);
-        leftLegGroup.add(legL);
-        const bootL = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.32, 12), bootsMat);
-        bootL.position.set(0, -0.45, 0.04);
-        leftLegGroup.add(bootL);
-        gohan.add(leftLegGroup);
-
-        const rightLegGroup = new THREE.Group();
-        rightLegGroup.position.set(0.16, 0.66, 0);
-        const legR = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.50, 8, 12), orangeGiMat);
-        legR.position.set(0, -0.22, 0);
-        rightLegGroup.add(legR);
-        const bootR = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.32, 12), bootsMat);
-        bootR.position.set(0, -0.45, 0.04);
-        rightLegGroup.add(bootR);
-        gohan.add(rightLegGroup);
-
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.25, 0.72, 12), orangeGiMat);
-        torso.position.y = 1.10;
-        gohan.add(torso);
-
-        const chestInsignia = new THREE.Mesh(new THREE.CircleGeometry(0.12, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-        chestInsignia.position.set(0.12, 1.18, 0.28);
-        gohan.add(chestInsignia);
-
-        const waistSash = new THREE.Mesh(new THREE.TorusGeometry(0.29, 0.06, 8, 24), blueInnerMat);
-        waistSash.rotation.x = Math.PI / 2;
-        waistSash.position.y = 0.82;
-        gohan.add(waistSash);
-
-        const leftArmGroup = new THREE.Group();
-        leftArmGroup.position.set(-0.34, 1.36, 0);
-        const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), skinMat);
-        armL.position.set(0, -0.20, 0);
-        leftArmGroup.add(armL);
-        const wristbandL = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 0.14, 12), blueInnerMat);
-        wristbandL.position.set(0, -0.42, 0);
-        leftArmGroup.add(wristbandL);
-        gohan.add(leftArmGroup);
-
-        const rightArmGroup = new THREE.Group();
-        rightArmGroup.position.set(0.34, 1.36, 0);
-        const armR = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.44, 8, 12), skinMat);
-        armR.position.set(0, -0.20, 0);
-        rightArmGroup.add(armR);
-        const wristbandR = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 0.14, 12), blueInnerMat);
-        wristbandR.position.set(0, -0.42, 0);
-        rightArmGroup.add(wristbandR);
-        gohan.add(rightArmGroup);
-
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), skinMat);
-        head.position.y = 1.60;
-        gohan.add(head);
-
-        const hairGroup = new THREE.Group();
-        hairGroup.position.set(0, 1.62, 0);
-        [
-            { pos: [0, 0.42, -0.02], rot: [0.1, 0, 0], scale: [0.16, 0.75] },
-            { pos: [-0.18, 0.32, 0.02], rot: [0.1, 0, 0.45], scale: [0.14, 0.65] },
-            { pos: [0.18, 0.32, 0.02], rot: [0.1, 0, -0.45], scale: [0.14, 0.65] },
-            { pos: [-0.28, 0.12, 0.08], rot: [0.3, 0, 0.75], scale: [0.12, 0.55] },
-            { pos: [0.28, 0.12, 0.08], rot: [0.3, 0, -0.75], scale: [0.12, 0.55] },
-            { pos: [0, 0.06, 0.26], rot: [0.9, 0, 0], scale: [0.08, 0.42] }
-        ].forEach(sd => {
-            const spike = new THREE.Mesh(new THREE.ConeGeometry(sd.scale[0], sd.scale[1], 6), hairBlackMat);
-            spike.position.set(sd.pos[0], sd.pos[1], sd.pos[2]);
-            spike.rotation.set(sd.rot[0], sd.rot[1], sd.rot[2]);
-            hairGroup.add(spike);
-        });
-        gohan.add(hairGroup);
-
-        const tailMesh = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.05, 8, 16, Math.PI * 0.85), new THREE.MeshToonMaterial({ color: 0x78350f }));
-        tailMesh.rotation.y = Math.PI / 2;
-        tailMesh.position.set(0, 0.75, -0.28);
-        gohan.add(tailMesh);
-
-        const shadowCircle = new THREE.Mesh(
-            new THREE.CircleGeometry(0.42, 32),
-            new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.35 })
-        );
-        shadowCircle.rotation.x = -Math.PI / 2;
-        shadowCircle.position.y = 0.01;
-        gohan.add(shadowCircle);
-
-        gohan.userData = { leftLegGroup, rightLegGroup, leftArmGroup, rightArmGroup, cloakTailMesh: tailMesh };
-        return gohan;
+        // Nếu file MD2 chưa tải xong, tạm thời trả về một Group rỗng để tránh lỗi màn hình trắng
+        const tempGroup = new THREE.Group();
+        return tempGroup;
     }
 
     /* 👑 SKIN 3: SHADOW NINJA CYBER (GIÁP ĐEN OBSIDIAN, VISOR ĐỎ & SONG KIẾM) */
@@ -6194,7 +6036,7 @@ export class Shop3DScene {
         this._updateHouseDoorPrompts();
         this._updateNimbusPrompts();
 
-        // 🚪 Xoay Bản Lề Mở/Đóng Cửa Nhà Smooth Animation
+        // 🚪 Xوay Bản Lề Mở/Đóng Cửa Nhà Smooth Animation
         if (this.mainShowroomDoorHinge) {
             const targetAngle = this.isHouseDoorOpen ? Math.PI * 0.58 : 0.0;
             this.mainShowroomDoorHinge.rotation.y = THREE.MathUtils.lerp(
@@ -6274,14 +6116,12 @@ export class Shop3DScene {
                 let angleDiff = targetAngle - this.nimbusCloud.rotation.y;
                 while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
                 while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                // Bẻ lái mượt mà tốc độ 2.5 rad/s ngang bằng tốc độ bẻ lái của Siêu xe (steeringSpeed = 2.2)
                 this.nimbusCloud.rotation.y += angleDiff * Math.min(1.0, deltaTime * 2.5);
             }
 
             // Xử lý khi bấm F hạ cánh từ từ dịu nhẹ từ trên cao xuống
             if (this.isNimbusLanding) {
                 const targetGroundY = this._calculateGroundY(this.nimbusCloud.position.x, this.nimbusCloud.position.z) + 0.8;
-                // Hạ độ cao bồng bềnh từ từ dịu nhẹ 5.0 m/s
                 this.nimbusFlightHeight = Math.max(targetGroundY, this.nimbusFlightHeight - 5.0 * deltaTime);
 
                 if (Math.abs(this.nimbusCloud.position.y - targetGroundY) < 0.12) {
@@ -6295,16 +6135,13 @@ export class Shop3DScene {
                 }
             }
 
-            // Lerp độ cao Y mượt mà
             this.nimbusCloud.position.y = THREE.MathUtils.lerp(this.nimbusCloud.position.y, this.nimbusFlightHeight, Math.min(1.0, deltaTime * 6.0));
 
-            // Đồng bộ playerPos & playerMesh đứng vững 100% trên mặt mây phẳng (+0.72m chân & vòng cyan cổ chân hiển thị nguyên vẹn 100%)
             this.playerPos.copy(this.nimbusCloud.position);
             this.playerMesh.position.set(this.nimbusCloud.position.x, this.nimbusCloud.position.y + 1.18, this.nimbusCloud.position.z);
             this.playerMesh.rotation.y = this.nimbusCloud.rotation.y;
             this.playerMesh.visible = true;
 
-            // 🎥 GTA FLYING CAMERA: CAMERA DYNAMICALLY EXPANDS FOV/DISTANCE WHEN FLYING HIGH INTO THE SKY
             if (!this.isPointerDown) {
                 const targetYaw = this.nimbusCloud.rotation.y + Math.PI;
                 let angleDiff = targetYaw - this.cameraYaw;
@@ -6312,14 +6149,12 @@ export class Shop3DScene {
                 while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
                 this.cameraYaw += angleDiff * Math.min(1.0, deltaTime * 2.5);
 
-                // Nới rộng khoảng cách camera theo độ cao Y (từ 9.5m lên 13.0m khi bay cao 35m) cho tầm nhìn GTA rộng mở
                 const altitudeProgress = THREE.MathUtils.clamp((this.nimbusCloud.position.y - 0.8) / 30.0, 0, 1);
                 const targetCamDist = 9.5 + altitudeProgress * 3.5;
                 this.cameraDistance = THREE.MathUtils.lerp(this.cameraDistance, targetCamDist, deltaTime * 4.0);
             }
 
         } else if (this.nimbusCloud) {
-            // Khi Cân Đẩu Vân đang đỗ (Idle floating animation)
             const currentGround = this._calculateGroundY(this.nimbusCloud.position.x, this.nimbusCloud.position.z);
             this.nimbusCloud.position.y = currentGround + 0.8 + Math.sin(timeNow * 2.5) * 0.15;
             this.nimbusCloud.rotation.y += deltaTime * 0.4;
@@ -6329,25 +6164,20 @@ export class Shop3DScene {
         if (this.isDrivingVehicle && this.currentVehicle) {
             const veh = this.currentVehicle;
 
-            // 📱 MOBILE CONTROLS: Đọc dữ liệu vector điều khiển từ Virtual Joystick cho Siêu xe Mobile
             const mobileVec = this.mobileControls ? this.mobileControls.getMoveVector() : { dirX: 0, dirZ: 0, intensity: 0 };
-
-            // 📱 MOBILE CONTROLS: Kết hợp phím bàn phím (WASD) và Joystick gạt Lên/Xuống/Trái/Phải
             const isW = this.activeKeys.has('KeyW') || this.activeKeys.has('ArrowUp') || (mobileVec.intensity > 0.1 && mobileVec.dirZ < -0.2);
             const isS = this.activeKeys.has('KeyS') || this.activeKeys.has('ArrowDown') || (mobileVec.intensity > 0.1 && mobileVec.dirZ > 0.2);
             const isA = this.activeKeys.has('KeyA') || this.activeKeys.has('ArrowLeft') || (mobileVec.intensity > 0.1 && mobileVec.dirX < -0.2);
             const isD = this.activeKeys.has('KeyD') || this.activeKeys.has('ArrowRight') || (mobileVec.intensity > 0.1 && mobileVec.dirX > 0.2);
 
-            // Tăng tốc / Lùi
             if (isW) {
                 veh.speed = Math.min(veh.maxSpeed, veh.speed + veh.acceleration * deltaTime);
             } else if (isS) {
                 veh.speed = Math.max(-veh.maxSpeed * 0.55, veh.speed - veh.acceleration * deltaTime);
             } else {
-                veh.speed *= Math.pow(0.04, deltaTime); // Ma sát tự nhiên khi thả ga
+                veh.speed *= Math.pow(0.04, deltaTime);
             }
 
-            // Bẻ lái theo hướng xe (phím A/D hoặc Joystick gạt ngang)
             if (Math.abs(veh.speed) > 0.15) {
                 const dirSign = veh.speed > 0 ? 1 : -1;
                 if (isA) {
@@ -6360,7 +6190,6 @@ export class Shop3DScene {
                 }
             }
 
-            // Di chuyển xe theo hướng xoay rotation.y
             const moveDist = veh.speed * deltaTime;
             const forwardX = Math.sin(veh.mesh.rotation.y);
             const forwardZ = Math.cos(veh.mesh.rotation.y);
@@ -6368,25 +6197,20 @@ export class Shop3DScene {
             veh.mesh.position.x += forwardX * moveDist;
             veh.mesh.position.z += forwardZ * moveDist;
 
-            // Giới hạn vùng biên bản đồ
             veh.mesh.position.x = THREE.MathUtils.clamp(veh.mesh.position.x, this.bounds.minX, this.bounds.maxX);
             veh.mesh.position.z = THREE.MathUtils.clamp(veh.mesh.position.z, this.bounds.minZ, this.bounds.maxZ);
 
-            // Độ cao địa hình cho xe
             const targetGroundY = this._calculateGroundY(veh.mesh.position.x, veh.mesh.position.z);
             veh.mesh.position.y = THREE.MathUtils.lerp(veh.mesh.position.y, targetGroundY + 0.02, Math.min(1.0, deltaTime * 14.0));
 
-            // Đồng bộ vị trí Player với Xe
             this.playerPos.copy(veh.mesh.position);
 
-            // Xoay bánh xe theo tốc độ di chuyển
             if (veh.wheels && veh.wheels.length > 0) {
                 veh.wheels.forEach(w => {
                     w.rotation.x += veh.speed * deltaTime * 3.5;
                 });
             }
 
-            // 🎥 GTA STYLE AUTO FOLLOW CAMERA: CAMERA TỰ ĐỘNG XOAY THEO HƯỚNG BẺ LÁI CỦA SIÊU XE
             if (!this.isPointerDown) {
                 const targetYaw = veh.mesh.rotation.y + Math.PI;
                 let angleDiff = targetYaw - this.cameraYaw;
@@ -6397,18 +6221,15 @@ export class Shop3DScene {
                 this.cameraYaw += angleDiff * Math.min(1.0, deltaTime * followSpeed);
             }
         } else if (!this.isRidingNimbus) {
-            // 🚶 XỬ LÝ ĐI BỘ TRÊN CHÂN (ON FOOT MOVEMENT - KHÔNG ÁP DỤNG KHI ĐANG CƯỠI CÂN ĐẨU VÂN)
-            // 📱 MOBILE CONTROLS: Đọc dữ liệu vector điều khiển từ Virtual Joystick cho Player Đi bộ 360°
+            // 🚶 XỬ LÝ ĐI BỘ TRÊN CHÂN (ON FOOT MOVEMENT)
             const mobileVec = this.mobileControls ? this.mobileControls.getMoveVector() : { dirX: 0, dirZ: 0, intensity: 0 };
             const isW = this.activeKeys.has('KeyW') || this.activeKeys.has('ArrowUp');
             const isS = this.activeKeys.has('KeyS') || this.activeKeys.has('ArrowDown');
             const isA = this.activeKeys.has('KeyA') || this.activeKeys.has('ArrowLeft');
             const isD = this.activeKeys.has('KeyD') || this.activeKeys.has('ArrowRight');
 
-            // GTA STYLE MOVEMENT
             const forwardX = -Math.sin(this.cameraYaw);
             const forwardZ = -Math.cos(this.cameraYaw);
-
             const rightX = Math.cos(this.cameraYaw);
             const rightZ = -Math.sin(this.cameraYaw);
 
@@ -6419,11 +6240,9 @@ export class Shop3DScene {
             if (isA) { moveVector.x -= rightX; moveVector.z -= rightZ; }
             if (isD) { moveVector.x += rightX; moveVector.z += rightZ; }
 
-            // 📱 MOBILE CONTROLS: Thêm Vector di chuyển 360° linh hoạt từ Virtual Joystick Mobile
             if (mobileVec.intensity > 0.05) {
-                const joyForward = -mobileVec.dirZ; // >0 khi vuốt lên
+                const joyForward = -mobileVec.dirZ;
                 const joyRight = mobileVec.dirX;
-
                 moveVector.x += (forwardX * joyForward + rightX * joyRight) * mobileVec.intensity;
                 moveVector.z += (forwardZ * joyForward + rightZ * joyRight) * mobileVec.intensity;
             }
@@ -6444,65 +6263,59 @@ export class Shop3DScene {
 
                 this.playerMesh.rotation.y += angleDiff * Math.min(1.0, deltaTime * 14.0);
 
-                // 🎬 ANIMATION MIXER & CROSSFADE CONTROLLER (IDLE, WALK, RUN, JUMP)
-                if (this.playerMixer) {
-                    this.playerMixer.update(deltaTime);
-
-                    let targetActionName = 'idle';
-                    if (!this.isGrounded) {
-                        targetActionName = 'jump';
-                    } else if (moveVector.lengthSq() > 0) {
-                        targetActionName = this.activeKeys.has('ShiftLeft') ? 'run' : 'walk';
-                    }
-
-                    if (this.playerActions && targetActionName !== this.currentActionName) {
-                        const prevAction = this.playerActions[this.currentActionName];
-                        const nextAction = this.playerActions[targetActionName] || this.playerActions['walk'] || this.playerActions['idle'];
-
-                        if (nextAction) {
-                            if (prevAction) prevAction.fadeOut(0.2);
-                            nextAction.reset().fadeIn(0.2).play();
-                            this.currentActionName = targetActionName;
+                // 🎯 PHÂN TÁCH: NẾU ĐANG DÙNG SKIN BABY GOKU (MD2) THÌ CHẠY ANIMATION MD2
+                if (this.selectedCharacterSkin === 'baby_goku' && this.md2CharacterInstance) {
+                    try {
+                        if (this.currentMd2Anim !== 'run') {
+                            this.md2CharacterInstance.setAnimation('run');
+                            this.currentMd2Anim = 'run';
                         }
+                    } catch (e) { }
+                } else {
+                    // 🎬 CÁC SKIN CYBER / SHADOW KHÁC DÙNG MIXER HOẶC PROCEDURAL SWAY
+                    if (this.playerMixer) {
+                        this.playerMixer.update(deltaTime);
                     }
                 }
 
-                // Hoạt ảnh bước đi Procedural Fallback: Đung đưa Chân, Tay & Áo Choàng tự nhiên
+                // Hoạt ảnh bước đi Procedural cho các skin thường
                 this.playerWalkTimer += deltaTime * 13.5;
-                if (this.leftLegGroup && this.rightLegGroup) {
-                    this.leftLegGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.55;
-                    this.rightLegGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.55;
-                }
-                if (this.leftArmGroup && this.rightArmGroup) {
-                    this.leftArmGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.78;
-                    this.rightArmGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.78;
-                }
-                if (this.cloakTailMesh) {
-                    this.cloakTailMesh.rotation.x = 0.15 + Math.sin(this.playerWalkTimer * 2.0) * 0.14;
+                if (this.selectedCharacterSkin !== 'baby_goku') {
+                    if (this.leftLegGroup && this.rightLegGroup) {
+                        this.leftLegGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.55;
+                        this.rightLegGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.55;
+                    }
+                    if (this.leftArmGroup && this.rightArmGroup) {
+                        this.leftArmGroup.rotation.x = -Math.sin(this.playerWalkTimer) * 0.78;
+                        this.rightArmGroup.rotation.x = Math.sin(this.playerWalkTimer) * 0.78;
+                    }
                 }
             } else {
-                // Khi đứng yên -> Chuyển AnimationMixer về Idle & trả tư thế tay chân về vị trí cân bằng
-                if (this.playerMixer && this.currentActionName !== 'idle') {
-                    const prevAction = this.playerActions ? this.playerActions[this.currentActionName] : null;
-                    const idleAction = this.playerActions ? this.playerActions['idle'] : null;
-                    if (idleAction) {
-                        if (prevAction) prevAction.fadeOut(0.2);
-                        idleAction.reset().fadeIn(0.2).play();
-                        this.currentActionName = 'idle';
-                    }
+                // 🧍 KHI ĐỨNG YÊN
+                if (this.selectedCharacterSkin === 'baby_goku' && this.md2CharacterInstance) {
+                    try {
+                        if (this.currentMd2Anim !== 'stand') {
+                            this.md2CharacterInstance.setAnimation('stand');
+                            this.currentMd2Anim = 'stand';
+                        }
+                    } catch (e) { }
                 }
 
-                if (this.leftLegGroup && this.rightLegGroup) {
-                    this.leftLegGroup.rotation.x = THREE.MathUtils.lerp(this.leftLegGroup.rotation.x, 0, deltaTime * 10.0);
-                    this.rightLegGroup.rotation.x = THREE.MathUtils.lerp(this.rightLegGroup.rotation.x, 0, deltaTime * 10.0);
+                if (this.selectedCharacterSkin !== 'baby_goku') {
+                    if (this.leftLegGroup && this.rightLegGroup) {
+                        this.leftLegGroup.rotation.x = THREE.MathUtils.lerp(this.leftLegGroup.rotation.x, 0, deltaTime * 10.0);
+                        this.rightLegGroup.rotation.x = THREE.MathUtils.lerp(this.rightLegGroup.rotation.x, 0, deltaTime * 10.0);
+                    }
+                    if (this.leftArmGroup && this.rightArmGroup) {
+                        this.leftArmGroup.rotation.x = THREE.MathUtils.lerp(this.leftArmGroup.rotation.x, 0, deltaTime * 10.0);
+                        this.rightArmGroup.rotation.x = THREE.MathUtils.lerp(this.rightArmGroup.rotation.x, 0, deltaTime * 10.0);
+                    }
                 }
-                if (this.leftArmGroup && this.rightArmGroup) {
-                    this.leftArmGroup.rotation.x = THREE.MathUtils.lerp(this.leftArmGroup.rotation.x, 0, deltaTime * 10.0);
-                    this.rightArmGroup.rotation.x = THREE.MathUtils.lerp(this.rightArmGroup.rotation.x, 0, deltaTime * 10.0);
-                }
-                if (this.cloakTailMesh) {
-                    this.cloakTailMesh.rotation.x = THREE.MathUtils.lerp(this.cloakTailMesh.rotation.x, 0.15, deltaTime * 5.0);
-                }
+            }
+
+            // 🔄 CẬP NHẬT TICK CHO MD2 NẾU ĐANG CHỌN BABY GOKU
+            if (this.selectedCharacterSkin === 'baby_goku' && this.md2CharacterInstance) {
+                this.md2CharacterInstance.update(deltaTime);
             }
 
             // Space Jump
@@ -6511,7 +6324,6 @@ export class Shop3DScene {
                 this.isGrounded = false;
             }
 
-            // Dynamic Ground Calculation based on player X, Z
             const targetGroundY = this._calculateGroundY(this.playerPos.x, this.playerPos.z);
             this.groundY = THREE.MathUtils.lerp(this.groundY, targetGroundY, Math.min(1.0, deltaTime * 14.0));
 
@@ -6528,7 +6340,11 @@ export class Shop3DScene {
                 }
             }
 
-            this.playerMesh.position.copy(this.playerPos);
+            const adjustedPlayerPos = this.playerPos.clone();
+            if (this.selectedCharacterSkin === 'baby_goku') {
+                adjustedPlayerPos.y += 0.5; // Đẩy cao MD2 lên tránh lún đất
+            }
+            this.playerMesh.position.copy(adjustedPlayerPos);
         }
 
         // GTA & ROBLOX STYLE CAMERA ORBIT LERP
@@ -6550,7 +6366,7 @@ export class Shop3DScene {
             this.camera.lookAt(this.currentLookAt);
         }
 
-        // 🏆 XOAY 4 MÔ HÌNH TRƯNG BÀY 3D GOKU BÊN TRONG CĂN NHÀ VÀNG (INSIDE HOUSE EXHIBITION)
+        // 🏆 XOAY 4 MÔ HÌNH TRƯNG BÀY 3D BÊN TRONG CĂN NHÀ VÀNG
         if (this.gokuExhibitionModels && this.gokuExhibitionModels.length > 0) {
             this.gokuExhibitionModels.forEach((model, i) => {
                 if (model) {
@@ -6559,7 +6375,7 @@ export class Shop3DScene {
             });
         }
 
-        // 🚪 XỬ LÝ MỞ / ĐÓNG CỬA BẢN LỀ CĂN NHÀ VÀNG KHI NGƯỜI CHƠI BẤM [F] (GIỐNG 100% NHÀ CHARACTER WARDROBE)
+        // 🚪 XỬ LÝ MỞ / ĐÓNG CỬA BẢN LỀ CĂN NHÀ VÀNG KHI NGƯỜI CHƠI BẤM [F]
         if (this.exhibitionDoorHingeL && this.exhibitionDoorHingeR) {
             const targetRotL = this.isExhibitionDoorOpen ? -Math.PI / 2.2 : 0;
             const targetRotR = this.isExhibitionDoorOpen ? Math.PI / 2.2 : 0;
@@ -6568,13 +6384,13 @@ export class Shop3DScene {
             this.exhibitionDoorHingeR.rotation.y = THREE.MathUtils.lerp(this.exhibitionDoorHingeR.rotation.y, targetRotR, deltaTime * 6.0);
         }
 
-        // 📺 CẬP NHẬT REALTIME MÀN HÌNH LED BILLBOARD ("Hi, I'm Viet Anh.") BÊN CẠNH QUẦY RAMEN
+        // 📺 CẬP NHẬT REALTIME MÀN HÌNH LED BILLBOARD
         this._updateLedTvDisplay(deltaTime);
 
-        // 🎬 CẬP NHẬT REALTIME MÀN HÌNH TV LIVE STREAM 60FPS TRÊN MÁI QUẦY RAMEN
+        // 🎬 CẬP NHẬT REALTIME MÀN HÌNH TV LIVE STREAM 60FPS
         this._updateCyberLiveStream(deltaTime);
 
-        // 🎧 HOẠT HỌA REALTIME NHÂN VẬT ANIME BEAN ĐEO TAI NGHE DỰNG Ở SÀN QUẦY RAMEN
+        // 🎧 HOẠT HỌA REALTIME NHÂN VẬT ANIME BEAN ĐEO TAI NGHE
         if (this.beanNPC) {
             const time = performance.now() * 0.003;
             this.beanNPC.position.y = 0.0 + Math.sin(time * 2.5) * 0.02;
@@ -6588,14 +6404,14 @@ export class Shop3DScene {
             this.game.trophyHallManager.update(0.016);
         }
 
-        // 🌀 CẬP NHẬT REALTIME CỔNG DỊCH CHUYỂN HOLOGRAPHIC PORTAL 3D AT PALACE
+        // 🌀 CẬP NHẬT REALTIME CỔNG DỊCH CHUYỂN HOLOGRAPHIC PORTAL 3D
         if (this.holographicPortal) {
             const isNear = this.holographicPortal.update(deltaTime, this.playerPos);
             const promptEl = document.getElementById('portal-teleport-prompt');
             if (promptEl) {
                 if (isNear) {
                     promptEl.classList.add('show');
-                    promptEl.style.display = 'flex'; // Đảm bảo hiện lại nếu trước đó bị ẩn
+                    promptEl.style.display = 'flex';
                 } else {
                     promptEl.classList.remove('show');
                 }
@@ -6610,7 +6426,7 @@ export class Shop3DScene {
             }
         }
 
-        // 📍 CẬP NHẬT REALTIME TỌA ĐỘ X, Y, Z TRÊN HUD GÓC PHẢI MÀN HÌNH
+        // 📍 CẬP NHẬT REALTIME TỌA ĐỘ TRÊN HUD
         this._updatePositionHUD();
     }
 
